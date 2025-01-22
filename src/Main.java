@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -23,14 +24,13 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		
 		// Outer panel holds Menu bar and console
-		JPanel outer = new JPanel();
-		outer.setLayout(new BorderLayout());
+		JPanel outerElements = new JPanel();
+		outerElements.setLayout(new BorderLayout());
 		
 		// Inner holds the gameplay area and the hand display
-		JPanel inner = new JPanel();
-		inner.setLayout(new BorderLayout());
+		JPanel gameElements = new JPanel();
+		gameElements.setLayout(new BorderLayout());
 		
 		// Set up menu bar
 		Menu menuBar = new Menu();
@@ -39,19 +39,19 @@ public class Main {
 		// Set up console
 		JPanel console = new JPanel();
 		console.setLayout(new BorderLayout());
-		console.setBackground(Color.cyan);
+		console.setBackground(new Color(255,241,241));
 		console.setPreferredSize(new Dimension(300,0));
         console.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		
 		// Score
 		JPanel score = new JPanel();
-		score.setBackground(Color.lightGray);
+		score.setBackground(new Color(255,241,241));
 		score.setPreferredSize(new Dimension(0,100));
         score.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		
 		// Chat input
 		JPanel chat = new JPanel();
-		chat.setBackground(Color.green);
+		chat.setBackground(new Color(255,241,241));
 		chat.setPreferredSize(new Dimension(0,150));
         chat.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		
@@ -60,29 +60,36 @@ public class Main {
 		console.add(BorderLayout.NORTH, score);
 		
 		// Game area
-		JPanel game = new JPanel();
-		game.setBackground(Color.orange);
+		JPanel gameStateArea = new JPanel();
+		gameStateArea.setBackground(new Color(255,241,241));
 		
 		// Hand
-		JPanel hand = new JPanel();
-		hand.setPreferredSize(new Dimension(0,150));
-		hand.setBackground(Color.darkGray);
+		JPanel handArea = new JPanel();
+		handArea.setPreferredSize(new Dimension(0,150));
+		handArea.setBackground(new Color(255,241,241));
+		handArea.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		
-		inner.add(BorderLayout.SOUTH, hand);
-		inner.add(BorderLayout.CENTER, game);
+		gameElements.add(BorderLayout.SOUTH, handArea);
+		gameElements.add(BorderLayout.CENTER, gameStateArea);
 		
 		// Adding components to the outer frame
-		outer.add(BorderLayout.NORTH, menuBar);
-		outer.add(BorderLayout.EAST, console);
-		outer.add(BorderLayout.CENTER, inner);
+		outerElements.add(BorderLayout.NORTH, menuBar);
+		outerElements.add(BorderLayout.EAST, console);
+		outerElements.add(BorderLayout.CENTER, gameElements);
 		
+		// Icon
+		ImageIcon icon = new ImageIcon("resource/img/icon.png");
+		
+		// Draw the gui
 		JFrame gui = new JFrame();
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gui.setVisible(true);
 		gui.setSize(1280, 720);
 		gui.setResizable(false);
 		gui.setTitle("Crazy Eights");
-		gui.add(outer);
+		gui.setIconImage(icon.getImage());
+		gui.add(outerElements);
+		gui.setVisible(true);
+
 		
 	}
 
