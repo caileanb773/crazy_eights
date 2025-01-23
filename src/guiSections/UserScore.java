@@ -23,17 +23,22 @@ public class UserScore extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 	private int scoreInt;
+	private int userNumInt;
 	JLabel scoreLabel;
 	JLabel userNum;
 	
 	public UserScore(int userNo) {
+		this.userNumInt = userNo;
 		this.scoreLabel = new JLabel("User " + userNo + " score = " + scoreInt);
-		scoreLabel.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 14));
+		this.scoreLabel.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 14));
+		this.scoreLabel.setOpaque(false);
+		this.setOpaque(false);
 		this.add(scoreLabel);
 	}
 	
 	public void incrementScore() {
 		this.scoreInt++;
+		this.scoreLabel.setText("User " + this.userNumInt + " score = " + scoreInt);
 		this.revalidate();
 		this.repaint();
 
