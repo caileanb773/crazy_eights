@@ -1,0 +1,42 @@
+package guiSections;
+
+import java.awt.Font;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+/**
+ * CET - CS Academic Level 4
+ * Declaration: I declare that this is my own original work and is free of plagiarism
+ * Student Name: Cailean Bernard
+ * Student Number: 041143947
+ * Section #: 300-302
+ * Course: CST8221 - Java Application Programming
+ * Professor: Daniel Cormier
+ * Contents:
+ */
+
+public class UserScore extends JPanel {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private int scoreInt;
+	JLabel scoreLabel;
+	JLabel userNum;
+	
+	public UserScore(int userNo) {
+		this.scoreLabel = new JLabel("User " + userNo + " score = " + scoreInt);
+		scoreLabel.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 14));
+		this.add(scoreLabel);
+	}
+	
+	public void incrementScore() {
+		this.scoreInt++;
+		this.revalidate();
+		this.repaint();
+
+	}
+
+}

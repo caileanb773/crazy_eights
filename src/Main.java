@@ -1,13 +1,21 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.TextArea;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import guiSections.Menu;
+import guiSections.UserScore;
 
 /**
  * CET - CS Academic Level 4
@@ -43,25 +51,65 @@ public class Main {
 		console.setPreferredSize(new Dimension(300,0));
         console.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		
+        // Score text/counters
+        JLabel scoreTitle = new JLabel("---SCORE---");
+        scoreTitle.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 20));
+        UserScore user1 = new UserScore(1);
+        UserScore user2 = new UserScore(2);
+        
 		// Score
-		JPanel score = new JPanel();
-		score.setBackground(new Color(255,241,241));
-		score.setPreferredSize(new Dimension(0,100));
-        score.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		JPanel scoreBox = new JPanel();
+		scoreBox.setBackground(new Color(255,241,241));
+		scoreBox.setPreferredSize(new Dimension(0,100));
+        scoreBox.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+        scoreBox.setLayout(new BoxLayout(scoreBox, BoxLayout.Y_AXIS));
+        
+        // Adding elements to score box
+        scoreBox.add(scoreTitle);
+        scoreBox.add(user1);
+        scoreBox.add(user2);
+
+
+        // -------------------- CHAT STUFF --------------------
+
+        // Add textArea for chat input
+        TextArea chatBox = new TextArea();
+        chatBox.setPreferredSize(new Dimension(250,100));
+        chatBox.setBackground(Color.pink);
+        
+        // Chat "send" button
+        JButton chatSend = new JButton("SEND");
+        chatSend.setFocusable(false);
+		chatSend.setFont(new Font("SNES Fonts: Mario Paint Regular",Font.PLAIN,12));
 		
 		// Chat input
 		JPanel chat = new JPanel();
 		chat.setBackground(new Color(255,241,241));
 		chat.setPreferredSize(new Dimension(0,150));
         chat.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+        chat.setLayout(new FlowLayout());
+        
+        // Add chatBox to the chat section
+        chat.add(chatBox);
+        chat.add(chatSend);
 		
-		// Add chat section to console
+		// Add chat and score sections to console
 		console.add(BorderLayout.SOUTH, chat);
-		console.add(BorderLayout.NORTH, score);
+		console.add(BorderLayout.NORTH, scoreBox);
+		
+        // -------------------- GAME AREA STUFF --------------------
+		
+		// Game logo
+		ImageIcon gameLogoImg = new ImageIcon("resource/img/crazyeightslogo.png");
+		JLabel gameLogo = new JLabel();
+		gameLogo.setIcon(gameLogoImg);
 		
 		// Game area
 		JPanel gameStateArea = new JPanel();
 		gameStateArea.setBackground(new Color(255,241,241));
+		
+		// Add logo to Game Area
+		gameStateArea.add(gameLogo);
 		
 		// Hand
 		JPanel handArea = new JPanel();
@@ -89,7 +137,6 @@ public class Main {
 		gui.setIconImage(icon.getImage());
 		gui.add(outerElements);
 		gui.setVisible(true);
-
 		
 	}
 
