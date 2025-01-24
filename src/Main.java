@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.TextArea;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -16,6 +17,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 
 import guiSections.Menu;
 import guiSections.UserScore;
@@ -70,7 +73,7 @@ public class Main {
 		// Score
 		JPanel scoreBox = new JPanel();
 		scoreBox.setBackground(new Color(255,241,241));
-		scoreBox.setPreferredSize(new Dimension(0,100));
+		//scoreBox.setPreferredSize(new Dimension(0,100)); // this made the component not appear for some reason?
 		scoreBox.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		scoreBox.setLayout(new BoxLayout(scoreBox, BoxLayout.Y_AXIS));
 
@@ -78,13 +81,29 @@ public class Main {
 		scoreBox.add(scoreTitle);
 		scoreBox.add(user1);
 		scoreBox.add(user2);
+		
+		// ScoreBoxWrapper
+		JPanel scoreBoxWrapper = new JPanel();
 
 		// -------------------- CHAT STUFF --------------------
 
 		// Add textArea for chat input
 		TextArea chatBox = new TextArea();
-		chatBox.setPreferredSize(new Dimension(250,100));
+		//chatBox.setPreferredSize(new Dimension(250,100));
 		chatBox.setBackground(Color.pink);
+		
+		// Chat input wrapper
+		JPanel chatBoxWrapper = new JPanel();
+		
+		// Chat Display wrapper panel
+		JPanel chatDisplayWrapper = new JPanel();
+		
+		// Add JTextArea for chat display
+		JTextPane chatDisplay = new JTextPane();
+		chatDisplay.setPreferredSize(new Dimension(280,300));
+		chatDisplay.setEditable(false);
+		chatDisplay.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		chatDisplay.setMargin(new Insets(10,10,10,10));
 
 		// Chat "send" button
 		JButton chatSend = new JButton("SEND");
@@ -101,10 +120,16 @@ public class Main {
 		// Add chatBox to the chat section
 		chat.add(chatBox);
 		chat.add(chatSend);
+				
+		// Adding components to wrappers
+		chatDisplayWrapper.add(chatDisplay);
+		scoreBoxWrapper.add(scoreBox);
+		chatBoxWrapper.add(chat);
 
 		// Add chat and score sections to console
-		console.add(BorderLayout.SOUTH, chat);
-		console.add(BorderLayout.NORTH, scoreBox);
+		console.add(BorderLayout.SOUTH, chatDisplayWrapper);
+		console.add(BorderLayout.CENTER, chatDisplayWrapper);
+		console.add(BorderLayout.NORTH, scoreBoxWrapper);
 
 		// -------------------- GAME AREA STUFF --------------------
 
@@ -153,14 +178,12 @@ public class Main {
 		JFrame gui = new JFrame();
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		gui.setSize(1280, 720);
-		gui.setResizable(false);
+		gui.setResizable(true);
 		gui.setTitle("Crazy Eights");
 		gui.setIconImage(icon.getImage());
 		gui.add(outerElements);
 		gui.setLocationRelativeTo(null);
 		gui.setVisible(true);
-
-		
 		
 	}
 
