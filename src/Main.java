@@ -184,6 +184,7 @@ public class Main {
 		gui.add(outerElements);
 		gui.setLocationRelativeTo(null);
 		gui.setVisible(true);
+		//gui.pack();
 		
 	}
 
