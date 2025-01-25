@@ -60,7 +60,7 @@ public class Main {
 		JPanel console = new JPanel();
 		console.setLayout(new BorderLayout());
 		console.setBackground(new Color(255,241,241));
-		console.setPreferredSize(new Dimension(300,0));
+		//console.setPreferredSize(new Dimension(300,0));
 		console.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 
 		// Score text/counters
@@ -100,10 +100,10 @@ public class Main {
 		
 		// Add JTextArea for chat display
 		JTextPane chatDisplay = new JTextPane();
-		chatDisplay.setPreferredSize(new Dimension(280,300));
+		//chatDisplay.setPreferredSize(new Dimension(280,300));
 		chatDisplay.setEditable(false);
 		chatDisplay.setBorder(BorderFactory.createLineBorder(Color.black, 2));
-		chatDisplay.setMargin(new Insets(10,10,10,10));
+		//chatDisplay.setMargin(new Insets(10,10,10,10));
 
 		// Chat "send" button
 		JButton chatSend = new JButton("SEND");
@@ -113,9 +113,9 @@ public class Main {
 		// Chat input
 		JPanel chat = new JPanel();
 		chat.setBackground(new Color(255,241,241));
-		chat.setPreferredSize(new Dimension(0,150));
+		//chat.setPreferredSize(new Dimension(0,150));
 		chat.setBorder(BorderFactory.createLineBorder(Color.black, 2));
-		chat.setLayout(new FlowLayout());
+		//chat.setLayout(new FlowLayout());
 
 		// Add chatBox to the chat section
 		chat.add(chatBox);
@@ -127,7 +127,7 @@ public class Main {
 		chatBoxWrapper.add(chat);
 
 		// Add chat and score sections to console
-		console.add(BorderLayout.SOUTH, chatDisplayWrapper);
+		console.add(BorderLayout.SOUTH, chatBoxWrapper);
 		console.add(BorderLayout.CENTER, chatDisplayWrapper);
 		console.add(BorderLayout.NORTH, scoreBoxWrapper);
 
@@ -184,7 +184,7 @@ public class Main {
 		gui.add(outerElements);
 		gui.setLocationRelativeTo(null);
 		gui.setVisible(true);
-		//gui.pack();
+		gui.pack();
 		
 	}
 
