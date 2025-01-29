@@ -4,22 +4,15 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.TextArea;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-
 import guiSections.Menu;
 import guiSections.UserScore;
 
@@ -43,7 +36,7 @@ public class Main {
 	}
 
 	public static void drawMainApplication() {
-
+		
 		// Outer panel holds Menu bar and console
 		JPanel outerElements = new JPanel();
 		outerElements.setLayout(new BorderLayout());
@@ -60,7 +53,6 @@ public class Main {
 		JPanel console = new JPanel();
 		console.setLayout(new BorderLayout());
 		console.setBackground(new Color(255,241,241));
-		//console.setPreferredSize(new Dimension(300,0));
 		console.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 
 		// Score text/counters
@@ -73,7 +65,6 @@ public class Main {
 		// Score
 		JPanel scoreBox = new JPanel();
 		scoreBox.setBackground(new Color(255,241,241));
-		//scoreBox.setPreferredSize(new Dimension(0,100)); // this made the component not appear for some reason?
 		scoreBox.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 		scoreBox.setLayout(new BoxLayout(scoreBox, BoxLayout.Y_AXIS));
 
@@ -84,26 +75,26 @@ public class Main {
 		
 		// ScoreBoxWrapper
 		JPanel scoreBoxWrapper = new JPanel();
+		scoreBoxWrapper.setLayout(new BorderLayout());
 
 		// -------------------- CHAT STUFF --------------------
 
 		// Add textArea for chat input
 		TextArea chatBox = new TextArea();
-		//chatBox.setPreferredSize(new Dimension(250,100));
 		chatBox.setBackground(Color.pink);
 		
 		// Chat input wrapper
 		JPanel chatBoxWrapper = new JPanel();
+		chatBoxWrapper.setLayout(new FlowLayout());
 		
 		// Chat Display wrapper panel
 		JPanel chatDisplayWrapper = new JPanel();
+		chatDisplayWrapper.setLayout(new BorderLayout());
 		
 		// Add JTextArea for chat display
 		JTextPane chatDisplay = new JTextPane();
-		//chatDisplay.setPreferredSize(new Dimension(280,300));
 		chatDisplay.setEditable(false);
 		chatDisplay.setBorder(BorderFactory.createLineBorder(Color.black, 2));
-		//chatDisplay.setMargin(new Insets(10,10,10,10));
 
 		// Chat "send" button
 		JButton chatSend = new JButton("SEND");
@@ -113,18 +104,24 @@ public class Main {
 		// Chat input
 		JPanel chat = new JPanel();
 		chat.setBackground(new Color(255,241,241));
-		//chat.setPreferredSize(new Dimension(0,150));
+		chat.setLayout(new FlowLayout());
 		chat.setBorder(BorderFactory.createLineBorder(Color.black, 2));
-		//chat.setLayout(new FlowLayout());
 
 		// Add chatBox to the chat section
 		chat.add(chatBox);
 		chat.add(chatSend);
 				
-		// Adding components to wrappers
-		chatDisplayWrapper.add(chatDisplay);
+		// Adding components to wrappers		
 		scoreBoxWrapper.add(scoreBox);
+		scoreBoxWrapper.setBorder(BorderFactory.createEmptyBorder(15,15,10,15));
+		
+		chatDisplayWrapper.add(chatDisplay);
+		chatDisplayWrapper.setLayout(new BorderLayout());
+		chatDisplayWrapper.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
+		chatDisplayWrapper.add(chatDisplay, BorderLayout.CENTER);
+		
 		chatBoxWrapper.add(chat);
+		chatBoxWrapper.setBorder(BorderFactory.createEmptyBorder(5,10,10,10));
 
 		// Add chat and score sections to console
 		console.add(BorderLayout.SOUTH, chatBoxWrapper);
