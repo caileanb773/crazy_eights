@@ -129,27 +129,58 @@ public class Main {
 		console.add(BorderLayout.NORTH, scoreBoxWrapper);
 
 		// -------------------- GAME AREA STUFF --------------------
+		
+		// Users are arranged clockwise starting from player 1 at the top
+		
+		// Player 1 Area
+		JPanel player1 = new JPanel();
+		player1.setBorder(BorderFactory.createLineBorder(Color.black,2));
+		player1.setOpaque(false);
+		
+		// Player 2 Area
+		JPanel player2 = new JPanel();
+		player2.setBorder(BorderFactory.createLineBorder(Color.black,2));
+		player2.setOpaque(false);
+
+		// Player 3 Area
+		JPanel player3 = new JPanel();
+		player3.setBorder(BorderFactory.createLineBorder(Color.black,2));
+		player3.setOpaque(false);
+		
+		// Played cards area
 
 		// Game logo
-		ImageIcon gameLogoImg = new ImageIcon("resource/img/crazyeightslogo.png");
+		ImageIcon gameLogoImg = new ImageIcon("asset/img/crazyeightslogo.png");
 		JLabel gameLogo = new JLabel();
 		gameLogo.setIcon(gameLogoImg);
 
 		// Game area
 		JPanel gameStateArea = new JPanel();
+		gameStateArea.setLayout(new BorderLayout());
 		gameStateArea.setBackground(new Color(255,241,241));
 
-		// Add logo to Game Area
-		gameStateArea.add(gameLogo);
+		// Add logo and players to Game Area
+		gameStateArea.add(BorderLayout.CENTER, gameLogo);
+		gameElements.add(BorderLayout.NORTH, player1);
+		gameElements.add(BorderLayout.EAST, player2);
+		gameElements.add(BorderLayout.WEST, player3);
 
 		// Hand
 		JPanel handArea = new JPanel();
+		handArea.setLayout(new FlowLayout());
 		handArea.setPreferredSize(new Dimension(0,150));
 		handArea.setBackground(new Color(255,241,241));
 		handArea.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 
 		gameElements.add(BorderLayout.SOUTH, handArea);
 		gameElements.add(BorderLayout.CENTER, gameStateArea);
+		
+		// Cards in hand
+		for (int i = 0; i < 11; i++) {
+			JButton cardSlice = new JButton(new ImageIcon("asset/card/l1c.png"));
+			cardSlice.setBorder(null);
+			handArea.add(cardSlice);
+		}
 
 		// Adding components to the outer frame
 		outerElements.add(BorderLayout.NORTH, menuBar);
@@ -158,28 +189,19 @@ public class Main {
 		
 		// -------------------- BEGIN TESTING AREA --------------------
 		
-		JButton inc1 = new JButton("Increment user 1 score");
-		inc1.addActionListener(e -> user1.incrementScore());
-		handArea.add(inc1);
-		
-		JButton inc2 = new JButton("Increment user 2 score");
-		inc2.addActionListener(e -> user2.incrementScore());
-		handArea.add(inc2);
-		
+
 		// -------------------- END TESTING AREA --------------------
 
 		// Icon
-		ImageIcon icon = new ImageIcon("resource/img/icon.png");
+		ImageIcon icon = new ImageIcon("asset/img/icon.png");
 
 		// Draw the gui
 		JFrame gui = new JFrame();
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gui.setSize(1280, 720);
 		gui.setResizable(true);
 		gui.setTitle("Crazy Eights");
 		gui.setIconImage(icon.getImage());
-		gui.add(outerElements);
-		gui.setLocationRelativeTo(null);
+		gui.getContentPane().add(outerElements);
 		gui.setVisible(true);
 		gui.pack();
 		
