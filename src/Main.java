@@ -4,15 +4,23 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.MenuBar;
 import java.awt.TextArea;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
+
 import guiSections.Menu;
 import guiSections.UserScore;
 
@@ -32,6 +40,8 @@ public class Main {
 	public static void main(String[] args) {
 
 		drawMainApplication();
+		
+		// TODO: Bust drawMainApplication() into more methods
 
 	}
 
@@ -189,6 +199,14 @@ public class Main {
 		
 		// -------------------- BEGIN TESTING AREA --------------------
 		
+		JMenuBar mBar = new JMenuBar();
+		mBar.setVisible(true);
+		JMenuItem mFile = new JMenuItem();
+		mFile.setVisible(true);
+		mFile.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_F,
+						InputEvent.CTRL_DOWN_MASK + InputEvent.ALT_DOWN_MASK));
+		mBar.add(mFile);		
 
 		// -------------------- END TESTING AREA --------------------
 
@@ -203,6 +221,7 @@ public class Main {
 		gui.setIconImage(icon.getImage());
 		gui.getContentPane().add(outerElements);
 		gui.setVisible(true);
+		gui.setJMenuBar(mBar);	// delete this
 		gui.pack();
 		
 	}
