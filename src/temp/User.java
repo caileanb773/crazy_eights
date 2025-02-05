@@ -29,12 +29,12 @@ public class User extends JPanel {
 	JLabel scoreLabel;
 	JLabel userNum;
 	
-	public User(int userNo, String n, int numCards) {
+	public User(int userNo, String n, int numCards, Font font) {
 		this.name = n.toUpperCase();
 		this.userNumInt = userNo;
 		this.cardsInHand = numCards;
 		this.scoreLabel = new JLabel(name + " SCORE " + scoreInt + " CARDS " + cardsInHand);
-		this.scoreLabel.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 11));
+		this.scoreLabel.setFont(font);
 		this.scoreLabel.setOpaque(false);
 		this.setOpaque(false);
 		this.add(scoreLabel);

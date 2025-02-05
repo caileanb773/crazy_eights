@@ -3,8 +3,11 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Image;
 import java.awt.TextArea;
+import java.io.File;
+import java.io.IOException;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -75,6 +78,8 @@ public class Main {
 	 * */
 	public static void drawMainApplication() {
 		
+		Font myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
+		
 		// Outer panel holds Menu bar and console
 		JPanel outerElements = new JPanel();
 		outerElements.setLayout(new BorderLayout());
@@ -96,12 +101,12 @@ public class Main {
 		// Score text/counters
 		JLabel scoreTitle = new JLabel("--- SCORE ---");
 		scoreTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-		scoreTitle.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 20));
-		User uConsole = new User(0, "Console", 0);
-		User user1 = new User(1, "Coop", 12);
-		User user2 = new User(2, "Laura", 12);
-		User user3 = new User(3, "Hawk", 12);
-		User user4 = new User(4, "Bob", 12);
+		scoreTitle.setFont(myFont.deriveFont(14f));
+		User uConsole = new User(0, "Console", 0, myFont);
+		User user1 = new User(1, "Coop", 12, myFont);
+		User user2 = new User(2, "Laura", 12, myFont);
+		User user3 = new User(3, "Hawk", 12, myFont);
+		User user4 = new User(4, "Bob", 12, myFont);
 
 		// Score
 		JPanel scoreBox = new JPanel();
@@ -148,7 +153,8 @@ public class Main {
 		// Chat "send" button
 		JButton chatSend = new JButton("SEND");
 		chatSend.setFocusable(false);
-		chatSend.setFont(new Font("SNES Fonts: Mario Paint Regular",Font.PLAIN,12));
+		//chatSend.setFont(new Font("SNES Fonts: Mario Paint Regular",Font.PLAIN,12));
+		chatSend.setFont(myFont.deriveFont(12f));
 
 		// Chat input
 		JPanel chat = new JPanel();
@@ -189,6 +195,7 @@ public class Main {
 		JPanel playerNorthCards = new JPanel();
 		playerNorthCards.setBackground(null);
 		JLabel playerNorthName = new JLabel(user1.getName());
+		playerNorthName.setFont(myFont);
 		playerNorthName.setHorizontalAlignment(SwingConstants.CENTER);
 		playerNorth.add(BorderLayout.NORTH, playerNorthName);
 		playerNorth.add(BorderLayout.SOUTH, playerNorthCards);
@@ -197,6 +204,7 @@ public class Main {
 		// Player 2 Area
 		JPanel playerEast = new JPanel();
 		JLabel playerEastName = new JLabel(user2.getName());
+		playerEastName.setFont(myFont);
 		playerEastName.setHorizontalAlignment(SwingConstants.CENTER);
 		playerEast.add(playerEastName);
 		playerEast.setBackground(MY_BKGRD_PINK);
@@ -204,6 +212,7 @@ public class Main {
 		// Player 3 Area
 		JPanel playerWest = new JPanel();
 		JLabel playerWestName = new JLabel(user3.getName());
+		playerWestName.setFont(myFont);
 		playerWest.add(playerWestName);
 		playerWest.setBackground(MY_BKGRD_PINK);
 		
@@ -438,6 +447,20 @@ public class Main {
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/***/
+	static Font getMyFont(String path) {
+		File fontFile = new File(path);
+		Font myFont = new Font("Arial", Font.PLAIN, 12);
+		
+		try {
+			myFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(12f);
+		} catch (FontFormatException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		return myFont;
 	}
 
 }
