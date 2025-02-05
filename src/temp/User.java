@@ -1,4 +1,4 @@
-package guiSections;
+package temp;
 
 import java.awt.Font;
 
@@ -16,32 +16,36 @@ import javax.swing.JPanel;
  * Contents:
  */
 
-public class UserScore extends JPanel {
+public class User extends JPanel {
 	
 	/**
 	 * 
 	 */
+	private String name;
 	private static final long serialVersionUID = 1L;
 	private int scoreInt;
 	private int userNumInt;
+	private int cardsInHand;
 	JLabel scoreLabel;
 	JLabel userNum;
 	
-	public UserScore(int userNo) {
+	public User(int userNo, String n, int numCards) {
+		this.name = n.toUpperCase();
 		this.userNumInt = userNo;
-		this.scoreLabel = new JLabel("USER " + userNo + " SCORE = " + scoreInt);
-		this.scoreLabel.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 14));
+		this.cardsInHand = numCards;
+		this.scoreLabel = new JLabel(name + " SCORE " + scoreInt + " CARDS " + cardsInHand);
+		this.scoreLabel.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 11));
 		this.scoreLabel.setOpaque(false);
 		this.setOpaque(false);
 		this.add(scoreLabel);
 	}
 	
-	public void incrementScore() {
-		this.scoreInt++;
-		this.scoreLabel.setText("USER " + this.userNumInt + " SCORE = " + scoreInt);
-		this.revalidate();
-		this.repaint();
-
+	public String getName() {
+		return this.name;
+	}
+	
+	public int getId() {
+		return this.userNumInt;
 	}
 
 }

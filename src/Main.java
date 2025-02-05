@@ -1,28 +1,30 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.MenuBar;
+import java.awt.Image;
 import java.awt.TextArea;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-
-import guiSections.Menu;
-import guiSections.UserScore;
+import javax.swing.SwingConstants;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
+import temp.User;
 
 /**
  * CET - CS Academic Level 4
@@ -32,11 +34,29 @@ import guiSections.UserScore;
  * Section #: 300-302
  * Course: CST8221 - Java Application Programming
  * Professor: Daniel Cormier
- * Contents:
+ * Contents: Main class. Contains main method and methods to draw the GUI
  */
 
+/**
+ * Calls main() function, which calls drawMainApplication.
+ * @author Cailean Bernard
+ * @since JDK 22
+ * */
 public class Main {
+	
+	static final boolean VERTICAL = false;
+	static final boolean HORIZONTAL = true;
+	static final boolean VISIBLE = true;
+	static final boolean HIDDEN = false;
+	static final Color MY_BKGRD_PINK = new Color(255,241,241);
+	static final Color MY_BKGRD_BLUE = new Color(33,65,202);
+	static final Color MY_BORDER_BLUE = new Color(136, 200, 238);
 
+	/**
+	 * Calls drawMainApplication(), which draws the GUI.
+	 * @author Cailean Bernard
+	 * @since JDK 22
+	 * */
 	public static void main(String[] args) {
 
 		drawMainApplication();
@@ -45,6 +65,14 @@ public class Main {
 
 	}
 
+	/**
+	 * Draws the GUI elements. Each GUI element is a JPanel, which holds other
+	 * JPanels. There are outer elements, which hold the title bar, console,
+	 * player's hand, and the gameplay area. Each of these areas is further 
+	 * broken down into several other components.
+	 * @author Cailean Bernard
+	 * @since JDK 22
+	 * */
 	public static void drawMainApplication() {
 		
 		// Outer panel holds Menu bar and console
@@ -54,44 +82,51 @@ public class Main {
 		// Inner holds the gameplay area and the hand display
 		JPanel gameElements = new JPanel();
 		gameElements.setLayout(new BorderLayout());
-
-		// Set up menu bar
-		Menu menuBar = new Menu();
-		menuBar.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		
+		// Set up custom menu bar
+		//Menu menuBar = new Menu();
+		//menuBar.setBorder(BorderFactory.createLineBorder(Color.black, 2));
 
 		// Set up console
 		JPanel console = new JPanel();
 		console.setLayout(new BorderLayout());
-		console.setBackground(new Color(255,241,241));
-		console.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		console.setBackground(MY_BKGRD_PINK);
+		console.setBorder(BorderFactory.createMatteBorder(0, 2, 0, 0, Color.BLACK));
 
 		// Score text/counters
-		JLabel scoreTitle = new JLabel("---SCORE---");
+		JLabel scoreTitle = new JLabel("--- SCORE ---");
 		scoreTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 		scoreTitle.setFont(new Font("SNES Fonts: Mario Paint Regular", Font.PLAIN, 20));
-		UserScore user1 = new UserScore(1);
-		UserScore user2 = new UserScore(2);
+		User uConsole = new User(0, "Console", 0);
+		User user1 = new User(1, "Coop", 12);
+		User user2 = new User(2, "Laura", 12);
+		User user3 = new User(3, "Hawk", 12);
+		User user4 = new User(4, "Bob", 12);
 
 		// Score
 		JPanel scoreBox = new JPanel();
-		scoreBox.setBackground(new Color(255,241,241));
-		scoreBox.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		scoreBox.setBackground(Color.WHITE);
+		scoreBox.setBorder(BorderFactory.createLineBorder(MY_BORDER_BLUE, 2));
 		scoreBox.setLayout(new BoxLayout(scoreBox, BoxLayout.Y_AXIS));
 
 		// Adding elements to score box
 		scoreBox.add(scoreTitle);
 		scoreBox.add(user1);
 		scoreBox.add(user2);
+		scoreBox.add(user3);
+		scoreBox.add(user4);
 		
 		// ScoreBoxWrapper
 		JPanel scoreBoxWrapper = new JPanel();
 		scoreBoxWrapper.setLayout(new BorderLayout());
+		scoreBoxWrapper.setBackground(null);
 
 		// -------------------- CHAT STUFF --------------------
 
 		// Add textArea for chat input
-		TextArea chatBox = new TextArea();
-		chatBox.setBackground(Color.pink);
+		TextArea chatBox = new TextArea(5,20);
+		chatBox.setBackground(Color.WHITE);
+		chatBox.setFont(new Font("Arial", Font.PLAIN, 18));
 		
 		// Chat input wrapper
 		JPanel chatBoxWrapper = new JPanel();
@@ -103,8 +138,12 @@ public class Main {
 		
 		// Add JTextArea for chat display
 		JTextPane chatDisplay = new JTextPane();
+		chatDisplay.setEditorKit(new StyledEditorKit());
 		chatDisplay.setEditable(false);
-		chatDisplay.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		chatDisplay.setBorder(BorderFactory.createLineBorder(MY_BORDER_BLUE, 2));
+		
+		// Scroll pane for chat display
+		JScrollPane chatDisplayScroll = new JScrollPane(chatDisplay);
 
 		// Chat "send" button
 		JButton chatSend = new JButton("SEND");
@@ -113,24 +152,26 @@ public class Main {
 
 		// Chat input
 		JPanel chat = new JPanel();
-		chat.setBackground(new Color(255,241,241));
-		chat.setLayout(new FlowLayout());
-		chat.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		chat.setBackground(Color.WHITE);
+		chat.setLayout(new BorderLayout());
+		chat.setBorder(BorderFactory.createLineBorder(MY_BORDER_BLUE, 2));
 
 		// Add chatBox to the chat section
-		chat.add(chatBox);
-		chat.add(chatSend);
+		chat.add(BorderLayout.NORTH, chatBox);
+		chat.add(BorderLayout.SOUTH, chatSend);
 				
 		// Adding components to wrappers		
 		scoreBoxWrapper.add(scoreBox);
 		scoreBoxWrapper.setBorder(BorderFactory.createEmptyBorder(15,15,10,15));
 		
-		chatDisplayWrapper.add(chatDisplay);
+		chatDisplayWrapper.add(chatDisplayScroll);
+		chatDisplayWrapper.setBackground(null);
 		chatDisplayWrapper.setLayout(new BorderLayout());
 		chatDisplayWrapper.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
 		chatDisplayWrapper.add(chatDisplay, BorderLayout.CENTER);
 		
 		chatBoxWrapper.add(chat);
+		chatBoxWrapper.setBackground(null);
 		chatBoxWrapper.setBorder(BorderFactory.createEmptyBorder(5,10,10,10));
 
 		// Add chat and score sections to console
@@ -143,72 +184,161 @@ public class Main {
 		// Users are arranged clockwise starting from player 1 at the top
 		
 		// Player 1 Area
-		JPanel player1 = new JPanel();
-		player1.setBorder(BorderFactory.createLineBorder(Color.black,2));
-		player1.setOpaque(false);
-		
+		JPanel playerNorth = new JPanel();
+		playerNorth.setLayout(new BorderLayout());
+		JPanel playerNorthCards = new JPanel();
+		playerNorthCards.setBackground(null);
+		JLabel playerNorthName = new JLabel(user1.getName());
+		playerNorthName.setHorizontalAlignment(SwingConstants.CENTER);
+		playerNorth.add(BorderLayout.NORTH, playerNorthName);
+		playerNorth.add(BorderLayout.SOUTH, playerNorthCards);
+		playerNorth.setBackground(MY_BKGRD_PINK);
+
 		// Player 2 Area
-		JPanel player2 = new JPanel();
-		player2.setBorder(BorderFactory.createLineBorder(Color.black,2));
-		player2.setOpaque(false);
+		JPanel playerEast = new JPanel();
+		JLabel playerEastName = new JLabel(user2.getName());
+		playerEastName.setHorizontalAlignment(SwingConstants.CENTER);
+		playerEast.add(playerEastName);
+		playerEast.setBackground(MY_BKGRD_PINK);
 
 		// Player 3 Area
-		JPanel player3 = new JPanel();
-		player3.setBorder(BorderFactory.createLineBorder(Color.black,2));
-		player3.setOpaque(false);
+		JPanel playerWest = new JPanel();
+		JLabel playerWestName = new JLabel(user3.getName());
+		playerWest.add(playerWestName);
+		playerWest.setBackground(MY_BKGRD_PINK);
 		
 		// Played cards area
 
 		// Game logo
-		ImageIcon gameLogoImg = new ImageIcon("asset/img/crazyeightslogo.png");
-		JLabel gameLogo = new JLabel();
-		gameLogo.setIcon(gameLogoImg);
+		ImageIcon gameLogoImg = new ImageIcon("asset/img/logo.png");
+		int width = gameLogoImg.getIconWidth();
+		int height = gameLogoImg.getIconHeight();
+		Image gameBG = gameLogoImg.getImage().getScaledInstance(width/2, height/2, Image.SCALE_SMOOTH);
+		ImageIcon gameBGLogo = new ImageIcon(gameBG);
+		JLabel gameLogo = new JLabel(gameBGLogo);
+
+		gameLogo.setVerticalAlignment(SwingConstants.CENTER);
+		gameLogo.setHorizontalAlignment(SwingConstants.CENTER);
 
 		// Game area
 		JPanel gameStateArea = new JPanel();
 		gameStateArea.setLayout(new BorderLayout());
-		gameStateArea.setBackground(new Color(255,241,241));
+		gameStateArea.setBackground(MY_BKGRD_PINK);
+		
+		JPanel cardLibrary = new JPanel();
+		cardLibrary.setBackground(MY_BKGRD_PINK);
+		
+		JPanel cardsPlayed = new JPanel();
+		cardsPlayed.setBackground(MY_BKGRD_PINK);
+		
+		JPanel displayPlayedCards = new JPanel();
+		displayPlayedCards.setBackground(MY_BKGRD_PINK);
+		displayPlayedCards.setLayout(new FlowLayout());
+		displayPlayedCards.add(cardLibrary);
+		displayPlayedCards.add(cardsPlayed);
+
+		JButton library = new JButton(new ImageIcon("asset/card/back.png"));
+		library.setBorder(null);
+		
+		JButton played = new JButton(new ImageIcon("asset/card/As.png"));
+		played.setBorder(null);
+		
+		cardLibrary.add(library);
+		cardsPlayed.add(played);
+		
+		JPanel logoPlusCards = new JPanel();
+		
+		logoPlusCards.setVisible(true);
+		logoPlusCards.setLayout(new BorderLayout());
+		logoPlusCards.setBackground(MY_BKGRD_PINK);
+		logoPlusCards.add(BorderLayout.SOUTH, gameLogo);
+		logoPlusCards.add(BorderLayout.NORTH, displayPlayedCards);
 
 		// Add logo and players to Game Area
-		gameStateArea.add(BorderLayout.CENTER, gameLogo);
-		gameElements.add(BorderLayout.NORTH, player1);
-		gameElements.add(BorderLayout.EAST, player2);
-		gameElements.add(BorderLayout.WEST, player3);
+		gameStateArea.add(BorderLayout.CENTER, logoPlusCards);
+		gameElements.add(BorderLayout.NORTH, playerNorth);
+		gameElements.add(BorderLayout.EAST, playerEast);
+		gameElements.add(BorderLayout.WEST, playerWest);
 
 		// Hand
 		JPanel handArea = new JPanel();
 		handArea.setLayout(new FlowLayout());
-		handArea.setPreferredSize(new Dimension(0,150));
-		handArea.setBackground(new Color(255,241,241));
-		handArea.setBorder(BorderFactory.createLineBorder(Color.black, 2));
+		handArea.setBackground(MY_BKGRD_PINK);
 
 		gameElements.add(BorderLayout.SOUTH, handArea);
 		gameElements.add(BorderLayout.CENTER, gameStateArea);
 		
 		// Cards in hand
-		for (int i = 0; i < 11; i++) {
-			JButton cardSlice = new JButton(new ImageIcon("asset/card/l1c.png"));
-			cardSlice.setBorder(null);
-			handArea.add(cardSlice);
-		}
+		addCardsToHand(handArea, HORIZONTAL, VISIBLE, user1);
+		addCardsToHand(playerNorthCards, HORIZONTAL, HIDDEN, user2);
+		addCardsToHand(playerEast, VERTICAL, HIDDEN, user3);
+		addCardsToHand(playerWest, VERTICAL, HIDDEN, user4);
 
 		// Adding components to the outer frame
-		outerElements.add(BorderLayout.NORTH, menuBar);
+		//outerElements.add(BorderLayout.NORTH, menuBar);
 		outerElements.add(BorderLayout.EAST, console);
 		outerElements.add(BorderLayout.CENTER, gameElements);
 		
-		// -------------------- BEGIN TESTING AREA --------------------
+		// -------------------- Menu Bar --------------------
 		
+		// Menu Bar
 		JMenuBar mBar = new JMenuBar();
 		mBar.setVisible(true);
-		JMenuItem mFile = new JMenuItem();
-		mFile.setVisible(true);
-		mFile.setAccelerator(
-				KeyStroke.getKeyStroke(KeyEvent.VK_F,
-						InputEvent.CTRL_DOWN_MASK + InputEvent.ALT_DOWN_MASK));
-		mBar.add(mFile);		
+		mBar.setLayout(new FlowLayout(FlowLayout.LEADING));
+		
+		/* ----- Main menu options ----- */
+		
+		// Menu "Host Game" option
+		JMenu mHostGame = new JMenu("Start Game");
+		mHostGame.setVisible(true);
+		mHostGame.setEnabled(true);
+		
+		// Menu "Host Game" option
+		JMenu mJoinGame = new JMenu("Join Game");
+		mJoinGame.setVisible(true);
+		mJoinGame.setEnabled(true);
+		
+		JMenu mDisconnect = new JMenu("Disconnect");
+		mDisconnect.setVisible(true);
+		mDisconnect.setEnabled(false);
+		
+		JMenu mOptions = new JMenu("Options");
+		mOptions.setVisible(true);
+		mOptions.setEnabled(true);
+		
+		JMenu mAbout = new JMenu("About");
+		mAbout.setVisible(true);
+		mAbout.setEnabled(true);
+		
+		/* ----- Submenu options ----- */
+		JCheckBoxMenuItem soundToggle = new JCheckBoxMenuItem("Sound effects on/off");
+		soundToggle.setSelected(true);
+		JCheckBoxMenuItem musicToggle = new JCheckBoxMenuItem("Music on/off");
+		musicToggle.setSelected(true);
+		JMenuItem mSinglePlayer = new JMenuItem("Single Player");
+		JMenuItem mMultiPlayer = new JMenuItem("Multiplayer");
+		
+		// Add submenu items
+		mOptions.add(soundToggle);
+		mOptions.add(musicToggle);
+		mHostGame.add(mSinglePlayer);
+		mHostGame.add(mMultiPlayer);
+		
+		// Add menu items
+		mBar.add(mHostGame);
+		mBar.add(mJoinGame);
+		mBar.add(mDisconnect);
+		mBar.add(mOptions);
+		mBar.add(mAbout);
+		
+		// teseting messages
+		addConsoleMessage(chatDisplay, uConsole, "User Cooper played Ace (S)");
+		addConsoleMessage(chatDisplay, user1, "brb, grabbing a coffee + pie.");
+		addConsoleMessage(chatDisplay, user2, "np");
+		addConsoleMessage(chatDisplay, user3, "it's foggy out again");
+		addConsoleMessage(chatDisplay, user4, "whose turn is it?");
 
-		// -------------------- END TESTING AREA --------------------
+		// -------------------- Main Frame --------------------
 
 		// Icon
 		ImageIcon icon = new ImageIcon("asset/img/icon.png");
@@ -221,9 +351,93 @@ public class Main {
 		gui.setIconImage(icon.getImage());
 		gui.getContentPane().add(outerElements);
 		gui.setVisible(true);
-		gui.setJMenuBar(mBar);	// delete this
+		gui.setJMenuBar(mBar);
 		gui.pack();
+		gui.setLocationRelativeTo(null);
 		
+	}
+	
+	/**
+	 * Method to add cards to hand.
+	 * @param area - The JPanel to add the cards to
+	 * @param horizontal - If the JPanel is displaying horizontally or not.
+	 * If true, panel is horizontal, if false, panel is vertical. This changes
+	 * which card slices we are displaying for that user's hand. 
+	 * @param visible - Changes if the card displayed is a card back (hidden) or
+	 * a card face (visible). The only time we display card faces in this method
+	 * is for when we are rendering cards in the user's hand.
+	 * @author Cailean Bernard
+	 * @since JDK 22
+	 * */
+	static void addCardsToHand(JPanel area, boolean horizontal, boolean visible, User user) {
+		if (horizontal) {
+			area.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 20));
+			JButton cardSlice;
+
+			for (int i = 0; i < 11; i++) {
+				if (visible) {
+					// Set the card to be a horizontal slice of a visible card
+					cardSlice = new JButton(new ImageIcon("asset/card/l1c.png"));
+				} else {
+					// Set the card to be a horizontal slice of a hidden card
+					cardSlice = new JButton(new ImageIcon("asset/card/lback.png"));
+				}
+				cardSlice.setBorder(null);
+				area.add(cardSlice);
+			}
+			if (visible) {
+				cardSlice = new JButton(new ImageIcon("asset/card/Qs.png"));
+				cardSlice.setBorder(null);
+				area.add(cardSlice);
+			} else {
+				cardSlice = new JButton(new ImageIcon("asset/card/back.png"));
+				cardSlice.setBorder(null);
+				area.add(cardSlice);
+			}
+			
+		} else {
+			area.setLayout(new BoxLayout(area, BoxLayout.Y_AXIS));
+			area.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+			JButton cardSlice;
+			for (int i = 0; i < 11; i++) {
+				cardSlice = new JButton(new ImageIcon("asset/card/tback.png"));
+				cardSlice.setBorder(null);
+				cardSlice.setEnabled(true);
+				area.add(cardSlice);
+			}
+			cardSlice = new JButton(new ImageIcon("asset/card/back.png"));
+			cardSlice.setBorder(null);
+			area.add(cardSlice);
+		}
+	}
+	
+	/**
+	 * Temporary method (will be refactored) to add a message to the chat display.
+	 * If the user is "console" (id: 0) then their text is displayed in red. Else,
+	 * all messages are in black. Writes a string passed to it to the StyledDocument
+	 * of the passed JTextPane, and displays the passed User's name.
+	 * @param textBox - The JTextBox to write to
+	 * @param user - The user writing to the text box
+	 * @param message - The String being written
+	 * @author Cailean Bernard
+	 * @since JDK 22
+	 * */
+	static void addConsoleMessage(JTextPane textBox, User user, String message) {
+		StyledDocument doc = textBox.getStyledDocument();
+		Style style = textBox.addStyle("Style", null);
+		String name = user.getName();
+		
+	   if (user.getId() == 0) {
+	        StyleConstants.setForeground(style, Color.RED);
+	    } else {
+	        StyleConstants.setForeground(style, Color.BLACK);
+	    }
+		
+		try {
+			doc.insertString(doc.getLength(), name + ": " + message + "\n", style);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
