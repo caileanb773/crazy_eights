@@ -181,7 +181,7 @@ public class Main {
 		chatDisplayWrapper.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
 
 		// TextArea for chat input
-		TextArea chatInput = new TextArea(3, 30);
+		TextArea chatInput = new TextArea(2, 30);
 		chatInput.setBackground(Color.WHITE);
 		chatInput.setFont(new Font("Times New Roman", Font.PLAIN, 12));
 
@@ -239,6 +239,11 @@ public class Main {
 
 		/* ---------- NORTH PLAYER ---------- */
 
+		/* playerNorth holds the cards (playerNorthCards) in its SOUTH border,
+		 * its name (playerNorthName) in the NORTH border, and then within the
+		 * cards panel, FlowLayout is used to add cards to hand. All of this is
+		 * then added to the NORTH section of the main game panel
+		 */
 		JPanel playerNorth = new JPanel();
 		playerNorth.setLayout(new BorderLayout());
 		JPanel playerNorthCards = new JPanel();
@@ -289,25 +294,23 @@ public class Main {
 		pWestWrapper.setBackground(BACKGROUND_PINK);
 		pWestWrapper.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
 		pWestWrapper.add(pWest);
+		
+		/* ---------- MAIN PLAYER / SOUTH PLAYER ---------- */
+		
+		// Hand for the user interacting with the app (located in the south)
+		JPanel mainUserHand = new JPanel();
+		mainUserHand.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 20));
+		mainUserHand.setBackground(BACKGROUND_PINK);
 
 		/* ---------- GAME LOGO ---------- */
 
-		/* Instead of resizing the raw image file, I chose to dynamically resize
-		 * it within the program so I could play around with which size I thought
-		 * worked best.
-		 */
+		// Icon that sits in the south-to-center of screen
 		ImageIcon gameLogoImg = new ImageIcon("asset/img/logo_sm.png");
 		JLabel gameLogo = new JLabel(gameLogoImg);
 		gameLogo.setVerticalAlignment(SwingConstants.CENTER);
 		gameLogo.setHorizontalAlignment(SwingConstants.CENTER);
 
 		/* ---------- PLAYING AREA ---------- */
-
-		/*
-		 * // Panel to hold the Library + Played cards and the logo JPanel gameStateArea
-		 * = new JPanel(); gameStateArea.setLayout(new BorderLayout());
-		 * gameStateArea.setBackground(BACKGROUND_PINK);
-		 */
 
 		// Library refers to the pile of face-down cards that have yet to be drawn
 		JPanel cardLibrary = new JPanel();
@@ -336,11 +339,6 @@ public class Main {
 		playingAreaAndLogo.setBackground(BACKGROUND_PINK);
 		playingAreaAndLogo.add(BorderLayout.SOUTH, gameLogo);
 		playingAreaAndLogo.add(BorderLayout.NORTH, playingArea);
-
-		// Hand for the user interacting with the app
-		JPanel mainUserHand = new JPanel();
-		mainUserHand.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 20));
-		mainUserHand.setBackground(BACKGROUND_PINK);
 
 		// Add all gameplay elements to game area
 		//gameStateArea.add(BorderLayout.CENTER, logoPlusCards);
@@ -439,13 +437,13 @@ public class Main {
 	 * */
 	public static void drawSplash() {
 
-		// Dynamically resizing the image instead of resizing raw asset
 		ImageIcon splashImage = new ImageIcon("asset/img/splash.png");
 		JLabel splashImageLabel = new JLabel(splashImage);
 		JPanel splashElements = new JPanel();
 		splashElements.setLayout(new BorderLayout());
 		splashElements.add(BorderLayout.CENTER, splashImageLabel);
 		
+		// Fake loading bar
 		JProgressBar loading = new JProgressBar();
 		loading.setMinimum(0);
 		loading.setMaximum(100);
