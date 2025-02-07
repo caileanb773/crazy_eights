@@ -10,7 +10,6 @@ import java.awt.TextArea;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -30,9 +29,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
-import temp.User;
 
-/**
+/*
  * CET - CS Academic Level 4
  * Declaration: I declare that this is my own original work and is free of plagiarism
  * Student Name: Cailean Bernard
@@ -93,7 +91,7 @@ public class Main {
 	 * */
 	public static void main(String[] args) {
 
-		drawSplash();
+		//drawSplash();
 		drawMainApplication();
 
 	}
@@ -104,6 +102,7 @@ public class Main {
 	 * player's hand, and the gameplay area. Each of these areas is further 
 	 * broken down into several other components.
 	 * @author Cailean Bernard
+	 * @param <User>
 	 * @since JDK 22
 	 * */
 	public static void drawMainApplication() {
@@ -112,6 +111,12 @@ public class Main {
 
 		// Get font from lib folder
 		Font myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
+		
+		// GridBagLayout constraints
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = GridBagConstraints.RELATIVE;
+		gbc.anchor = GridBagConstraints.CENTER;
 
 		// Outer panel holds play area and console
 		JPanel outerPanel = new JPanel();
@@ -140,7 +145,7 @@ public class Main {
 		JPanel scoreBox = new JPanel();
 		scoreBox.setBackground(Color.WHITE);
 		scoreBox.setBorder(BorderFactory.createLineBorder(BORDER_BLUE, 2));
-		scoreBox.setLayout(new BoxLayout(scoreBox, BoxLayout.Y_AXIS));
+		scoreBox.setLayout(new GridBagLayout());
 
 		// Score label
 		JLabel scoreTitle = new JLabel("--- SCORE ---");
@@ -148,18 +153,26 @@ public class Main {
 		scoreTitle.setFont(myFont.deriveFont(14f));
 
 		// Adding some temporary users
-		User uConsole = new User(0, "Console", 0, myFont);
-		User user1 = new User(1, "Coop", 12, myFont);
-		User user2 = new User(2, "Laura", 12, myFont);
-		User user3 = new User(3, "Hawk", 12, myFont);
-		User user4 = new User(4, "Bob", 12, myFont);
+		User uConsole = new User(0, "Console", 0, 0);
+		User user1 = new User(1, "Coop", 12, 1);
+		JLabel u1Label = new JLabel(user1.toString());
+		u1Label.setFont(myFont);
+		User user2 = new User(2, "Laura", 12, 2);
+		JLabel u2Label = new JLabel(user2.toString());
+		u2Label.setFont(myFont);
+		User user3 = new User(3, "Hawk", 12, 0);
+		JLabel u3Label = new JLabel(user3.toString());
+		u3Label.setFont(myFont);
+		User user4 = new User(4, "Bob", 12, 1);
+		JLabel u4Label = new JLabel(user4.toString());
+		u4Label.setFont(myFont);
 
 		// Adding elements to score box
-		scoreBox.add(scoreTitle);
-		scoreBox.add(user1);
-		scoreBox.add(user2);
-		scoreBox.add(user3);
-		scoreBox.add(user4);
+		scoreBox.add(scoreTitle, gbc);
+		scoreBox.add(u1Label, gbc);
+		scoreBox.add(u2Label, gbc);
+		scoreBox.add(u3Label, gbc);
+		scoreBox.add(u4Label, gbc);
 
 		// Adding console to wrappers		
 		scoreBoxWrapper.add(scoreBox);
@@ -230,12 +243,6 @@ public class Main {
 		/* ------------------------- GAME PANEL ------------------------- */
 		// Users are arranged clockwise starting from player 1 at the top
 		// User1 = North, User2 = East, user3 = West
-
-		// GridBagLayout for East and West players
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = GridBagConstraints.RELATIVE;
-		gbc.anchor = GridBagConstraints.CENTER;
 
 		/* ---------- NORTH PLAYER ---------- */
 

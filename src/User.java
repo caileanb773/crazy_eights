@@ -1,11 +1,4 @@
-package temp;
-
-import java.awt.Font;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-/**
+/*
  * CET - CS Academic Level 4
  * Declaration: I declare that this is my own original work and is free of plagiarism
  * Student Name: Cailean Bernard
@@ -16,25 +9,19 @@ import javax.swing.JPanel;
  * Contents:
  */
 
-public class User extends JPanel {
+public class User {
 
 	/** User's name */
 	private String name;
 	
-	/** SerialVersionUID (for multithreading?) */
-	private static final long serialVersionUID = 1L;
-	
 	/** The score of the user */
-	private int scoreInt;
+	private int score;
 	
 	/** The ID of the user (int) */
-	private int userNumInt;
+	private int userID;
 	
 	/** Number of cards user has in hand*/
 	private int cardsInHand;
-	
-	/** Label for adding to the score section of the UI */
-	JLabel scoreLabel;
 
 	/**
 	 * Constructor for User
@@ -45,15 +32,11 @@ public class User extends JPanel {
 	 * @author Cailean Bernard
 	 * @since JDK 22
 	 * */
-	public User(int userNo, String n, int numCards, Font font) {
-		scoreLabel = new JLabel();
+	public User(int userNo, String n, int numCards, int score) {
 		this.name = n.toUpperCase();
-		this.userNumInt = userNo;
+		this.userID = userNo;
 		this.cardsInHand = numCards;
-		this.scoreLabel = new JLabel(name + " SCORE " + scoreInt + " CARDS " + cardsInHand);
-		this.scoreLabel.setFont(font);
-		this.setOpaque(false);
-		this.add(scoreLabel);
+		this.score = score;
 	}
 	
 	/**
@@ -73,7 +56,18 @@ public class User extends JPanel {
 	 * @since JDK 22
 	 * */
 	public int getId() {
-		return this.userNumInt;
+		return this.userID;
 	}
-
+	
+	/**
+	 * Renders user's name, score, and cards in hand
+	 * @return String - The formatted string.
+	 * @author Cailean Bernard
+	 * @since JDK 22
+	 */
+	@Override
+	public String toString() {
+		return this.name + " SCORE= " + this.score + ", CARDS= " + this.cardsInHand;
+	}
+	
 }
