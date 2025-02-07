@@ -9,6 +9,12 @@
  * Contents:
  */
 
+/**
+ * User class that represents a user by name, score, cards in hand, and a hidden
+ * user ID.
+ * @author Cailean Bernard
+ * @since JDK 22
+ * */
 public class User {
 
 	/** User's name */
@@ -24,11 +30,12 @@ public class User {
 	private int cardsInHand;
 
 	/**
-	 * Constructor for User
+	 * Constructor for User. This class is temporary and will be completely
+	 * refactored.
 	 * @param userNo - The user's ID
 	 * @param n - The user's name
 	 * @param numCards - How many cards in user's hand
-	 * @param font - The font with which to display this user
+	 * @param score - The user's score
 	 * @author Cailean Bernard
 	 * @since JDK 22
 	 * */

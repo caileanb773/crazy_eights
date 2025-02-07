@@ -91,7 +91,7 @@ public class Main {
 	 * */
 	public static void main(String[] args) {
 
-		//drawSplash();
+		drawSplash();
 		drawMainApplication();
 
 	}
@@ -102,7 +102,6 @@ public class Main {
 	 * player's hand, and the gameplay area. Each of these areas is further 
 	 * broken down into several other components.
 	 * @author Cailean Bernard
-	 * @param <User>
 	 * @since JDK 22
 	 * */
 	public static void drawMainApplication() {
