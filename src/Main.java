@@ -481,7 +481,7 @@ public class Main {
 		// Fake loading
 		for (int i = 0; i <= 100; i+=5) {
 			try {
-				Thread.sleep(100);
+				Thread.sleep(200);
 				loading.setValue(i);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
