@@ -1,3 +1,5 @@
+package system;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -9,6 +11,8 @@ import java.awt.GridBagLayout;
 import java.awt.TextField;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -30,6 +34,10 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
 
+import sysobj.Card;
+import sysobj.Rank;
+import sysobj.Suit;
+
 /*
  * CET - CS Academic Level 4
  * Declaration: I declare that this is my own original work and is free of plagiarism
@@ -43,12 +51,13 @@ import javax.swing.text.StyledEditorKit;
 
 /**
  * Calls main() function, which calls drawMainApplication.
+ * 
  * @author Cailean Bernard
  * @since 22
- * */
+ */
 public class Main {
 
-	/** 
+	/**
 	 * Constant for Vertical
 	 */
 	static final boolean VERTICAL = false;
@@ -71,12 +80,12 @@ public class Main {
 	/**
 	 * Constant for the background pink colour
 	 */
-	static final Color BACKGROUND_PINK = new Color(255,241,241);
+	static final Color BACKGROUND_PINK = new Color(255, 241, 241);
 
 	/**
 	 * Constant for the background blue colour
 	 */
-	static final Color BACKGROUND_BLUE = new Color(33,65,202);
+	static final Color BACKGROUND_BLUE = new Color(33, 65, 202);
 
 	/**
 	 * Constant for the border blue colour
@@ -85,6 +94,7 @@ public class Main {
 
 	/**
 	 * Calls drawMainApplication(), which draws the GUI.
+	 * 
 	 * @param args - An array of strings passed as arguments
 	 * @author Cailean Bernard
 	 * @since 22
@@ -99,8 +109,9 @@ public class Main {
 	/**
 	 * Draws the GUI elements. Each GUI element is a JPanel, which holds other
 	 * JPanels. There are outer elements, which hold the title bar, console,
-	 * player's hand, and the gameplay area. Each of these areas is further 
-	 * broken down into several other components.
+	 * player's hand, and the gameplay area. Each of these areas is further broken
+	 * down into several other components.
+	 * 
 	 * @author Cailean Bernard
 	 * @since 22
 	 */
@@ -151,31 +162,27 @@ public class Main {
 		scoreTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 		scoreTitle.setFont(myFont.deriveFont(14f));
 
-		// Adding some temporary users
-		User uConsole = new User(0, "Console", 0, 0);
-		User user1 = new User(1, "Coop", 12, 1);
-		JLabel u1Label = new JLabel(user1.toString());
-		u1Label.setFont(myFont);
-		User user2 = new User(2, "Laura", 12, 2);
-		JLabel u2Label = new JLabel(user2.toString());
-		u2Label.setFont(myFont);
-		User user3 = new User(3, "Hawk", 12, 0);
-		JLabel u3Label = new JLabel(user3.toString());
-		u3Label.setFont(myFont);
-		User user4 = new User(4, "Bob", 12, 1);
-		JLabel u4Label = new JLabel(user4.toString());
-		u4Label.setFont(myFont);
+		/*
+		 * // Adding some temporary users User uConsole = new User(0, "Console", 0, 0);
+		 * User user1 = new User(1, "Coop", 12, 1); JLabel u1Label = new
+		 * JLabel(user1.toString()); u1Label.setFont(myFont); User user2 = new User(2,
+		 * "Laura", 12, 2); JLabel u2Label = new JLabel(user2.toString());
+		 * u2Label.setFont(myFont); User user3 = new User(3, "Hawk", 12, 0); JLabel
+		 * u3Label = new JLabel(user3.toString()); u3Label.setFont(myFont); User user4 =
+		 * new User(4, "Bob", 12, 1); JLabel u4Label = new JLabel(user4.toString());
+		 * u4Label.setFont(myFont);
+		 */
 
 		// Adding elements to score box
 		scoreBox.add(scoreTitle, gbc);
-		scoreBox.add(u1Label, gbc);
-		scoreBox.add(u2Label, gbc);
-		scoreBox.add(u3Label, gbc);
-		scoreBox.add(u4Label, gbc);
+		/*
+		 * scoreBox.add(u1Label, gbc); scoreBox.add(u2Label, gbc); scoreBox.add(u3Label,
+		 * gbc); scoreBox.add(u4Label, gbc);
+		 */
 
-		// Adding console to wrappers		
+		// Adding console to wrappers
 		scoreBoxWrapper.add(scoreBox);
-		scoreBoxWrapper.setBorder(BorderFactory.createEmptyBorder(15,15,10,15));
+		scoreBoxWrapper.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15));
 
 		/* ---------- Chat Elements ---------- */
 
@@ -183,14 +190,14 @@ public class Main {
 		JPanel chatBoxWrapper = new JPanel();
 		chatBoxWrapper.setLayout(new FlowLayout());
 		chatBoxWrapper.setBackground(null);
-		chatBoxWrapper.setBorder(BorderFactory.createEmptyBorder(5,10,10,10));
+		chatBoxWrapper.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
 
 		// Wrapper Panel for chat display elements
 		JPanel chatDisplayWrapper = new JPanel();
 		chatDisplayWrapper.setLayout(new BorderLayout());
 		chatDisplayWrapper.setBackground(null);
 		chatDisplayWrapper.setLayout(new BorderLayout());
-		chatDisplayWrapper.setBorder(BorderFactory.createEmptyBorder(10,15,10,15));
+		chatDisplayWrapper.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
 		// TextArea for chat input
 		TextField chatInput = new TextField(20);
@@ -221,7 +228,6 @@ public class Main {
 		chatBox.add(chatInput);
 		chatBox.add(chatSend);
 
-
 		// Wrapping the scrolling chat display
 		chatDisplayWrapper.add(chatDisplayScroll, BorderLayout.CENTER);
 
@@ -233,34 +239,30 @@ public class Main {
 		console.add(BorderLayout.CENTER, chatDisplayWrapper);
 		console.add(BorderLayout.NORTH, scoreBoxWrapper);
 
-		// Temporary messages for the console
-		addConsoleMessage(chatDisplay, uConsole, "User " + user1.getName() + " played Ace of Spades!");
-		addConsoleMessage(chatDisplay, user1, "brb, grabbing a coffee + pie.");
-		addConsoleMessage(chatDisplay, user2, "np");
-		addConsoleMessage(chatDisplay, user3, "it's foggy out again");
-		addConsoleMessage(chatDisplay, user4, "whose turn is it?");
-
 		/* ------------------------- GAME PANEL SECTION ------------------------- */
 		// Users are arranged clockwise starting from player 1 at the top
 		// User1 = North, User2 = East, user3 = West
 
 		/* ---------- NORTH PLAYER ---------- */
 
-		/* playerNorth holds the cards (playerNorthCards) in its SOUTH border,
-		 * its name (playerNorthName) in the NORTH border, and then within the
-		 * cards panel, FlowLayout is used to add cards to hand. All of this is
-		 * then added to the NORTH section of the main game panel
+		/*
+		 * playerNorth holds the cards (playerNorthCards) in its SOUTH border, its name
+		 * (playerNorthName) in the NORTH border, and then within the cards panel,
+		 * FlowLayout is used to add cards to hand. All of this is then added to the
+		 * NORTH section of the main game panel
 		 */
 		JPanel playerNorth = new JPanel();
 		playerNorth.setLayout(new BorderLayout());
 		JPanel playerNorthCards = new JPanel();
 		playerNorthCards.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 10));
 		playerNorthCards.setBackground(null);
-		JLabel playerNorthName = new JLabel(user1.getName());
-		playerNorthName.setFont(myFont);
-		playerNorthName.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-		playerNorthName.setHorizontalAlignment(SwingConstants.CENTER);
-		playerNorth.add(BorderLayout.NORTH, playerNorthName);
+		/*
+		 * JLabel playerNorthName = new JLabel(user1.getName());
+		 * playerNorthName.setFont(myFont);
+		 * playerNorthName.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+		 * playerNorthName.setHorizontalAlignment(SwingConstants.CENTER);
+		 * playerNorth.add(BorderLayout.NORTH, playerNorthName);
+		 */
 		playerNorth.add(BorderLayout.SOUTH, playerNorthCards);
 		playerNorth.setBackground(BACKGROUND_PINK);
 
@@ -272,11 +274,11 @@ public class Main {
 		pEast.setLayout(new GridBagLayout());
 
 		// Label for the name
-		JLabel pEastName = new JLabel(user2.getName());
-		pEastName.setFont(myFont);
-		pEastName.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-		pEast.add(pEastName);
-
+		/*
+		 * JLabel pEastName = new JLabel(user2.getName()); pEastName.setFont(myFont);
+		 * pEastName.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+		 * pEast.add(pEastName);
+		 */
 		// Wrapper to hold East Player's elements
 		JPanel pEastWrapper = new JPanel();
 		pEastWrapper.setBackground(BACKGROUND_PINK);
@@ -291,11 +293,11 @@ public class Main {
 		pWest.setLayout(new GridBagLayout());
 
 		// Label for the name
-		JLabel pWestName = new JLabel(user3.getName());
-		pWestName.setFont(myFont);
-		pWestName.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-		pWest.add(pWestName);
-
+		/*
+		 * JLabel pWestName = new JLabel(user3.getName()); pWestName.setFont(myFont);
+		 * pWestName.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+		 * pWest.add(pWestName);
+		 */
 		// Wrapper to hold East Player's elements
 		JPanel pWestWrapper = new JPanel();
 		pWestWrapper.setBackground(BACKGROUND_PINK);
@@ -307,7 +309,7 @@ public class Main {
 		// Hand for the user interacting with the app (located in the south)
 		JPanel mainUserWrapper = new JPanel(new BorderLayout());
 		mainUserWrapper.setBackground(BACKGROUND_PINK);
-		JLabel mainUserName = new JLabel(user4.getName() + " (YOU)");
+		JLabel mainUserName = new JLabel("Main players name goes here");
 		mainUserName.setFont(myFont);
 		mainUserName.setHorizontalAlignment(SwingConstants.CENTER);
 		JPanel mainUserCards = new JPanel();
@@ -355,13 +357,11 @@ public class Main {
 		playingAreaAndLogo.add(BorderLayout.NORTH, playingArea);
 
 		// Add all gameplay elements to game area
-		//gameStateArea.add(BorderLayout.CENTER, logoPlusCards);
 		gameElements.add(BorderLayout.NORTH, playerNorth);
 		gameElements.add(BorderLayout.EAST, pEastWrapper);
 		gameElements.add(BorderLayout.WEST, pWestWrapper);
 		gameElements.add(BorderLayout.SOUTH, mainUserWrapper);
 		gameElements.add(BorderLayout.CENTER, playingAreaAndLogo);
-		//gameElements.add(BorderLayout.CENTER, gameStateArea);
 
 		// Adding cards to each players' hand
 		addCardsToHand(mainUserCards, HORIZONTAL, VISIBLE, gbc);
@@ -403,8 +403,10 @@ public class Main {
 		JMenu langSelect = new JMenu("Language");
 		JMenuItem langEng = new JMenuItem("English");
 
-		/* Game will start in English by default. The language the program is 
-		 * currently running in will be disabled as a selection. */
+		/*
+		 * Game will start in English by default. The language the program is currently
+		 * running in will be disabled as a selection.
+		 */
 		langEng.setEnabled(false);
 		JMenuItem langFr = new JMenuItem("French");
 		JCheckBoxMenuItem soundToggle = new JCheckBoxMenuItem("Sound effects on/off");
@@ -453,6 +455,7 @@ public class Main {
 
 	/**
 	 * Draws a splash screen for 3 seconds.
+	 * 
 	 * @author Cailean Bernard
 	 * @since 22
 	 */
@@ -479,9 +482,9 @@ public class Main {
 		splashFrame.setLocationRelativeTo(null);
 
 		// Fake loading
-		for (int i = 0; i <= 100; i+=5) {
+		for (int i = 0; i <= 100; i += 5) {
 			try {
-				Thread.sleep(200);
+				Thread.sleep(100);
 				loading.setValue(i);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -492,23 +495,27 @@ public class Main {
 
 	/**
 	 * Method to add cards to hand.
-	 * @param area - The JPanel to add the cards to
-	 * @param horizontal - If the JPanel is displaying horizontally or not.
-	 * If true, panel is horizontal, if false, panel is vertical. This changes
-	 * which card slices we are displaying for that user's hand. 
-	 * @param visible - Changes if the card displayed is a card back (hidden) or
-	 * a card face (visible). The only time we display card faces in this method
-	 * is for when we are rendering cards in the user's hand.
-	 * @param gbc - The GridBagConstraints needed to add the cards to vertical hands.
+	 * 
+	 * @param area       - The JPanel to add the cards to
+	 * @param horizontal - If the JPanel is displaying horizontally or not. If true,
+	 *                   panel is horizontal, if false, panel is vertical. This
+	 *                   changes which card slices we are displaying for that user's
+	 *                   hand.
+	 * @param visible    - Changes if the card displayed is a card back (hidden) or
+	 *                   a card face (visible). The only time we display card faces
+	 *                   in this method is for when we are rendering cards in the
+	 *                   user's hand.
+	 * @param gbc        - The GridBagConstraints needed to add the cards to
+	 *                   vertical hands.
 	 * @author Cailean Bernard
 	 * @since 22
 	 */
 	static void addCardsToHand(JPanel area, boolean horizontal, boolean visible, GridBagConstraints gbc) {
-
+		
 		// If the game area is horizontal, render the cards horizontally
 		if (horizontal) {
 			JButton cardSlice;
-			/* method should handle adding names as well as buttons.*/
+			/* method should handle adding names as well as buttons. */
 			for (int i = 0; i < 11; i++) {
 
 				// If the card is visible, render a card face. Else, render a card back
@@ -547,13 +554,15 @@ public class Main {
 		}
 	}
 
+	
 	/**
 	 * Temporary method (will be refactored) to add a message to the chat display.
 	 * If the user is "console" (id: 0) then their text is displayed in red. Else,
 	 * all messages are in black. Writes a string passed to it to the StyledDocument
 	 * of the passed JTextPane, and displays the passed User's name.
+	 * 
 	 * @param textBox - The JTextBox to write to
-	 * @param user - The user writing to the text box
+	 * @param user    - The user writing to the text box
 	 * @param message - The String being written
 	 * @author Cailean Bernard
 	 * @since 22
@@ -580,8 +589,9 @@ public class Main {
 	/**
 	 * Fetches the custom font specified at "path" and returns the font to be used
 	 * in setFont() functions.
-	 * @return Font - The Font returned from the specified path, after it has
-	 * been located.
+	 * 
+	 * @return Font - The Font returned from the specified path, after it has been
+	 *         located.
 	 * @param path - The path to the font.
 	 * @author Cailean Bernard
 	 * @since 22

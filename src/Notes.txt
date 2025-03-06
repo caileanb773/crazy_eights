@@ -1,0 +1,11 @@
+-in player, drawCard could return an Optional<Card> instead of null. in any case,
+it needs to handle when the deck is empty so reshuffling can happen.
+-playCard needs to remove the played card from the players hand
+-when a player plays an 8, after they select the rank/suit, the card image of the
+played "8" should change to reflect the new rank/suit
+-choosing names for AI players will have to happen in the model, to ensure no
+repeating names
+-AI could have a difficulty slider; if on easy, the AI will select a card at random
+to play. If on hard difficulty, they will always choose a card with a special effect
+if they have one. If on easy, and they play an eight, they will choose a random
+rank/suit. If on hard, they will choose the optimal suit/rank to choose.

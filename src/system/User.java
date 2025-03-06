@@ -8,6 +8,7 @@
  * Professor: Daniel Cormier
  * Contents:
  */
+package system;
 
 /**
  * User class that represents a user by name, score, cards in hand, and a hidden

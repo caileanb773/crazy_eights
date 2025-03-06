@@ -1,0 +1,7 @@
+-changed name of method getCardImg() to fetchCardImg() in Card (clashes with card image getter)
+-changed name of method addCard() to addCardToHand() in Player (ambiguity)
+-added getter for Player's hand size in Player
+-changed method signature for decidePlayDraw in AIPlayer (only need to pass the last played card)
+-changed fields of Player from private to protected so they are accessible in AIPlayer
+-changed method signature of AIPlayer.decidePlayDraw() to return an int (if they can't draw, and can't play, they must pass)
+-added setter for suit in Card class (the suit can change when a player plays an 8). rank is now final
