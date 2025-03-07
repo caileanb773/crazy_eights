@@ -3,7 +3,6 @@ package system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -13,7 +12,9 @@ import sysobj.Suit;
 public class GameModel {
 
 	private List<Player> players;
-	private Player currentPlayer;
+	private Player pActivePlayer;
+	private Player pGameWinner;
+	private Player pRoundWinner;
 	private List<Card> deck;
 	private List<Card> playedCards;
 	private boolean isTurnOrderReversed;
@@ -22,8 +23,6 @@ public class GameModel {
 	private int numTwosPlayed;
 	
 	//TODO processturn()
-	//TODO checkwincon()
-	//TODO checkroundover()
 	//TODO handlegameover()
 	//TODO handleroundover()
 	//TODO endgame()
@@ -37,6 +36,8 @@ public class GameModel {
 	public GameModel(int numHumanPlayers) {
 		int numAIPlayers = 0;
 		this.players = new ArrayList<Player>();
+		this.pGameWinner = null;
+		this.pRoundWinner = null;
 		instantiateDeck();
 		shuffleDeck();
 		this.playedCards = new ArrayList<Card>();
@@ -109,8 +110,6 @@ public class GameModel {
 	}
 	
 	public void processTurn() {
-		boolean isRoundOver = false;
-		boolean isGameOver = false;
 		
 		// TODO: wait for player actions (playing a card, drawing cards, passing turn
 		
@@ -119,32 +118,56 @@ public class GameModel {
 		 * according to how many cards remain in their hand. Then, check if any
 		 * one user has a score of 50 or more. If no players have empty hands,
 		 * then the turn passes to the next player. */
-		for (Player p : players) {
-			if (p.getHandSize() == 0) {
-				isRoundOver = true;
-				break;
-			}
-		}
 		
-		if (isRoundOver) {
-			// Increment each player's score according to how many cards are left in hand
+		if (isRoundOver()) {
+			// Increment each player's score based on current cards in hand
 			for (Player p : players) {
 				incrementScore(p, p.getHandSize());
-				
-				// Check if the gameOver flag should be set, but continue incrementing scores
-				if (p.getScore() >= 50) {
-					isGameOver = true;
-				}
+			}
+			
+			// check if the game is over
+			if (isGameOver()) {
+				endGame();
+			} else {
+				// start the next round
 			}
 		} else {
-			// pass the turn to the next player
+			// move to the next players turn
 		}
-		
-		if (isGameOver) {
-			// handle the game being over
-		} else {
-			// start a new round
+
+	}
+	
+	public boolean isRoundOver() {
+		for (Player p : players) {
+			if (p.getHandSize() == 0) {
+				pRoundWinner = p;
+				return true;
+			}
 		}
+		return false;
+	}
+	
+	public boolean isGameOver() {
+		for (Player p : players) {
+			if (p.getScore() >= 50) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public Player getWinningPlayer() {
+		Player winningPlayer = null;
+		int minScore = 999;
+		for (Player p : players) {
+			int playerScore = p.getScore();
+			if (playerScore < minScore) {
+				minScore = playerScore;
+				winningPlayer = p;
+			}
+		}
+		return winningPlayer;
+		// TODO: handle edge cases where there are 2 winners?
 	}
 
 	public int getNextTurn() {
@@ -152,12 +175,16 @@ public class GameModel {
 		if (isTurnOrderReversed) {
 			currentTurn--;
 			if (currentTurn < 0) {
+				
+				// wrap turn around to numplayers-1
 				currentTurn = numPlayers-1;
 			}
 			return currentTurn;
 		} else {
 			currentTurn++;
 			if (currentTurn >= numPlayers) {
+				
+				// wrap turn around to 0
 				currentTurn = 0;
 			}
 			return currentTurn;
@@ -199,11 +226,14 @@ public class GameModel {
 			// if the passive player has room in their hand, force them to draw. else, the active player must draw
 			if (passivePlayer.getHandSize() < 12) {
 				passivePlayer.addCardToHand(deck.remove(deck.size()-1));
-			} else  if (currentPlayer.getHandSize() < 12){
-				currentPlayer.addCardToHand(deck.remove(deck.size()-1));
+			} else  if (pActivePlayer.getHandSize() < 12){
+				pActivePlayer.addCardToHand(deck.remove(deck.size()-1));
 			} else {
 				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
-				incrementScore(currentPlayer, numCards);
+				incrementScore(pActivePlayer, numCards);
+				if (isGameOver()) {
+					endGame();
+				}
 			}
 			
 			// decrement the number of cards
@@ -249,7 +279,21 @@ public class GameModel {
 	}
 	
 	public void endGame() {
-		// TODO method stub
+		pGameWinner = getWinningPlayer();
+		
+		// send winner winner chicken dinner message to all players
+		// prompt for rematch potentially?
+		
+		// last thing
+		cleanUpGameState();
+	}
+	
+	public void cleanUpGameState() {
+		playedCards.clear();
+		deck.clear();
+		for (Player p: players) {
+			p.clearHand();
+		}
 	}
 	
 	public void incrementScore(Player player, int amt) {

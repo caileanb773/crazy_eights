@@ -6,4 +6,8 @@
 -changed method signature of AIPlayer.decidePlayDraw() to return an int (if they can't draw, and can't play, they must pass)
 -added setter for suit in Card class (the suit can change when a player plays an 8). rank is now final
 -added handleEmptyDeck() to GameModel. Certain situations could have a player draw off an empty deck, so we call this before to add the played cards back to the deck (besides the top card)
--
+-checkRoundOver() is now isRoundOver(), follows easier to read "isThingTrue" convention
+-checkWinCon() is now isGameOver(), method purpose is clearer with this name, and enhances readability
+-renamed a few fields in GameModel (currentPlayer -> pActivePlayer)
+-added a few fields in GameModel (pGameWinner, pRoundWinner, nextTurn, numTwosPlayed)
+-added method cleanUpGameState() which removes all cards from all zones
