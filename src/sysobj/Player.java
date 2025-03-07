@@ -111,5 +111,9 @@ public class Player {
 	public int getHandSize() {
 		return this.hand.size();
 	}
+	
+	public void clearHand() {
+		this.hand.clear();
+	}
 
 }

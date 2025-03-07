@@ -11,8 +11,6 @@ import java.awt.GridBagLayout;
 import java.awt.TextField;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -33,10 +31,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
-
-import sysobj.Card;
-import sysobj.Rank;
-import sysobj.Suit;
 
 /*
  * CET - CS Academic Level 4
