@@ -95,9 +95,10 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		drawSplash();
-		drawMainApplication();
-
+		GameModel m = new GameModel(1);
+		GameView v = new GameView();
+		new GameController(m, v);
+		
 	}
 
 	/**
@@ -505,7 +506,7 @@ public class Main {
 	 * @since 22
 	 */
 	static void addCardsToHand(JPanel area, boolean horizontal, boolean visible, GridBagConstraints gbc) {
-		
+
 		// If the game area is horizontal, render the cards horizontally
 		if (horizontal) {
 			JButton cardSlice;
@@ -548,7 +549,7 @@ public class Main {
 		}
 	}
 
-	
+
 	/**
 	 * Temporary method (will be refactored) to add a message to the chat display.
 	 * If the user is "console" (id: 0) then their text is displayed in red. Else,

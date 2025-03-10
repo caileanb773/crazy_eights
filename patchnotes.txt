@@ -11,3 +11,17 @@
 -renamed a few fields in GameModel (currentPlayer -> pActivePlayer)
 -added a few fields in GameModel (pGameWinner, pRoundWinner, nextTurn, numTwosPlayed)
 -added method cleanUpGameState() which removes all cards from all zones
+-added methods to the view to expose the buttons to the controller so actionlisteners can be added
+-added private classes to controller to implement what should happen when buttons are clicked
+-added method displayCardsInHand() to the view
+-added method displayAbout() to the view
+-added method resizeWindow() to game view. once the game starts and cards are added to the playing area, the window must resize to accomodate the elements.
+-added method updateNames() to game view to update player names in game area
+-added method updatescoretable to update the score table
+-added field to game model that holds AI Player names so that they aren't selected twice
+-added method displayLastPlayedCard() to view
+-added method refreshHands() to view. inefficient but I will refactor it later. refreshes each user's hand JPanel
+-added a method addListenersToPlayerHand which adds a cardplaylistener to each card in the player's hand
+-added playCard() method to the model
+-moved methods for drawing cards, adding cards to hand, playing cards, and determining legal moves from Player class to the Model, where it should have been all along
+-added removeCardFromHand() method to Player, instead of fiddling around with getters for the hand

@@ -12,8 +12,8 @@ public class AIPlayer extends Player {
 
 	}
 
-	public AIPlayer(String name) {
-		super(name);
+	public AIPlayer(String name, int orientation) {
+		super(name, orientation);
 	}
 
 	public int decidePlayDraw(Card lastPlayedCard) {

@@ -1,5 +1,9 @@
 package system;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +19,8 @@ public class GameModel {
 	private Player pActivePlayer;
 	private Player pGameWinner;
 	private Player pRoundWinner;
-	private List<Card> deck;
+	private List<Card> library;
+	private List<String> aiNames;
 	private List<Card> playedCards;
 	private boolean isTurnOrderReversed;
 	private int currentTurn;
@@ -28,6 +33,10 @@ public class GameModel {
 	//TODO endgame()
 	//TODO checkPlay()
 	
+	// TODO: thought. the user should not just be able to draw cards whenever they want.
+	// the game will have to check if they have a move and force them to play a card if they do.
+	// they are only allowed to draw a card if they do not have a legal play
+	
 	// checkwincon and checkroundover can be abstracted out of processturn
 
 	public GameModel() {
@@ -35,17 +44,17 @@ public class GameModel {
 
 	public GameModel(int numHumanPlayers) {
 		int numAIPlayers = 0;
-		this.players = new ArrayList<Player>();
-		this.pGameWinner = null;
-		this.pRoundWinner = null;
-		instantiateDeck();
-		shuffleDeck();
-		this.playedCards = new ArrayList<Card>();
-		this.isTurnOrderReversed = false;
-		this.currentTurn = 0;
-		this.nextTurn = 1;
-		this.numTwosPlayed = 0;
-
+		players = new ArrayList<Player>();
+		pGameWinner = null;
+		pRoundWinner = null;
+		playedCards = new ArrayList<Card>();
+		aiNames = new ArrayList<String>();
+		isTurnOrderReversed = false;
+		currentTurn = 3;
+		nextTurn = 1;
+		numTwosPlayed = 0;
+		loadAINames();
+		
 		// Add AI players up to 4 based on how many human players are going to play
 		if (numHumanPlayers == 1) {
 			numAIPlayers = 3;
@@ -54,34 +63,53 @@ public class GameModel {
 		} else {
 			System.out.println("GameModel constructor tried to set numAIPlayers to number other than 2/3.");
 		}
+		
+		int orientation = 0;
 
 		for (int i = 0; i < numAIPlayers; i++) {
-			this.players.add(createCPUOpponent());
+			this.players.add(createCPUOpponent(orientation++));
 		}
 
-		// TODO: add the human players to the list here
+		// TODO: replace this with a method that returns a real player's name
+		players.add(new Player("ME", GameView.SOUTH));
 	}
 
 	public void instantiateDeck(){
-		this.deck = new ArrayList<Card>();
+		this.library = new ArrayList<Card>();
 		for (Suit s : Suit.values()) {
 			for (Rank r : Rank.values()) {
-				deck.add(new Card(r, s));
+				library.add(new Card(r, s));
 			}
 		}
 	}
 
 	public void shuffleDeck() {
-		Collections.shuffle(this.deck);
+		Collections.shuffle(this.library);
 	}
 
-	public AIPlayer createCPUOpponent() {
-		return new AIPlayer(getAIPlayerName());
+	public AIPlayer createCPUOpponent(int orientation) {
+		return new AIPlayer(getAIPlayerName(), orientation);
+	}
+	
+	public void loadAINames() {
+		String name;
+		try (BufferedReader reader = new BufferedReader(new FileReader("asset/AINames.txt"))){
+			while ((name = reader.readLine()) != null) {
+				aiNames.add(name);
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found in GameModel.getAIPlayerName().");
+		} catch (IOException e) {
+			System.out.println("IOException encountered");
+		}
 	}
 
 	public String getAIPlayerName() {
-		// TODO update this method to select a random name from the .csv
-		return "AIPlayer";
+		String name;
+		Collections.shuffle(aiNames);
+		name = aiNames.getLast();
+		aiNames.remove(aiNames.size()-1);
+		return "AI " + name.toUpperCase();
 	}
 
 	public void startGame() {
@@ -89,22 +117,68 @@ public class GameModel {
 		 * deck acts as the "draw" pile, and the top card of the deck is flipped
 		 * over onto the "played cards" pile. After this, a "round" of the game
 		 * may begin until it is won and the points from it are tallied. */
+		instantiateDeck();
+		shuffleDeck();
 		dealCards(6);
-		playedCards.add(deck.remove(deck.size()-1));
+		playedCards.add(library.remove(library.size()-1));
+		pActivePlayer = players.get(currentTurn);
+		System.out.println(pActivePlayer.toString());
 		// TODO a more fitting name for this method might be "initializeRound();
+	}
+	
+	public boolean playCard(Card card) {
+		// defensive programming, unlikely scenarios
+		if (!pActivePlayer.getHand().contains(card)) {
+			System.out.println("Player attempted to play a card that wasn't in their hand in GameModel.playCard().");
+			return false;
+		} else if (pActivePlayer.getHandSize() == 0){
+			System.out.println("Player attempted to play a card from an empty hand in GameModel.playCard().");
+			return false;
+		} else if (card == null) {
+			System.out.println("GameModel.playCard() was passed a null card.");
+			return false;
+		} else {
+			
+			// determine legality of play
+			if (isPlayLegal(card)) {
+				pActivePlayer.removeCardFromHand(card);
+				playedCards.add(card);
+				return true;
+			} else {
+				return false;
+			}
+			
+		}
+	}
+	
+	public boolean isPlayLegal(Card card) {
+		if (card == null) {
+			System.out.println("GameModel.isPlayLegal() passed null card.");
+			return false;
+		}
+		
+		Card lastPlayedCard = playedCards.getLast();
+		Rank cardRank = card.getRank();
+		if (cardRank == Rank.EIGHT
+				|| cardRank == lastPlayedCard.getRank()
+				|| card.getSuit() == lastPlayedCard.getSuit()) {
+			return true;
+		}
+		System.out.println("Illegal move!");
+		return false;
 	}
 	
 	public void dealCards(int numCards) {
 		int cardsNeeded = players.size() * numCards;
 
-		if (cardsNeeded > deck.size()) {
+		if (cardsNeeded > library.size()) {
 			System.out.println("dealCards(): insufficient cards in deck to deal to players.");
 			return;
 		}
 
 		for (Player p : players) {
 			for (int i = 0; i < numCards; i++) {
-				p.addCardToHand(deck.remove(deck.size()-1));
+				p.addCardToHand(library.remove(library.size()-1));
 			}
 		}
 	}
@@ -205,6 +279,23 @@ public class GameModel {
 			}
 		}
 	}
+	
+	public void drawCard() {
+		// Check that the library is not empty
+		if (!library.isEmpty()) {
+			if (pActivePlayer.getHandSize() < 12) {
+				Card drawnCard = library.remove(library.size()-1);
+				pActivePlayer.addCardToHand(drawnCard);
+				System.out.println(drawnCard.toString());
+			} else {
+				System.out.println("Hand is full, cannot draw card");
+			}
+			System.out.println("Size of library is now " + library.size());
+		} else {
+			// TODO: Reshuffle all but the top card of the played cards back into the library
+		}
+
+	}
 
 	public void forceDraw(Player passivePlayer, int numCards) {
 		/* TODO: this method needs to take into consideration that if the player
@@ -219,15 +310,15 @@ public class GameModel {
 		while (numCards > 0) {
 			
 			// check that the deck is not empty. if it is, reshuffle all but the last played card into a new deck
-			if (deck.isEmpty()) {
+			if (library.isEmpty()) {
 				handleEmptyDeck();
 			}
 			
 			// if the passive player has room in their hand, force them to draw. else, the active player must draw
 			if (passivePlayer.getHandSize() < 12) {
-				passivePlayer.addCardToHand(deck.remove(deck.size()-1));
+				passivePlayer.addCardToHand(library.remove(library.size()-1));
 			} else  if (pActivePlayer.getHandSize() < 12){
-				pActivePlayer.addCardToHand(deck.remove(deck.size()-1));
+				pActivePlayer.addCardToHand(library.remove(library.size()-1));
 			} else {
 				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
 				incrementScore(pActivePlayer, numCards);
@@ -253,7 +344,7 @@ public class GameModel {
 		 * remaining cards to the deck. Clear the played cards, then add back
 		 * the top card, then shuffle the deck. */
 		Card topCard = playedCards.remove(playedCards.size()-1);
-		deck.addAll(playedCards);
+		library.addAll(playedCards);
 		playedCards.clear();
 		shuffleDeck();
 		playedCards.add(topCard);
@@ -266,11 +357,11 @@ public class GameModel {
 		 * into the play area */
 		
 		Card topCard = playedCards.remove(playedCards.size()-1);
-		deck.addAll(playedCards);
+		library.addAll(playedCards);
 		playedCards.clear();
 		
 		for (Player p : players) {
-			deck.addAll(p.getHand());
+			library.addAll(p.getHand());
 			p.clearHand();
 		}
 		
@@ -290,7 +381,7 @@ public class GameModel {
 	
 	public void cleanUpGameState() {
 		playedCards.clear();
-		deck.clear();
+		library.clear();
 		for (Player p: players) {
 			p.clearHand();
 		}
@@ -300,12 +391,16 @@ public class GameModel {
 		player.setScore(player.getScore() + amt);
 	}
 	
+	public Player getActivePlayer() {
+		return this.pActivePlayer;
+	}
+	
 	public List<Player> getPlayers() {
 		return this.players;
 	}
 	
 	public List<Card> getDeck() {
-		return this.deck;
+		return this.library;
 	}
 	
 	public List<Card> getPlayedCards() {

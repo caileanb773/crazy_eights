@@ -9,3 +9,4 @@ repeating names
 to play. If on hard difficulty, they will always choose a card with a special effect
 if they have one. If on easy, and they play an eight, they will choose a random
 rank/suit. If on hard, they will choose the optimal suit/rank to choose.
+-to keep the window the right size, could add some invisible cards, call pack(), then remove them

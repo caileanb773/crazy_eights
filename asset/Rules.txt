@@ -1,0 +1,20 @@
+Setup:
+2-4 players, standard 52-card deck.
+Deal 6 cards to each player.
+Place the rest as a draw pile, flip one card to start the discard pile.
+Gameplay:
+Players take turns placing a card that matches the top discard (by suit or rank). Turns go in clockwise order.
+Eights are wild—play an 8 to choose a new suit.
+If the player has no playable card, draw until you can play. No player can hold more than 12 cards in their hand.
+Special Cards:
+2: When a 2 is played, the next player in the turn order must pick up 2 cards. This is additive, so if
+another 2 is played, then the next player in the turn order picks up 4 cards, and then 6 cards, and then 8.
+4: If a 4 is played, the next player must pick up 4 cards. This effect is not cumulative.
+If a forced draw (from playing a 2 or a 4) would force a player to pick up cards that would make their
+hand size more than 12, the surplus go back to the player who played the "force draw" card (2, 4).
+Ace: Reverse the turn order.
+Queen: Skip the turn of the next player.
+Winning:
+First player to discard all of their cards wins the round. All remaining players
+gain points equal to the number of cards in their hand. When any player reaches
+50 points, the game is over, and the player with the least points is the winner.
