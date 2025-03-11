@@ -25,3 +25,5 @@
 -added playCard() method to the model
 -moved methods for drawing cards, adding cards to hand, playing cards, and determining legal moves from Player class to the Model, where it should have been all along
 -added removeCardFromHand() method to Player, instead of fiddling around with getters for the hand
+-added boolean isPlayerTurnOver to model. This acts as a flag to tell the model that the current turn is over and the next should be processed. included a getter and setter for this as well
+-added method listenForPlayerAction() in the model. listens for the player to either play a card, or to draw cards until their hand is full. when either of these happens, their turn is over

@@ -26,6 +26,7 @@ public class GameModel {
 	private int currentTurn;
 	private int nextTurn;
 	private int numTwosPlayed;
+	private boolean isPlayerTurnOver;
 	
 	//TODO processturn()
 	//TODO handlegameover()
@@ -53,6 +54,7 @@ public class GameModel {
 		currentTurn = 3;
 		nextTurn = 1;
 		numTwosPlayed = 0;
+		isPlayerTurnOver = false;
 		loadAINames();
 		
 		// Add AI players up to 4 based on how many human players are going to play
@@ -123,7 +125,7 @@ public class GameModel {
 		playedCards.add(library.remove(library.size()-1));
 		pActivePlayer = players.get(currentTurn);
 		System.out.println(pActivePlayer.toString());
-		// TODO a more fitting name for this method might be "initializeRound();
+		processTurn();
 	}
 	
 	public boolean playCard(Card card) {
@@ -143,6 +145,7 @@ public class GameModel {
 			if (isPlayLegal(card)) {
 				pActivePlayer.removeCardFromHand(card);
 				playedCards.add(card);
+				isPlayerTurnOver = true;
 				return true;
 			} else {
 				return false;
@@ -184,14 +187,11 @@ public class GameModel {
 	}
 	
 	public void processTurn() {
+		isPlayerTurnOver = false;
 		
 		// TODO: wait for player actions (playing a card, drawing cards, passing turn
 		
-		/* Check if any one player has 0 cards in hand. If one player does, then
-		 * the round is over. If the round is over, increment each user's score
-		 * according to how many cards remain in their hand. Then, check if any
-		 * one user has a score of 50 or more. If no players have empty hands,
-		 * then the turn passes to the next player. */
+		
 		
 		if (isRoundOver()) {
 			// Increment each player's score based on current cards in hand
@@ -206,7 +206,7 @@ public class GameModel {
 				// start the next round
 			}
 		} else {
-			// move to the next players turn
+			getNextTurn();
 		}
 
 	}
@@ -405,6 +405,14 @@ public class GameModel {
 	
 	public List<Card> getPlayedCards() {
 		return this.playedCards;
+	}
+	
+	public boolean getIsPlayerTurnOver() {
+		return this.isPlayerTurnOver;
+	}
+	
+	public void setIsPlayerTurnOver(boolean b) {
+		this.isPlayerTurnOver = b;
 	}
 
 }
