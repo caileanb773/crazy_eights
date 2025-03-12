@@ -9,6 +9,7 @@ public class Player {
 	protected String name;
 	protected int score;
 	protected int orientation;
+	protected boolean isHuman;
 
 	public Player() {
 
@@ -19,6 +20,7 @@ public class Player {
 		this.hand = new ArrayList<Card>();
 		this.score = 0;
 		this.orientation = orientation;
+		this.isHuman = false;
 	}
 
 	public void addCardToHand(Card card) {
@@ -61,6 +63,14 @@ public class Player {
 		return false;
 	}
 	
+	public boolean isHuman() {
+		return isHuman;
+	}
+
+	public void setHuman(boolean isHuman) {
+		this.isHuman = isHuman;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -95,7 +105,7 @@ public class Player {
 	
 	@Override
 	public String toString() {
-		return "Player " + this.name + " current score " + this.score;
+		return "Player " + this.name + " current score: " + this.score + " orientation: " + this.orientation + " isHuman: " + isHuman;
 	}
 
 }

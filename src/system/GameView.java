@@ -29,8 +29,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledEditorKit;
@@ -48,10 +50,10 @@ public class GameView extends JFrame {
 	static final Color BACKGROUND_PINK = new Color(255, 241, 241);
 	static final Color BACKGROUND_BLUE = new Color(33, 65, 202);
 	static final Color BORDER_BLUE = new Color(136, 200, 238);
-	static final int NORTH = 0;
-	static final int EAST = 1;
-	static final int WEST = 2;
-	static final int SOUTH = 3;
+	static final int SOUTH = 0;
+	static final int WEST = 1;
+	static final int NORTH = 2;
+	static final int EAST = 3;
 
 	// Player hands and names
 	private JPanel playerNorthCards;
@@ -79,13 +81,13 @@ public class GameView extends JFrame {
 	private JMenuItem mMultiPlayer;
 	private JButton playedCards;
 	private JButton library;
-	
+
 	// Player cards in hand
 	private JLabel playerNorthScore;
 	private JLabel playerEastScore;
 	private JLabel playerWestScore;
 	private JLabel playerSouthScore;
-	
+
 	// Other stuff
 	private Font myFont;
 	private GridBagConstraints myGBC;
@@ -105,6 +107,15 @@ public class GameView extends JFrame {
 		// TODO: handle the unhandled fields in the constructor
 	}
 
+	/**
+	 * Draws the GUI elements. Each GUI element is a JPanel, which holds other
+	 * JPanels. There are outer elements, which hold the title bar, console,
+	 * player's hand, and the gameplay area. Each of these areas is further broken
+	 * down into several other components.
+	 * 
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void drawMainApplication() {
 
 		/* ---------- PREAMBLE ---------- */
@@ -112,7 +123,7 @@ public class GameView extends JFrame {
 		// Outer panel holds play area and console
 		JPanel outerPanel = new JPanel();
 		outerPanel.setLayout(new BorderLayout());
-		
+
 		// Inner holds the game play area
 		JPanel gameElements = new JPanel();
 		gameElements.setLayout(new BorderLayout());
@@ -152,7 +163,7 @@ public class GameView extends JFrame {
 		playerWestScore.setFont(myFont);
 		playerSouthScore = new JLabel();
 		playerSouthScore.setFont(myFont);
-		
+
 		// Adding elements to score box
 		scoreBox.add(scoreTitle, myGBC);
 		scoreBox.add(playerNorthScore, myGBC);
@@ -434,6 +445,46 @@ public class GameView extends JFrame {
 		gui.setLocationRelativeTo(null);
 
 	}
+
+	/**
+	 * Draws a splash screen for 3 seconds.
+	 * 
+	 * @author Cailean Bernard
+	 * @since 22
+	 */
+	public static void drawSplash() {
+
+		ImageIcon splashImage = new ImageIcon("asset/img/splash.png");
+		JLabel splashImageLabel = new JLabel(splashImage);
+		JPanel splashElements = new JPanel();
+		splashElements.setLayout(new BorderLayout());
+		splashElements.add(BorderLayout.CENTER, splashImageLabel);
+
+		// Fake loading bar
+		JProgressBar loading = new JProgressBar();
+		loading.setMinimum(0);
+		loading.setMaximum(100);
+		loading.setStringPainted(VISIBLE);
+
+		splashElements.add(BorderLayout.SOUTH, loading);
+
+		JWindow splashFrame = new JWindow();
+		splashFrame.add(splashElements);
+		splashFrame.setVisible(true);
+		splashFrame.pack();
+		splashFrame.setLocationRelativeTo(null);
+
+		// Fake loading
+		for (int i = 0; i <= 100; i += 5) {
+			try {
+				Thread.sleep(100);
+				loading.setValue(i);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		splashFrame.dispose();
+	}
 	
 	public void refreshHand(Player player, int orientation) {
 		JPanel handPanel = null;
@@ -444,25 +495,25 @@ public class GameView extends JFrame {
 		case WEST: handPanel = playerWestCards; break;
 		default: System.out.println("Default case reached in GameView.refreshHand().");
 		}
-	    handPanel.removeAll();
+		handPanel.removeAll();
 
-	    int handSize = player.getHandSize();
-	    System.out.println("Refreshing images of cards in hand...");
-	    for (int i = 0; i < handSize; i++) {
-	    	Card card = player.getHand().get(i);
-	    	if (i < handSize -1) {
-	    		//draw a slice
-	    		card.setIcon(card.fetchCardImg(false, true));
-	    		handPanel.add(card);
-	    	} else {
-	    		// draw the whole card
-	    		card.setIcon(card.fetchCardImg(false, false));
-		        handPanel.add(card);
-	    	}
-	    }
+		int handSize = player.getHandSize();
+		System.out.println("Refreshing images of cards in hand...");
+		for (int i = 0; i < handSize; i++) {
+			Card card = player.getHand().get(i);
+			if (i < handSize -1) {
+				//draw a slice
+				card.setIcon(card.fetchCardImg(false, true));
+				handPanel.add(card);
+			} else {
+				// draw the whole card
+				card.setIcon(card.fetchCardImg(false, false));
+				handPanel.add(card);
+			}
+		}
 
-	    handPanel.revalidate();  
-	    handPanel.repaint();
+		handPanel.revalidate();  
+		handPanel.repaint();
 	}
 
 	public void displayLastPlayedCard(Card card) {
@@ -489,7 +540,7 @@ public class GameView extends JFrame {
 		handDisplay.removeAll();
 		for (int i = 0; i < handSize; i++){
 			Card card = p.getHand().get(i);
-			
+
 			// Display card slices for all but the last card
 			if (i < handSize -1) {
 				if (orientation == EAST || orientation == WEST) {
@@ -513,10 +564,10 @@ public class GameView extends JFrame {
 		}
 		handDisplay.revalidate();
 		handDisplay.repaint();
-		
+
 		resizeWindow(handDisplay);
 	}
-	
+
 	public void updatePlayerNames(Player p, int orientation) {
 		String playerName = p.getName();
 		switch (orientation) {
@@ -527,7 +578,7 @@ public class GameView extends JFrame {
 		default: System.out.println("Default case reached in GameView.updateNames().");
 		}
 	}
-	
+
 	public void updateScoreTable(Player p) {
 		String labelText = p.getName() + " = " + p.getScore();
 		switch (p.getOrientation()) {
@@ -538,14 +589,14 @@ public class GameView extends JFrame {
 		default: System.out.println("Default case reached in GameView.updateScoreTable().");
 		}
 	}
-	
+
 	public void resizeWindow(JPanel panel) {
 		JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(panel);
-        frame.pack();
-        frame.revalidate();
-        frame.repaint();
+		frame.pack();
+		frame.revalidate();
+		frame.repaint();
 	}
-	
+
 	public void displayAbout() {
 		String line;
 		StringBuilder sb = new StringBuilder();
@@ -623,9 +674,9 @@ public class GameView extends JFrame {
 	public void setDrawFromLibraryListener(ActionListener listener) {
 		library.addActionListener(listener);
 	}
-	
+
 	public void playCardFromHandListener(ActionListener listener) {
-		
+
 	}
-	
+
 }

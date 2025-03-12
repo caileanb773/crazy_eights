@@ -2,14 +2,16 @@ package system;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import sysobj.Card;
 import sysobj.Player;
 
-public class GameController {
+public class GameController implements Observer {
 
 	private GameModel model;
 	private GameView view;
+	private int processTurnCalls = 0;
 
 	public GameController(GameModel m, GameView v) {
 		this.model = m;
@@ -20,13 +22,68 @@ public class GameController {
 		view.setHostGameListener(new HostGameListener());
 		view.setJoinGameListener(new JoinGameListener());
 		view.setDisconnectListener(new DisconnectListener());
-		view.setOptionsListener(new OptionsListener());
 		view.setAboutListener(new AboutListener());
 		view.setLangEnglishListener(new LangEnglishListener());
 		view.setLangFrenchListener(new LangFrenchListener());
 		view.setSoundToggleListener(new SoundToggleListener());
 		view.setMusicToggleListener(new MusicToggleListener());
 		view.setDrawFromLibraryListener(new CardDrawListener());
+	}
+	
+	@Override
+	public void update() {
+		
+	}
+	
+	public void handleStartGame() {
+		model.startGame();
+		List<Card> playedCards = model.getPlayedCards();
+		int orientation = 0;
+		for (Player p : model.getPlayers()) {
+			view.updateScoreTable(p);
+			view.updatePlayerNames(p, orientation);
+			view.displayCardsInHand(p, orientation++);
+		}
+		addListenersToPlayerHand(model.getActivePlayer());
+		view.displayLastPlayedCard(playedCards.getLast());
+		beginGame();
+	}
+	
+	public void beginGame() {
+		
+	}
+	
+	public void processTurn() {
+		System.out.println("ProcessTurn() Calls: " + processTurnCalls++);
+		
+		if (model.isRoundOver()) {
+			if (model.isGameOver()) {
+				System.out.println("Game is now over.");
+				endGame();
+				return;
+			}
+			System.out.println("The round is now over.");
+			endRound();
+			return;
+		}
+		
+		if (model.getActivePlayer().isHuman()) {
+			System.out.println("Waiting for human player's turn...");
+			return;
+		} else {
+			// AI player's turn
+			
+			
+		}
+		
+	}
+	
+	public void endGame() {
+		System.out.println("In endGame()");
+	}
+	
+	public void endRound() {
+		System.out.println("In endRound()");
 	}
 
 	public void addListenersToPlayerHand(Player player) {
@@ -38,37 +95,44 @@ public class GameController {
 		}
 	}
 
-
 	private class SinglePlayerListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			model.startGame();
-			int orientation = 0;
-			for (Player p : model.getPlayers()) {
-				view.updateScoreTable(p);
-				view.updatePlayerNames(p, orientation);
-				view.displayCardsInHand(p, orientation++);
-			}
-			addListenersToPlayerHand(model.getActivePlayer());
-			view.displayLastPlayedCard(model.getPlayedCards().get(model.getPlayedCards().size()-1));
+			handleStartGame();
 		}
 	}
 
 	private class CardDrawListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			System.out.println("Library clicked...");
-			if (model.getActivePlayer().hasLegalMove(model.getPlayedCards().getLast())) {
+			handleCardDraw();
+		}
+	}
+	
+	public void handleCardDraw() {
+		System.out.println("Library clicked");
+		Player activePlayer = model.getActivePlayer();
+		System.out.println("DEBUGGING: active player is: " + activePlayer.toString());
+
+		// check that the activeplayer is human before allowing them to draw a card
+		if (activePlayer.isHuman()) {
+			// block player from drawing a card if they have a legal play in hand
+			if (activePlayer.hasLegalMove(model.getPlayedCards().getLast())) {
 				System.out.println("Cannot draw a card if you have a legal play in hand. Play a card instead.");
 			} else {
 				model.drawCard();
-				view.refreshHand(model.getActivePlayer(), model.getActivePlayer().getOrientation());
-				addListenersToPlayerHand(model.getActivePlayer());
-				if (model.getActivePlayer().getHandSize() == 12) {
-					System.out.println(model.getActivePlayer().getName() + "'s turn is now over.");
-					model.setIsPlayerTurnOver(true);
+				view.refreshHand(activePlayer, activePlayer.getOrientation());
+				addListenersToPlayerHand(activePlayer);
+
+				// if their hand is full after card draw, end their turn
+				if (activePlayer.getHandSize() == 12) {
+					System.out.println(activePlayer.getName() + "'s turn is now over.");
+					model.setActivePlayer(model.getNextPlayer());
+					processTurn();
 				}
 			}
+		} else {
+			System.out.println("It is not your turn!");
 		}
 	}
 
@@ -76,17 +140,26 @@ public class GameController {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Card c = (Card) e.getSource();
-			System.out.println(c.toString() + " clicked");
-			Player activePlayer = model.getActivePlayer();
+			handleCardPlay(c);
+		}
+	}
+	
+	public void handleCardPlay(Card c) {
+		Player activePlayer = model.getActivePlayer();
+
+		if (activePlayer.isHuman()) {
 			if (model.playCard(c)) {
 				for (ActionListener al : c.getActionListeners()) {
 					c.removeActionListener(al);
 				}
 				view.refreshHand(activePlayer, activePlayer.getOrientation());
 				view.displayLastPlayedCard(c);
-				System.out.println(model.getActivePlayer().getName() + "'s turn is now over.");
-				model.setIsPlayerTurnOver(true);
+				System.out.println(activePlayer.getName() + "'s turn is now over.");
+				model.setActivePlayer(model.getNextPlayer());
+				processTurn();
 			}
+		} else {
+			System.out.println("It is not your turn!");
 		}
 	}
 
@@ -112,13 +185,6 @@ public class GameController {
 	}
 
 	private class DisconnectListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// Implement logic here
-		}
-	}
-
-	private class OptionsListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// Implement logic here
