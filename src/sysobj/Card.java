@@ -1,10 +1,9 @@
 package sysobj;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+
+import system.Const;
 
 /**
  * Each card is composed of a suit, a rank, and a display image (if the card is
@@ -22,26 +21,25 @@ public class Card extends JButton {
 	public Card(Rank r, Suit s) {
 		this.rank = r;
 		this.suit = s;
-		cardImg = fetchCardImg(false, false);
+		this.cardImg = fetchCardImg(false,false,true);
 		this.setBorder(null);
 		this.setIcon(cardImg);
-		
 	}
 
-	public ImageIcon fetchCardImg(boolean isEastWest, boolean isSlice) {
+	public ImageIcon fetchCardImg(boolean isTop, boolean isLeft, boolean isVisible) {
 		Rank r = this.rank;
 		Suit s = this.suit;
 		StringBuilder path = new StringBuilder();		
 		path.append("asset/card/");
-
-		if (isEastWest) {
-			if (isSlice) {
+		
+		if (isTop) {
+			if (isLeft) {
 				path.append("tback");
 			} else {
 				path.append("back");
 			}
 		} else {
-			if (isSlice) {
+			if (isLeft) {
 				path.append("l");
 			}
 			switch (r) {

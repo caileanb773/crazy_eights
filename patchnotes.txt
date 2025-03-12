@@ -28,3 +28,4 @@
 -added boolean isPlayerTurnOver to model. This acts as a flag to tell the model that the current turn is over and the next should be processed. included a getter and setter for this as well
 -added boolean isHuman flag to Player class, along with getters and setters. need a way to differentiate between computer controlled players and human players
 -renamed getNextTurn() to getNextPlayer() and changed return type from int to Player in Model
+-abstracted all constants out of all classes into one Const class. got tired of hunting down constants i had declared, and some classes need constants from others

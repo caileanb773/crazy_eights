@@ -6,10 +6,10 @@ import java.util.List;
 public class Player {
 
 	protected List<Card> hand;
+	protected boolean isHuman;
 	protected String name;
 	protected int score;
 	protected int orientation;
-	protected boolean isHuman;
 
 	public Player() {
 
@@ -35,18 +35,17 @@ public class Player {
 		}
 		hand.add(card);
 	}
-	
+
 	public void removeCardFromHand(Card card) {
 		this.hand.remove(card);
 	}
 
-	// TODO this one will be a doozy
 	public boolean hasLegalMove(Card lastPlayedCard) {
 		if (this.hand.isEmpty()) {
 			System.out.println("Player.hasLegalMove() found no cards in hand.");
 			return false;
 		}
-		
+
 		/* a player had a legal move if they have an 8 in hand OR they have a
 		 * card in hand that matches the last played card's rank OR suit */
 		for (Card card : this.hand) {
@@ -57,12 +56,11 @@ public class Player {
 				return true;
 			}
 		}
-		
+
 		// no legal moves found
-		System.out.println("Player.hasLegalMoves() found no legal moves for player: " + this.name);
 		return false;
 	}
-	
+
 	public boolean isHuman() {
 		return isHuman;
 	}
@@ -74,15 +72,15 @@ public class Player {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public void setScore(int scr) {
 		this.score = scr;
 	}
-	
+
 	public String getName() {
 		return this.name;
 	}
-	
+
 	public int getScore() {
 		return this.score;
 	}
@@ -94,15 +92,15 @@ public class Player {
 	public int getHandSize() {
 		return this.hand.size();
 	}
-	
+
 	public int getOrientation() {
 		return this.orientation;
 	}
-	
+
 	public void clearHand() {
 		this.hand.clear();
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Player " + this.name + " current score: " + this.score + " orientation: " + this.orientation + " isHuman: " + isHuman;

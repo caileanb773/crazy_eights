@@ -15,9 +15,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -36,24 +36,10 @@ import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledEditorKit;
-
 import sysobj.Card;
 import sysobj.Player;
 
 public class GameView extends JFrame {
-
-	// Constants (global, but mostly used in this class)
-	static final boolean VERTICAL = false;
-	static final boolean HORIZONTAL = true;
-	static final boolean VISIBLE = true;
-	static final boolean HIDDEN = false;
-	static final Color BACKGROUND_PINK = new Color(255, 241, 241);
-	static final Color BACKGROUND_BLUE = new Color(33, 65, 202);
-	static final Color BORDER_BLUE = new Color(136, 200, 238);
-	static final int SOUTH = 0;
-	static final int WEST = 1;
-	static final int NORTH = 2;
-	static final int EAST = 3;
 
 	// Player hands and names
 	private JPanel playerNorthCards;
@@ -82,7 +68,7 @@ public class GameView extends JFrame {
 	private JButton playedCards;
 	private JButton library;
 
-	// Player cards in hand
+	// Player scores
 	private JLabel playerNorthScore;
 	private JLabel playerEastScore;
 	private JLabel playerWestScore;
@@ -102,9 +88,7 @@ public class GameView extends JFrame {
 		myGBC.gridx = 0;
 		myGBC.gridy = GridBagConstraints.RELATIVE;
 		myGBC.anchor = GridBagConstraints.CENTER;
-		drawMainApplication();
-
-		// TODO: handle the unhandled fields in the constructor
+		drawMainWindow();
 	}
 
 	/**
@@ -116,7 +100,7 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void drawMainApplication() {
+	public void drawMainWindow() {
 
 		/* ---------- PREAMBLE ---------- */
 
@@ -128,13 +112,15 @@ public class GameView extends JFrame {
 		JPanel gameElements = new JPanel();
 		gameElements.setLayout(new BorderLayout());
 
+		/* ------------------------------------------------------------------------- */
 		/* ------------------------- CONSOLE PANEL SECTION ------------------------- */
+		/* ------------------------------------------------------------------------- */
 
 		// Console holds the chat entry, chat display, and score display
 		JPanel console = new JPanel();
 		console.setLayout(new BorderLayout());
-		console.setBackground(BACKGROUND_PINK);
-		console.setBorder(BorderFactory.createMatteBorder(0, 2, 0, 0, Color.BLACK));
+		console.setBackground(Const.BACKGROUND_PINK);
+		console.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 0, Color.BLACK));
 
 		/* ---------- Score Elements ---------- */
 
@@ -146,7 +132,7 @@ public class GameView extends JFrame {
 		// Scorebox holds the "score" label and the users, with their scores
 		JPanel scoreBox = new JPanel();
 		scoreBox.setBackground(Color.WHITE);
-		scoreBox.setBorder(BorderFactory.createLineBorder(BORDER_BLUE, 2));
+		scoreBox.setBorder(BorderFactory.createLineBorder(Const.BORDER_BLUE, 2));
 		scoreBox.setLayout(new GridBagLayout());
 
 		// Score label
@@ -199,7 +185,7 @@ public class GameView extends JFrame {
 		JTextPane chatDisplay = new JTextPane();
 		chatDisplay.setEditorKit(new StyledEditorKit());
 		chatDisplay.setEditable(false);
-		chatDisplay.setBorder(BorderFactory.createLineBorder(BORDER_BLUE, 2));
+		chatDisplay.setBorder(BorderFactory.createLineBorder(Const.BORDER_BLUE, 2));
 
 		// Scroll pane for chat display
 		JScrollPane chatDisplayScroll = new JScrollPane(chatDisplay);
@@ -213,7 +199,7 @@ public class GameView extends JFrame {
 		JPanel chatBox = new JPanel();
 		chatBox.setBackground(Color.WHITE);
 		chatBox.setLayout(new FlowLayout());
-		chatBox.setBorder(BorderFactory.createLineBorder(BORDER_BLUE, 2));
+		chatBox.setBorder(BorderFactory.createLineBorder(Const.BORDER_BLUE, 2));
 
 		// Add chatInput and chatSend button to chatBox panel
 		chatBox.add(chatInput);
@@ -230,7 +216,9 @@ public class GameView extends JFrame {
 		console.add(BorderLayout.CENTER, chatDisplayWrapper);
 		console.add(BorderLayout.NORTH, scoreBoxWrapper);
 
+		/* ---------------------------------------------------------------------- */
 		/* ------------------------- GAME PANEL SECTION ------------------------- */
+		/* ---------------------------------------------------------------------- */
 
 		/* ---------- NORTH PLAYER ---------- */
 
@@ -251,13 +239,13 @@ public class GameView extends JFrame {
 		playerNorthName.setHorizontalAlignment(SwingConstants.CENTER);
 		playerNorth.add(BorderLayout.NORTH, playerNorthName);
 		playerNorth.add(BorderLayout.SOUTH, playerNorthCards);
-		playerNorth.setBackground(BACKGROUND_PINK);
+		playerNorth.setBackground(Const.BACKGROUND_PINK);
 
 		/* ---------- EAST PLAYER ---------- */
 
 		// Panel to hold Name and Cards
 		JPanel playerEast = new JPanel();
-		playerEast.setBackground(BACKGROUND_PINK);
+		playerEast.setBackground(Const.BACKGROUND_PINK);
 		playerEast.setLayout(new GridBagLayout());
 
 		// Label for the name
@@ -274,7 +262,7 @@ public class GameView extends JFrame {
 
 		// Wrapper to hold East Player's elements
 		JPanel pEastWrapper = new JPanel();
-		pEastWrapper.setBackground(BACKGROUND_PINK);
+		pEastWrapper.setBackground(Const.BACKGROUND_PINK);
 		pEastWrapper.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 		pEastWrapper.add(playerEast);
 
@@ -282,7 +270,7 @@ public class GameView extends JFrame {
 
 		// Panel to hold Name and Cards
 		JPanel playerWest = new JPanel();
-		playerWest.setBackground(BACKGROUND_PINK);
+		playerWest.setBackground(Const.BACKGROUND_PINK);
 		playerWest.setLayout(new GridBagLayout());
 
 		// Label for the name
@@ -299,7 +287,7 @@ public class GameView extends JFrame {
 
 		// Wrapper to hold East Player's elements
 		JPanel pWestWrapper = new JPanel();
-		pWestWrapper.setBackground(BACKGROUND_PINK);
+		pWestWrapper.setBackground(Const.BACKGROUND_PINK);
 		pWestWrapper.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 		pWestWrapper.add(playerWest);
 
@@ -307,13 +295,13 @@ public class GameView extends JFrame {
 
 		// Hand for the user interacting with the app (located in the south)
 		JPanel playerSouth = new JPanel(new BorderLayout());
-		playerSouth.setBackground(BACKGROUND_PINK);
+		playerSouth.setBackground(Const.BACKGROUND_PINK);
 		playerSouthName = new JLabel("");
 		playerSouthName.setFont(myFont);
 		playerSouthName.setHorizontalAlignment(SwingConstants.CENTER);
 		playerSouthCards = new JPanel();
 		playerSouthCards.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 10));
-		playerSouthCards.setBackground(BACKGROUND_PINK);
+		playerSouthCards.setBackground(Const.BACKGROUND_PINK);
 		playerSouth.add(BorderLayout.NORTH, playerSouthName);
 		playerSouth.add(BorderLayout.SOUTH, playerSouthCards);
 
@@ -329,21 +317,21 @@ public class GameView extends JFrame {
 
 		// Library refers to the pile of face-down cards that have yet to be drawn
 		JPanel cardLibrary = new JPanel();
-		cardLibrary.setBackground(BACKGROUND_PINK);
+		cardLibrary.setBackground(Const.BACKGROUND_PINK);
 		library = new JButton(new ImageIcon("asset/card/back.png"));
 		library.setBorder(null);
 		cardLibrary.add(library);
 
 		// Played cards have been played by players and are face-up
 		JPanel cardsPlayed = new JPanel();
-		cardsPlayed.setBackground(BACKGROUND_PINK);
+		cardsPlayed.setBackground(Const.BACKGROUND_PINK);
 		playedCards = new JButton();
 		playedCards.setBorder(null);
 		cardsPlayed.add(playedCards);
 
 		// Panel to hold the library and the played cards
 		JPanel playingArea = new JPanel();
-		playingArea.setBackground(BACKGROUND_PINK);
+		playingArea.setBackground(Const.BACKGROUND_PINK);
 		playingArea.setLayout(new FlowLayout());
 		playingArea.add(cardLibrary);
 		playingArea.add(cardsPlayed);
@@ -351,7 +339,7 @@ public class GameView extends JFrame {
 		// Holds the logo panel plus the combined library + played cards panel
 		JPanel playingAreaAndLogo = new JPanel();
 		playingAreaAndLogo.setLayout(new BorderLayout());
-		playingAreaAndLogo.setBackground(BACKGROUND_PINK);
+		playingAreaAndLogo.setBackground(Const.BACKGROUND_PINK);
 		playingAreaAndLogo.add(BorderLayout.SOUTH, gameLogo);
 		playingAreaAndLogo.add(BorderLayout.NORTH, playingArea);
 
@@ -362,7 +350,9 @@ public class GameView extends JFrame {
 		gameElements.add(BorderLayout.SOUTH, playerSouth);
 		gameElements.add(BorderLayout.CENTER, playingAreaAndLogo);
 
+		/* ------------------------------------------------------ */
 		/* -------------------- MENU SECTION -------------------- */
+		/* ------------------------------------------------------ */
 
 		// Menu Bar
 		mBar = new JMenuBar();
@@ -425,7 +415,9 @@ public class GameView extends JFrame {
 		mBar.add(mOptions);
 		mBar.add(mAbout);
 
+		/* ----------------------------------------------------------------------- */
 		/* ------------------------- MAIN WINDOW SECTION ------------------------- */
+		/* ----------------------------------------------------------------------- */
 
 		// Adding components to the outer frame
 		outerPanel.add(BorderLayout.EAST, console);
@@ -464,7 +456,7 @@ public class GameView extends JFrame {
 		JProgressBar loading = new JProgressBar();
 		loading.setMinimum(0);
 		loading.setMaximum(100);
-		loading.setStringPainted(VISIBLE);
+		loading.setStringPainted(Const.VISIBLE);
 
 		splashElements.add(BorderLayout.SOUTH, loading);
 
@@ -486,116 +478,154 @@ public class GameView extends JFrame {
 		splashFrame.dispose();
 	}
 	
-	public void refreshHand(Player player, int orientation) {
-		JPanel handPanel = null;
-		switch (orientation) {
-		case NORTH: handPanel = playerNorthCards; break;
-		case EAST: handPanel = playerEastCards; break;
-		case SOUTH: handPanel = playerSouthCards; break;
-		case WEST: handPanel = playerWestCards; break;
-		default: System.out.println("Default case reached in GameView.refreshHand().");
-		}
-		handPanel.removeAll();
-
-		int handSize = player.getHandSize();
-		System.out.println("Refreshing images of cards in hand...");
-		for (int i = 0; i < handSize; i++) {
-			Card card = player.getHand().get(i);
-			if (i < handSize -1) {
-				//draw a slice
-				card.setIcon(card.fetchCardImg(false, true));
-				handPanel.add(card);
-			} else {
-				// draw the whole card
-				card.setIcon(card.fetchCardImg(false, false));
-				handPanel.add(card);
-			}
-		}
-
-		handPanel.revalidate();  
-		handPanel.repaint();
-	}
-
-	public void displayLastPlayedCard(Card card) {
-		ImageIcon playedCardImg = card.fetchCardImg(false, false);
-		playedCards.setIcon(playedCardImg);
-		this.revalidate();
-		this.repaint();
-	}
-
-	public void displayCardsInHand(Player p, int orientation) {
-		int handSize = p.getHandSize();
-		if (orientation < 0 || orientation > 3) {
-			System.out.println("Orientation was < 0 || > 3 in displayCardsInHand");
-			return;
-		}
-		JPanel handDisplay = null;
-		switch (orientation) {
-		case NORTH: handDisplay = playerNorthCards; break;
-		case EAST: handDisplay = playerEastCards; break;
-		case SOUTH: handDisplay = playerSouthCards; break;
-		case WEST: handDisplay = playerWestCards; break;
-		default: System.out.println("Default switch case reached in GameView.displayCardsInHand()");
-		}
-		handDisplay.removeAll();
-		for (int i = 0; i < handSize; i++){
-			Card card = p.getHand().get(i);
-
-			// Display card slices for all but the last card
-			if (i < handSize -1) {
-				if (orientation == EAST || orientation == WEST) {
-					// change the displayed card's image
-					card.setImage(card.fetchCardImg(true, true));
-					handDisplay.add(card, myGBC);
-				} else {
-					card.setImage(card.fetchCardImg(false, true));
-					handDisplay.add(card);
-				}
-			} else {
-				if (orientation == EAST || orientation == WEST) {
-					card.setImage(card.fetchCardImg(true, false));
-					handDisplay.add(card, myGBC);
-				} else {
-					card.setImage(card.fetchCardImg(false, false));
-					handDisplay.add(card);
-				}
-			}
-
-		}
-		handDisplay.revalidate();
-		handDisplay.repaint();
-
-		resizeWindow(handDisplay);
-	}
-
-	public void updatePlayerNames(Player p, int orientation) {
-		String playerName = p.getName();
-		switch (orientation) {
-		case NORTH: playerNorthName.setText(playerName); break;
-		case EAST: playerEastName.setText(playerName); break;
-		case SOUTH: playerSouthName.setText(playerName); break;
-		case WEST: playerWestName.setText(playerName); break;
-		default: System.out.println("Default case reached in GameView.updateNames().");
-		}
-	}
-
-	public void updateScoreTable(Player p) {
-		String labelText = p.getName() + " = " + p.getScore();
-		switch (p.getOrientation()) {
-		case NORTH: playerNorthScore.setText(labelText); break;
-		case EAST: playerEastScore.setText(labelText); break;
-		case WEST: playerWestScore.setText(labelText); break;
-		case SOUTH: playerSouthScore.setText(labelText); break;
-		default: System.out.println("Default case reached in GameView.updateScoreTable().");
-		}
-	}
-
 	public void resizeWindow(JPanel panel) {
 		JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(panel);
 		frame.pack();
 		frame.revalidate();
 		frame.repaint();
 	}
+	
+	public Font getMyFont(String path) {
+		File fontFile = new File(path);
+		Font myFont = new Font("Arial", Font.PLAIN, 12);
+
+		try {
+			myFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(12f);
+		} catch (FontFormatException | IOException e) {
+			e.printStackTrace();
+		}
+
+		return myFont;
+	}
+	
+	/* ----------------------------------------------------------- */
+	/* -------------------- REFRESHER METHODS -------------------- */
+	/* ----------------------------------------------------------- */
+
+//	public void refreshHand(Player player) {
+//		JPanel handPanel = null;
+//		int orientation = player.getOrientation();
+//		switch (orientation) {
+//		case Const.NORTH: handPanel = playerNorthCards; break;
+//		case Const.EAST: handPanel = playerEastCards; break;
+//		case Const.SOUTH: handPanel = playerSouthCards; break;
+//		case Const.WEST: handPanel = playerWestCards; break;
+//		default: System.out.println("Default case reached in GameView.refreshHand().");
+//		}
+//		handPanel.removeAll();
+//
+//		int handSize = player.getHandSize();
+//		for (int i = 0; i < handSize; i++) {
+//			Card card = player.getHand().get(i);
+//			if (i < handSize -1) {
+//				//draw a slice
+//				card.setIcon(card.fetchCardImg(Const.VERTICAL, Const.CARD_SLICE));
+//				handPanel.add(card);
+//			} else {
+//				// draw the whole card
+//				card.setIcon(card.fetchCardImg(Const.VERTICAL, Const.FULL_CARD));
+//				handPanel.add(card);
+//			}
+//		}
+//
+//		handPanel.revalidate();  
+//		handPanel.repaint();
+//	}
+
+	public void displayLastPlayedCard(Card card) {
+		ImageIcon playedCardImg = card.fetchCardImg(Const.VERTICAL, Const.FULL_CARD, Const.VISIBLE);
+		playedCards.setIcon(playedCardImg);
+		this.revalidate();
+		this.repaint();
+	}
+
+	public void displayCardsInHand(Player p) {
+		int handSize = p.getHandSize();
+		int orientation = p.getOrientation();
+		if (orientation < 0 || orientation > 3) {
+			System.out.println("Orientation was < 0 || > 3 in displayCardsInHand");
+			return;
+		}
+		JPanel handDisplay = null;
+		switch (orientation) {
+		case Const.NORTH: handDisplay = playerNorthCards; break;
+		case Const.EAST: handDisplay = playerEastCards; break;
+		case Const.SOUTH: handDisplay = playerSouthCards; break;
+		case Const.WEST: handDisplay = playerWestCards; break;
+		default: System.out.println("Default switch case reached in GameView.displayCardsInHand()");
+		}
+		handDisplay.removeAll();
+		for (int i = 0; i < handSize; i++){
+			Card card = p.getHand().get(i);
+
+			if (orientation == Const.NORTH) {
+				
+				if (i < handSize -1) {
+					card.setImage(card.fetchCardImg(false, true, false));
+				} else {
+					card.setImage(card.fetchCardImg(false, false, false));
+				}
+				
+			}
+			// Display card slices for all but the last card
+			if (i < handSize -1) {
+				if (orientation == Const.EAST || orientation == Const.WEST) {
+					// change the displayed card's image
+					card.setImage(card.fetchCardImg(true, true, false));
+					handDisplay.add(card, myGBC);
+				} else {
+					card.setImage(card.fetchCardImg(false, true, false));
+					handDisplay.add(card);
+				}
+			} else {
+				if (orientation == Const.EAST || orientation == Const.WEST) {
+					card.setImage(card.fetchCardImg(true, false, false));
+					handDisplay.add(card, myGBC);
+				} else {
+					card.setImage(card.fetchCardImg(false, false, false));
+					handDisplay.add(card);
+				}
+			}
+
+		}
+		
+		handDisplay.revalidate();
+		handDisplay.repaint();
+		resizeWindow(handDisplay);
+	}
+
+	public void updatePlayerNames(Player p) {
+		String playerName = p.getName();
+		int orientation = p.getOrientation();
+		switch (orientation) {
+		case Const.NORTH: playerNorthName.setText(playerName); break;
+		case Const.EAST: playerEastName.setText(playerName); break;
+		case Const.SOUTH: playerSouthName.setText(playerName); break;
+		case Const.WEST: playerWestName.setText(playerName); break;
+		default: System.out.println("Default case reached in GameView.updateNames().");
+		}
+	}
+
+	private void updateScoreTable(Player p) {
+		String labelText = p.getName() + " = " + p.getScore();
+		switch (p.getOrientation()) {
+		case Const.NORTH: playerNorthScore.setText(labelText); break;
+		case Const.EAST: playerEastScore.setText(labelText); break;
+		case Const.WEST: playerWestScore.setText(labelText); break;
+		case Const.SOUTH: playerSouthScore.setText(labelText); break;
+		default: System.out.println("Default case reached in GameView.updateScoreTable().");
+		}
+	}
+	
+	public void refreshScores(List<Player> players) {
+		for (Player p : players) {
+			updateScoreTable(p);
+		}
+	}
+	
+	/* -------------------------------------------------------- */
+	/* -------------------- DIALOGS/POPUPS -------------------- */
+	/* -------------------------------------------------------- */
 
 	public void displayAbout() {
 		String line;
@@ -613,20 +643,15 @@ public class GameView extends JFrame {
 
 		JOptionPane.showMessageDialog(this, sb.toString(), "Rules", JOptionPane.INFORMATION_MESSAGE);
 	}
-
-	public Font getMyFont(String path) {
-		File fontFile = new File(path);
-		Font myFont = new Font("Arial", Font.PLAIN, 12);
-
-		try {
-			myFont = Font.createFont(Font.TRUETYPE_FONT, fontFile).deriveFont(12f);
-		} catch (FontFormatException | IOException e) {
-			e.printStackTrace();
-		}
-
-		return myFont;
+	
+	public void displayRoundWinner(Player player) {
+		JOptionPane.showMessageDialog(this, "The winner of the round is " + player.getName() + "!", "Round Winner", JOptionPane.INFORMATION_MESSAGE);
 	}
-
+	
+	/* --------------------------------------------------- */
+	/* -------------------- LISTENERS -------------------- */
+	/* --------------------------------------------------- */
+	
 	public void setSinglePlayerListener(ActionListener listener) {
 		mSinglePlayer.addActionListener(listener);
 	}
@@ -673,10 +698,6 @@ public class GameView extends JFrame {
 
 	public void setDrawFromLibraryListener(ActionListener listener) {
 		library.addActionListener(listener);
-	}
-
-	public void playCardFromHandListener(ActionListener listener) {
-
 	}
 
 }

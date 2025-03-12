@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JOptionPane;
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -16,18 +17,18 @@ import sysobj.Suit;
 public class GameModel {
 
 	private List<Player> players;
-	private Player pActivePlayer;
-	private Player pGameWinner;
-	private Player pRoundWinner;
 	private List<Card> library;
 	private List<String> aiNames;
 	private List<Card> playedCards;
+	private Player pActivePlayer;
+	private Player pGameWinner;
+	private Player pRoundWinner;
 	private boolean isTurnOrderReversed;
-	private int currentTurn;
-	private int nextTurn;
-	private int numTwosPlayed;
-	private boolean isPlayerTurnOver;
 	private boolean isGameRunning;
+	private int currentTurn;
+	private int numTwosPlayed;
+
+	/* -------------------- CONSTRUCTORS -------------------- */
 
 	public GameModel() {
 	}
@@ -41,9 +42,7 @@ public class GameModel {
 		aiNames = new ArrayList<String>();
 		isTurnOrderReversed = false;
 		currentTurn = 0;
-		nextTurn = 1;
 		numTwosPlayed = 0;
-		isPlayerTurnOver = false;
 		isGameRunning = false;
 		loadAINames();
 
@@ -69,10 +68,14 @@ public class GameModel {
 
 	}
 
+	/* ------------------------------------------------------------------- */
+	/* -------------------- CARD MANIPULATION METHODS -------------------- */
+	/* ------------------------------------------------------------------- */
+
 	public void instantiateDeck(){
 		if (library != null)
-				library.clear();
-		
+			library.clear();
+
 		library = new ArrayList<Card>();
 		for (Suit s : Suit.values()) {
 			for (Rank r : Rank.values()) {
@@ -83,6 +86,24 @@ public class GameModel {
 
 	public void shuffleDeck() {
 		Collections.shuffle(this.library);
+	}
+
+	public void dealCards(int numCards) {
+		if (library == null || library.isEmpty()) {
+			System.out.println("Library was null or empty in GameModel.dealCards().");
+		}
+		int cardsNeeded = players.size() * numCards;
+
+		if (cardsNeeded > library.size()) {
+			System.out.println("dealCards(): insufficient cards in deck to deal to players.");
+			return;
+		}
+
+		for (Player p : players) {
+			for (int i = 0; i < numCards; i++) {
+				p.addCardToHand(library.removeLast());
+			}
+		}
 	}
 
 	public AIPlayer createCPUOpponent(int orientation) {
@@ -110,24 +131,49 @@ public class GameModel {
 		return "AI " + name.toUpperCase();
 	}
 
-	public void startGame() {
-		/* When the game starts, deal cards to each player. Then, the rest of the
-		 * deck acts as the "draw" pile, and the top card of the deck is flipped
-		 * over onto the "played cards" pile. After this, a "round" of the game
-		 * may begin until it is won and the points from it are tallied. */
+	public void initRound() {
+
+		// New rounds always start from the host, regardless of winner
+		currentTurn = 0;
+
+		// clear each player's hand, clear the library, clear the played cards
+		if (library != null) {
+			cleanUpGameState();
+		}
 		instantiateDeck();
 		shuffleDeck();
 		dealCards(6);
-		
+
 		// Flip the top card of the library into the played cards zone
 		playedCards.add(library.removeLast());
-		
+
 		// Set the active player to the current turn
 		pActivePlayer = players.get(currentTurn);
+		isTurnOrderReversed = false;
 		isGameRunning = true;
-		// DEBUGGING
-		System.out.println(pActivePlayer.toString());
 	}
+
+	public void reshuffleSpentDeck() {
+
+		// Defensive programming
+		if (playedCards.size() <= 1) {
+			System.out.println("handleEmptyDeck() attempted to reshuffle a deck with only 1 card.");
+			return;
+		}
+
+		/* Remove and reserve the top card of the played cards pile, then add all
+		 * remaining cards to the deck. Clear the played cards, then add back
+		 * the top card, then shuffle the deck. */
+		Card topCard = playedCards.removeLast();
+		library.addAll(playedCards);
+		playedCards.clear();
+		shuffleDeck();
+		playedCards.add(topCard);
+	}
+
+	/* -------------------------------------------------------- */
+	/* -------------------- PLAYER ACTIONS -------------------- */
+	/* -------------------------------------------------------- */
 
 	public boolean playCard(Card card) {
 		// defensive programming, unlikely scenarios
@@ -144,9 +190,12 @@ public class GameModel {
 
 			// determine legality of play
 			if (isPlayLegal(card)) {
+				System.out.println(pActivePlayer.getName() + " is attempting to play a " + card.toString());
+
+				// apply special action here?
 				pActivePlayer.removeCardFromHand(card);
 				playedCards.add(card);
-				isPlayerTurnOver = true;
+				applySpecialAction(card);
 				return true;
 			} else {
 				return false;
@@ -172,46 +221,149 @@ public class GameModel {
 		return false;
 	}
 
-	public void dealCards(int numCards) {
-		if (library == null || library.isEmpty()) {
-			System.out.println("Library was null or empty in GameModel.dealCards().");
-		}
-		int cardsNeeded = players.size() * numCards;
+	/*
+	 * public void executeAIPlayerTurn() { AIPlayer player = (AIPlayer)
+	 * pActivePlayer; Card lastPlayedCard = playedCards.getLast(); int choice =
+	 * player.decidePlayDraw(lastPlayedCard); switch (choice) {
+	 * 
+	 * // 1 = PLAY, 2 = DRAW, 3 = PASS case Const.PLAY: Card cardChoice =
+	 * player.decideCard(lastPlayedCard); player.removeCardFromHand(cardChoice);
+	 * playedCards.add(cardChoice);
+	 * 
+	 * break; case Const.DRAW: break; case 3: break; default:
+	 * System.out.println("Default case reached in executeAIPlayerTurn()"); return;
+	 * } }
+	 */
 
-		if (cardsNeeded > library.size()) {
-			System.out.println("dealCards(): insufficient cards in deck to deal to players.");
-			return;
+	public void drawCard() {
+		// Check that the library is not empty
+		if (library.isEmpty()) {
+			System.out.println("Library was emptied. Reshuffling...");
+			reshuffleSpentDeck();
 		}
 
-		for (Player p : players) {
-			for (int i = 0; i < numCards; i++) {
-				p.addCardToHand(library.removeLast());
+		if (pActivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
+			Card drawnCard = library.removeLast();
+			pActivePlayer.addCardToHand(drawnCard);
+			System.out.println(pActivePlayer.getName() + " drew a " + drawnCard.toString());
+		} else {
+			System.out.println("Hand is full, cannot draw card");
+		}
+	}
+
+	public void forceDraw(Player passivePlayer, int penaltyCards) {
+		/* if the active player is forcing the passive player to draw x cards, 
+		 * and their hand can only hold y cards, the surplus is redirected to 
+		 * the active player.  */
+		int remainingCards = penaltyCards;
+
+		// while there are still cards left to be drawn
+		while (remainingCards > 0) {
+
+			// check that the deck is not empty. if it is, reshuffle all but the last played card into a new deck
+			if (library.isEmpty()) {
+				reshuffleSpentDeck();
+				if (library.isEmpty()) {
+					System.out.println("Deck remains empty after reshuffling. Ending this madness.");
+					break;
+				}
 			}
+
+			// if the passive player has room in their hand, force them to draw. else, the active player must draw
+			if (passivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
+				passivePlayer.addCardToHand(library.removeLast());
+			} else if (pActivePlayer.getHandSize() < Const.MAX_HAND_SIZE){
+				pActivePlayer.addCardToHand(library.removeLast());
+			} else {
+				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
+				int penaltyPoints = remainingCards;
+				System.out.println("PENALTY POINTS assigned to " + pActivePlayer + " = " + penaltyPoints);
+				incrementScore(pActivePlayer, penaltyPoints);
+				if (isGameOver()) {
+					endGame();
+				}
+			}
+
+			// decrement the number of cards
+			remainingCards--;
 		}
 	}
 
-	public void executeAIPlayerTurn() {
-		AIPlayer player = (AIPlayer) pActivePlayer;
-		Card lastPlayedCard = playedCards.getLast();
-		int choice = player.decidePlayDraw(lastPlayedCard);
-		switch (choice) {
+	/* -------------------------------------------------------------- */
+	/* -------------------- SPECIAL CARD ACTIONS -------------------- */
+	/* -------------------------------------------------------------- */
 
-		// 1 = PLAY, 2 = DRAW, 3 = PASS
-		case 1:
-			Card cardChoice = player.decideCard(lastPlayedCard);
-			player.removeCardFromHand(cardChoice);
-			playedCards.add(cardChoice);
-			
-			break;
-		case 2:
-			break;
-		case 3:
-			break;
-		default:
-			System.out.println("Default case reached in executeAIPlayerTurn()");
-			return;
+	public void applySpecialAction(Card c) {
+		switch (c.getRank()) {
+		case Rank.ACE: playAce(); break;
+		case Rank.TWO: playTwo(); break;
+		case Rank.FOUR: playFour(); break;
+		case Rank.EIGHT: playEight(); break;
+		case Rank.QUEEN: playQueen(); break;
+		default: numTwosPlayed = 0; break;
 		}
 	}
+
+	public void playAce() {
+		numTwosPlayed = 0;
+		isTurnOrderReversed = !isTurnOrderReversed;
+	}
+
+	public void playTwo() {
+		numTwosPlayed++;
+		forceDraw(peekNextPlayer(), 2*numTwosPlayed);
+	}
+
+	public void playFour() {
+		numTwosPlayed = 0;
+		forceDraw(peekNextPlayer(), 4);
+	}
+
+	public void playEight() {
+		if (pActivePlayer.isHuman()) {
+			System.out.println("Eight has been played, selecting suit...");
+			String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
+			String chosenSuit = (String) JOptionPane.showInputDialog(
+				null, 
+				"Choose a suit:", 
+				"Suit Selection", 
+				JOptionPane.QUESTION_MESSAGE, 
+				null, 
+				suits, 
+				suits[0]
+			);
+
+			if (chosenSuit != null) {
+				Suit s = null;
+				switch (chosenSuit) {
+				case "Hearts": s = Suit.HEARTS; break;
+				case "Diamonds": s = Suit.DIAMONDS; break;
+				case "Clubs": s = Suit.CLUBS; break;
+				case "Spades": s = Suit.SPADES; break;
+				default: System.out.println("default reached while choosing suit for eight.");
+				}
+				System.out.println("Player chose: " + chosenSuit);
+				getLastPlayedCard().setSuit(s);
+			} else {
+				System.out.println("No suit selected. Keeping current suit.");
+			}
+		} else {
+			System.out.println("Suit of the 8 played before choice: " + getLastPlayedCard().getSuit());
+			Suit s = ((AIPlayer) pActivePlayer).chooseSuit();
+			System.out.println("Suit of the 8 played after choice: " + getLastPlayedCard().getSuit());
+			getLastPlayedCard().setSuit(s);
+		}
+
+	}
+
+	public void playQueen() {
+		numTwosPlayed = 0;
+		skipTurn();
+	}
+
+	/* ----------------------------------------------------------- */
+	/* -------------------- GAMESTATE METHODS -------------------- */
+	/* ----------------------------------------------------------- */
 
 	public boolean isRoundOver() {
 		for (Player p : players) {
@@ -221,6 +373,14 @@ public class GameModel {
 			}
 		}
 		return false;
+	}
+
+	public void tallyScores() {
+		for (Player p : players) {
+			int score = p.getScore();
+			score += p.getHandSize();
+			p.setScore(score);
+		}
 	}
 
 	public boolean isGameOver() {
@@ -266,6 +426,20 @@ public class GameModel {
 		return players.get(currentTurn);
 	}
 
+	public Player peekNextPlayer() {
+		int numPlayers = players.size();
+		int nextTurn = isTurnOrderReversed ? currentTurn - 1 : currentTurn + 1;
+
+		// Wrapping around when underflowing/overflowing max players
+		if (nextTurn < 0) {
+			nextTurn = numPlayers - 1;
+		} else if (nextTurn >= numPlayers) {
+			nextTurn = 0;
+		}
+
+		return players.get(nextTurn);
+	}
+
 	public void skipTurn() {
 		int numPlayers = players.size();
 		if (isTurnOrderReversed) {
@@ -279,95 +453,6 @@ public class GameModel {
 				currentTurn = 0;
 			}
 		}
-	}
-
-	public void drawCard() {
-		// Check that the library is not empty
-		if (!library.isEmpty()) {
-			if (pActivePlayer.getHandSize() < 12) {
-				Card drawnCard = library.removeLast();
-				pActivePlayer.addCardToHand(drawnCard);
-				System.out.println(drawnCard.toString());
-			} else {
-				System.out.println("Hand is full, cannot draw card");
-			}
-			System.out.println("Size of library is now " + library.size());
-		} else {
-			// TODO: Reshuffle all but the top card of the played cards back into the library
-		}
-
-	}
-
-	public void forceDraw(Player passivePlayer, int numCards) {
-		/* TODO: this method needs to take into consideration that if the player
-		 * being forced to draw cards has 12, the surplus goes to the player who
-		 * forced them to draw cards */
-
-		/* if the active player is forcing the passive player to draw x cards, 
-		 * and their hand can only hold y cards, the surplus is redirected to 
-		 * the active player.  */
-
-		// while there are still cards left to be drawn
-		while (numCards > 0) {
-
-			// check that the deck is not empty. if it is, reshuffle all but the last played card into a new deck
-			if (library.isEmpty()) {
-				handleEmptyDeck();
-			}
-
-			// if the passive player has room in their hand, force them to draw. else, the active player must draw
-			if (passivePlayer.getHandSize() < 12) {
-				passivePlayer.addCardToHand(library.removeLast());
-			} else  if (pActivePlayer.getHandSize() < 12){
-				pActivePlayer.addCardToHand(library.removeLast());
-			} else {
-				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
-				incrementScore(pActivePlayer, numCards);
-				if (isGameOver()) {
-					endGame();
-				}
-			}
-
-			// decrement the number of cards
-			numCards--;
-		}
-	}
-
-	public void handleEmptyDeck() {
-
-		// Defensive programming
-		if (playedCards.size() <= 1) {
-			System.out.println("handleEmptyDeck() attempted to reshuffle a deck with only 1 card.");
-			return;
-		}
-
-		/* Remove and reserve the top card of the played cards pile, then add all
-		 * remaining cards to the deck. Clear the played cards, then add back
-		 * the top card, then shuffle the deck. */
-		Card topCard = playedCards.removeLast();
-		library.addAll(playedCards);
-		playedCards.clear();
-		shuffleDeck();
-		playedCards.add(topCard);
-	}
-
-	public void resetGame() {
-		/* add the cards from the played cards pile back to the deck, then clear
-		 * the played cards pile. then remove all cards from all players hands and
-		 * add those back to the deck. then shuffle, and flip over the top card
-		 * into the play area */
-
-		Card topCard = playedCards.removeLast();
-		library.addAll(playedCards);
-		playedCards.clear();
-
-		for (Player p : players) {
-			library.addAll(p.getHand());
-			p.clearHand();
-		}
-
-		shuffleDeck();
-		playedCards.add(topCard);
 	}
 
 	public void endGame() {
@@ -388,14 +473,22 @@ public class GameModel {
 		}
 	}
 
+	/* ------------------------------------------------------------- */
+	/* -------------------- GETTERS AND SETTERS -------------------- */
+	/* ------------------------------------------------------------- */
+
 	public void incrementScore(Player player, int amt) {
 		player.setScore(player.getScore() + amt);
+	}
+
+	public Card getLastPlayedCard() {
+		return this.playedCards.getLast();
 	}
 
 	public Player getActivePlayer() {
 		return this.pActivePlayer;
 	}
-	
+
 	public void setActivePlayer(Player p) {
 		this.pActivePlayer = p;
 	}
@@ -412,20 +505,20 @@ public class GameModel {
 		return this.playedCards;
 	}
 
-	public boolean getIsPlayerTurnOver() {
-		return this.isPlayerTurnOver;
-	}
-
-	public void setIsPlayerTurnOver(boolean b) {
-		this.isPlayerTurnOver = b;
-	}
-	
 	public boolean isGameRunning() {
 		return this.isGameRunning;
 	}
 	
+	public void setTurnOrderReversed(boolean turnOrder) {
+		this.isTurnOrderReversed = turnOrder;
+	}
+
 	public void setGameRunning(boolean isGameRunning) {
 		this.isGameRunning = isGameRunning;
+	}
+
+	public Player getRoundWinner() {
+		return this.pRoundWinner;
 	}
 
 }

@@ -1,12 +1,9 @@
 package sysobj;
 
 import java.util.Random;
+import system.Const;
 
 public class AIPlayer extends Player {
-
-	public final int PLAY = 1;
-	public final int DRAW = 2;
-	public final int PASS = 3;
 
 	public AIPlayer() {
 
@@ -19,13 +16,14 @@ public class AIPlayer extends Player {
 	public int decidePlayDraw(Card lastPlayedCard) {
 		// store the result of hasLegalMove locally instead of calling it twice
 		boolean hasMove = hasLegalMove(lastPlayedCard);
-		if (!hasMove && getHandSize() >= 12) {
-			return PASS;
+		if (!hasMove && getHandSize() >= Const.MAX_HAND_SIZE) {
+			return Const.PASS;
 		}
-		else if (hasMove) {
-			return PLAY;
+		
+		if (hasMove) {
+			return Const.PLAY;
 		} else {
-			return DRAW;
+			return Const.DRAW;
 		}
 	}
 
@@ -37,10 +35,9 @@ public class AIPlayer extends Player {
 		for (Card c : this.hand) {
 			Rank rank = c.getRank();
 			if (rank == Rank.EIGHT) {
-				Suit suit = chooseSuit();
-				c.setSuit(suit);
 				return c;
 			}
+
 			if (rank == lastPlayedCard.getRank()
 					|| c.getSuit() == lastPlayedCard.getSuit()) {
 				return c;
