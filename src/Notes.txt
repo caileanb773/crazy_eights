@@ -2,9 +2,6 @@
 The turn is passed (at least for the player) when their hand size == 12. I drew
 a card, my hand size went to 12, and my turn was passed, even though I had a
 legal play.
--passing the turn automatically when the player has no moves and a full hand works, though
 
--need to make sure if the turn comes back around to me and i still have no legal moves, that my turn is skipped
-
--eight needs to refresh the view when i play it
-
+-when having cards redirected into your hand, actionlisteners are not added to them
+-penalty points dont cause the scoreboard to be updated

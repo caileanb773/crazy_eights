@@ -477,14 +477,14 @@ public class GameView extends JFrame {
 		}
 		splashFrame.dispose();
 	}
-	
+
 	public void resizeWindow(JPanel panel) {
 		JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(panel);
 		frame.pack();
 		frame.revalidate();
 		frame.repaint();
 	}
-	
+
 	public Font getMyFont(String path) {
 		File fontFile = new File(path);
 		Font myFont = new Font("Arial", Font.PLAIN, 12);
@@ -497,43 +497,13 @@ public class GameView extends JFrame {
 
 		return myFont;
 	}
-	
+
 	/* ----------------------------------------------------------- */
 	/* -------------------- REFRESHER METHODS -------------------- */
 	/* ----------------------------------------------------------- */
 
-//	public void refreshHand(Player player) {
-//		JPanel handPanel = null;
-//		int orientation = player.getOrientation();
-//		switch (orientation) {
-//		case Const.NORTH: handPanel = playerNorthCards; break;
-//		case Const.EAST: handPanel = playerEastCards; break;
-//		case Const.SOUTH: handPanel = playerSouthCards; break;
-//		case Const.WEST: handPanel = playerWestCards; break;
-//		default: System.out.println("Default case reached in GameView.refreshHand().");
-//		}
-//		handPanel.removeAll();
-//
-//		int handSize = player.getHandSize();
-//		for (int i = 0; i < handSize; i++) {
-//			Card card = player.getHand().get(i);
-//			if (i < handSize -1) {
-//				//draw a slice
-//				card.setIcon(card.fetchCardImg(Const.VERTICAL, Const.CARD_SLICE));
-//				handPanel.add(card);
-//			} else {
-//				// draw the whole card
-//				card.setIcon(card.fetchCardImg(Const.VERTICAL, Const.FULL_CARD));
-//				handPanel.add(card);
-//			}
-//		}
-//
-//		handPanel.revalidate();  
-//		handPanel.repaint();
-//	}
-
 	public void displayLastPlayedCard(Card card) {
-		ImageIcon playedCardImg = card.fetchCardImg(Const.VERTICAL, Const.FULL_CARD, Const.VISIBLE);
+		ImageIcon playedCardImg = card.fetchCardImg(false, false, false);
 		playedCards.setIcon(playedCardImg);
 		this.revalidate();
 		this.repaint();
@@ -542,57 +512,75 @@ public class GameView extends JFrame {
 	public void displayCardsInHand(Player p) {
 		int handSize = p.getHandSize();
 		int orientation = p.getOrientation();
+		JPanel handDisplay = null;
+
 		if (orientation < 0 || orientation > 3) {
 			System.out.println("Orientation was < 0 || > 3 in displayCardsInHand");
 			return;
 		}
-		JPanel handDisplay = null;
+
 		switch (orientation) {
-		case Const.NORTH: handDisplay = playerNorthCards; break;
-		case Const.EAST: handDisplay = playerEastCards; break;
-		case Const.SOUTH: handDisplay = playerSouthCards; break;
-		case Const.WEST: handDisplay = playerWestCards; break;
-		default: System.out.println("Default switch case reached in GameView.displayCardsInHand()");
+		case Const.NORTH:
+			handDisplay = playerNorthCards;
+			break;
+		case Const.EAST:
+			handDisplay = playerEastCards;
+			break;
+		case Const.SOUTH:
+			handDisplay = playerSouthCards;
+			break;
+		case Const.WEST:
+			handDisplay = playerWestCards;
+			break;
+		default:
+			System.out.println("Default switch case reached in GameView.displayCardsInHand()");
 		}
+
 		handDisplay.removeAll();
-		for (int i = 0; i < handSize; i++){
+
+		for (int i = 0; i < handSize; i++) {
 			Card card = p.getHand().get(i);
+			boolean isLastCard = (i == handSize - 1);
 
-			if (orientation == Const.NORTH) {
-				
-				if (i < handSize -1) {
-					card.setImage(card.fetchCardImg(false, true, false));
+			// Only South sees their cards
+			boolean isHidden = (orientation != Const.SOUTH); 
+
+			if (orientation == Const.NORTH || orientation == Const.SOUTH) {
+				// FlowLayout (Left-to-right)
+				if (!isLastCard) {
+
+					// Left slice for all but last card
+					card.fetchCardImg(false, true, isHidden);  
 				} else {
-					card.setImage(card.fetchCardImg(false, false, false));
+
+					// Full card for last card
+					card.fetchCardImg(false, false, isHidden); 
 				}
-				
+			} else if (orientation == Const.EAST || orientation == Const.WEST) {
+				// GridBagLayout (Top-to-bottom)
+				if (!isLastCard) {
+
+					// Top slice for all but last card
+					card.fetchCardImg(true, false, isHidden);  
+				} else {
+
+					// Full card for last card
+					card.fetchCardImg(false, false, isHidden); 
+				}
 			}
-			// Display card slices for all but the last card
-			if (i < handSize -1) {
-				if (orientation == Const.EAST || orientation == Const.WEST) {
-					// change the displayed card's image
-					card.setImage(card.fetchCardImg(true, true, false));
-					handDisplay.add(card, myGBC);
-				} else {
-					card.setImage(card.fetchCardImg(false, true, false));
-					handDisplay.add(card);
-				}
+
+			if (orientation == Const.EAST || orientation == Const.WEST) {
+				handDisplay.add(card, myGBC);
 			} else {
-				if (orientation == Const.EAST || orientation == Const.WEST) {
-					card.setImage(card.fetchCardImg(true, false, false));
-					handDisplay.add(card, myGBC);
-				} else {
-					card.setImage(card.fetchCardImg(false, false, false));
-					handDisplay.add(card);
-				}
+				handDisplay.add(card);
 			}
-
 		}
-		
+
 		handDisplay.revalidate();
 		handDisplay.repaint();
 		resizeWindow(handDisplay);
 	}
+
 
 	public void updatePlayerNames(Player p) {
 		String playerName = p.getName();
@@ -616,13 +604,13 @@ public class GameView extends JFrame {
 		default: System.out.println("Default case reached in GameView.updateScoreTable().");
 		}
 	}
-	
+
 	public void refreshScores(List<Player> players) {
 		for (Player p : players) {
 			updateScoreTable(p);
 		}
 	}
-	
+
 	/* -------------------------------------------------------- */
 	/* -------------------- DIALOGS/POPUPS -------------------- */
 	/* -------------------------------------------------------- */
@@ -643,15 +631,29 @@ public class GameView extends JFrame {
 
 		JOptionPane.showMessageDialog(this, sb.toString(), "Rules", JOptionPane.INFORMATION_MESSAGE);
 	}
-	
+
 	public void displayRoundWinner(Player player) {
 		JOptionPane.showMessageDialog(this, "The winner of the round is " + player.getName() + "!", "Round Winner", JOptionPane.INFORMATION_MESSAGE);
 	}
-	
+
+	public void displayGameWinner(Player player) {
+		JOptionPane.showMessageDialog(this, "The winner of the game is " + player.getName() + "!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	public String getPlayerName() {
+		String playerName = JOptionPane.showInputDialog(null, "Enter your name:", "Player Name", JOptionPane.QUESTION_MESSAGE);
+
+		if (playerName != null && !playerName.trim().isEmpty()) {
+			return playerName;
+		} else {
+			return "ALAN SMITHEE";
+		}
+	}
+
 	/* --------------------------------------------------- */
 	/* -------------------- LISTENERS -------------------- */
 	/* --------------------------------------------------- */
-	
+
 	public void setSinglePlayerListener(ActionListener listener) {
 		mSinglePlayer.addActionListener(listener);
 	}

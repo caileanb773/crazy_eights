@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.JOptionPane;
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -17,14 +16,15 @@ import sysobj.Suit;
 public class GameModel {
 
 	private List<Player> players;
-	private List<Card> library;
 	private List<String> aiNames;
+	private List<Card> library;
 	private List<Card> playedCards;
 	private Player pActivePlayer;
 	private Player pGameWinner;
 	private Player pRoundWinner;
 	private boolean isTurnOrderReversed;
 	private boolean isGameRunning;
+	private boolean cardRedirection;
 	private int currentTurn;
 	private int numTwosPlayed;
 
@@ -32,8 +32,8 @@ public class GameModel {
 
 	public GameModel() {
 	}
-
-	public GameModel(int numHumanPlayers) {
+	
+	public void initGame(int numHumanPlayers, String playerName) {
 		int numAIPlayers = 0;
 		players = new ArrayList<Player>();
 		pGameWinner = null;
@@ -55,17 +55,30 @@ public class GameModel {
 			System.out.println("GameModel constructor tried to set numAIPlayers to number other than 2/3.");
 		}
 
-		// TODO: This is horrible, refactor this
 		int orientation = 0;
 		// TODO: replace this with a method that returns a real player's name
-		Player humanPlayer = new Player("Me", orientation);
+		Player humanPlayer = new Player(playerName, orientation);
 		humanPlayer.setHuman(true);
 		players.add(humanPlayer);
 
 		for (int i = 0; i < numAIPlayers; i++) {
 			this.players.add(createCPUOpponent(++orientation));
 		}
-
+	}
+	
+	public void clearGame() {
+		cleanUpGameState();
+		setTurnOrderReversed(false);
+		currentTurn = 0;
+		numTwosPlayed = 0;
+		isGameRunning = false;
+		pGameWinner = null;
+		pRoundWinner = null;
+		aiNames.clear();
+		players.clear();
+		players = null;
+		playedCards = null;
+		aiNames = null;
 	}
 
 	/* ------------------------------------------------------------------- */
@@ -133,16 +146,18 @@ public class GameModel {
 
 	public void initRound() {
 
-		// New rounds always start from the host, regardless of winner
-		currentTurn = 0;
+		// New rounds always start from the host (south player), regardless of winner
+		currentTurn = Const.SOUTH;
 
 		// clear each player's hand, clear the library, clear the played cards
 		if (library != null) {
 			cleanUpGameState();
 		}
+		
+		// set up a new game. shuffle a new deck and deal cards to each player
 		instantiateDeck();
 		shuffleDeck();
-		dealCards(6);
+		dealCards(Const.DEFAULT_HAND_SIZE);
 
 		// Flip the top card of the library into the played cards zone
 		playedCards.add(library.removeLast());
@@ -180,7 +195,7 @@ public class GameModel {
 		if (!pActivePlayer.getHand().contains(card)) {
 			System.out.println("Player attempted to play a card that wasn't in their hand in GameModel.playCard().");
 			return false;
-		} else if (pActivePlayer.getHandSize() == 0){
+		} else if (pActivePlayer.getHandSize() == Const.HAND_EMPTY){
 			System.out.println("Player attempted to play a card from an empty hand in GameModel.playCard().");
 			return false;
 		} else if (card == null) {
@@ -190,9 +205,7 @@ public class GameModel {
 
 			// determine legality of play
 			if (isPlayLegal(card)) {
-				System.out.println(pActivePlayer.getName() + " is attempting to play a " + card.toString());
-
-				// apply special action here?
+				System.out.println(pActivePlayer.getName() + " is playing a " + card.toString());
 				pActivePlayer.removeCardFromHand(card);
 				playedCards.add(card);
 				applySpecialAction(card);
@@ -221,27 +234,14 @@ public class GameModel {
 		return false;
 	}
 
-	/*
-	 * public void executeAIPlayerTurn() { AIPlayer player = (AIPlayer)
-	 * pActivePlayer; Card lastPlayedCard = playedCards.getLast(); int choice =
-	 * player.decidePlayDraw(lastPlayedCard); switch (choice) {
-	 * 
-	 * // 1 = PLAY, 2 = DRAW, 3 = PASS case Const.PLAY: Card cardChoice =
-	 * player.decideCard(lastPlayedCard); player.removeCardFromHand(cardChoice);
-	 * playedCards.add(cardChoice);
-	 * 
-	 * break; case Const.DRAW: break; case 3: break; default:
-	 * System.out.println("Default case reached in executeAIPlayerTurn()"); return;
-	 * } }
-	 */
-
 	public void drawCard() {
-		// Check that the library is not empty
+		// Check that the library is not empty. If it is, reshuffle it
 		if (library.isEmpty()) {
 			System.out.println("Library was emptied. Reshuffling...");
 			reshuffleSpentDeck();
 		}
 
+		// DEBUG: this might be where that weird hand size bug is coming from
 		if (pActivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
 			Card drawnCard = library.removeLast();
 			pActivePlayer.addCardToHand(drawnCard);
@@ -273,7 +273,9 @@ public class GameModel {
 			if (passivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
 				passivePlayer.addCardToHand(library.removeLast());
 			} else if (pActivePlayer.getHandSize() < Const.MAX_HAND_SIZE){
+				System.out.println("CARDS REDIRECTED TO PLAYER WHO PLAYED CARD!");
 				pActivePlayer.addCardToHand(library.removeLast());
+				cardRedirection = true;
 			} else {
 				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
 				int penaltyPoints = remainingCards;
@@ -283,7 +285,6 @@ public class GameModel {
 					endGame();
 				}
 			}
-
 			// decrement the number of cards
 			remainingCards--;
 		}
@@ -293,7 +294,9 @@ public class GameModel {
 	/* -------------------- SPECIAL CARD ACTIONS -------------------- */
 	/* -------------------------------------------------------------- */
 
+	
 	public void applySpecialAction(Card c) {
+		// each card technically has a special action of "not being a two"
 		switch (c.getRank()) {
 		case Rank.ACE: playAce(); break;
 		case Rank.TWO: playTwo(); break;
@@ -321,39 +324,12 @@ public class GameModel {
 
 	public void playEight() {
 		if (pActivePlayer.isHuman()) {
-			System.out.println("Eight has been played, selecting suit...");
-			String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
-			String chosenSuit = (String) JOptionPane.showInputDialog(
-				null, 
-				"Choose a suit:", 
-				"Suit Selection", 
-				JOptionPane.QUESTION_MESSAGE, 
-				null, 
-				suits, 
-				suits[0]
-			);
-
-			if (chosenSuit != null) {
-				Suit s = null;
-				switch (chosenSuit) {
-				case "Hearts": s = Suit.HEARTS; break;
-				case "Diamonds": s = Suit.DIAMONDS; break;
-				case "Clubs": s = Suit.CLUBS; break;
-				case "Spades": s = Suit.SPADES; break;
-				default: System.out.println("default reached while choosing suit for eight.");
-				}
-				System.out.println("Player chose: " + chosenSuit);
-				getLastPlayedCard().setSuit(s);
-			} else {
-				System.out.println("No suit selected. Keeping current suit.");
-			}
+			// do nothing, handled by the controller
 		} else {
-			System.out.println("Suit of the 8 played before choice: " + getLastPlayedCard().getSuit());
 			Suit s = ((AIPlayer) pActivePlayer).chooseSuit();
-			System.out.println("Suit of the 8 played after choice: " + getLastPlayedCard().getSuit());
 			getLastPlayedCard().setSuit(s);
+			System.out.println(pActivePlayer.getName() + " decided to change the suit to " + s.toString());
 		}
-
 	}
 
 	public void playQueen() {
@@ -367,7 +343,7 @@ public class GameModel {
 
 	public boolean isRoundOver() {
 		for (Player p : players) {
-			if (p.getHandSize() == 0) {
+			if (p.getHandSize() == Const.HAND_EMPTY) {
 				pRoundWinner = p;
 				return true;
 			}
@@ -385,7 +361,8 @@ public class GameModel {
 
 	public boolean isGameOver() {
 		for (Player p : players) {
-			if (p.getScore() >= 50) {
+			if (p.getScore() >= Const.MAX_SCORE) {
+				endGame();
 				return true;
 			}
 		}
@@ -394,7 +371,9 @@ public class GameModel {
 
 	public Player getWinningPlayer() {
 		Player winningPlayer = null;
-		int minScore = 999;
+		
+		// arbitrarily large value
+		int minScore = Integer.MAX_VALUE;
 		for (Player p : players) {
 			int playerScore = p.getScore();
 			if (playerScore < minScore) {
@@ -457,11 +436,11 @@ public class GameModel {
 
 	public void endGame() {
 		pGameWinner = getWinningPlayer();
-
-		// send winner winner chicken dinner message to all players
-		// prompt for rematch potentially?
-
-		// last thing
+		
+		if (pGameWinner == null) {
+			System.out.println("getWinningPlayer() returned a null winner in endGame()");
+			return;
+		}
 		cleanUpGameState();
 	}
 
@@ -508,9 +487,13 @@ public class GameModel {
 	public boolean isGameRunning() {
 		return this.isGameRunning;
 	}
-	
+
 	public void setTurnOrderReversed(boolean turnOrder) {
 		this.isTurnOrderReversed = turnOrder;
+	}
+	
+	public void setTurn(int turn) {
+		this.currentTurn = turn;
 	}
 
 	public void setGameRunning(boolean isGameRunning) {
@@ -519,6 +502,18 @@ public class GameModel {
 
 	public Player getRoundWinner() {
 		return this.pRoundWinner;
+	}
+	
+	public Player getGameWinner() {
+		return this.pGameWinner;
+	}
+	
+	public void setCardRedirection(boolean tf) {
+		this.cardRedirection = tf;
+	}
+	
+	public boolean getCardRedirection() {
+		return this.cardRedirection;
 	}
 
 }

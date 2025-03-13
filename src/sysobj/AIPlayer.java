@@ -19,7 +19,7 @@ public class AIPlayer extends Player {
 		if (!hasMove && getHandSize() >= Const.MAX_HAND_SIZE) {
 			return Const.PASS;
 		}
-		
+
 		if (hasMove) {
 			return Const.PLAY;
 		} else {
@@ -46,7 +46,7 @@ public class AIPlayer extends Player {
 		System.out.println("AIPlayer.decideCard() returned null card selection.");
 		return null;
 	}
-	
+
 	public Suit chooseSuit() {
 		Random r = new Random();
 		int choice = r.nextInt(4);

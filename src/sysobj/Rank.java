@@ -6,7 +6,7 @@ package sysobj;
  * @since 23
  * */
 public enum Rank {
-	
+
 	ACE,
 	TWO,
 	THREE,

@@ -3,8 +3,6 @@ package sysobj;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-import system.Const;
-
 /**
  * Each card is composed of a suit, a rank, and a display image (if the card is
  * face up).
@@ -21,58 +19,100 @@ public class Card extends JButton {
 	public Card(Rank r, Suit s) {
 		this.rank = r;
 		this.suit = s;
+
+		// Default orientation for a card !top, !left, !hidden = F, F, T
 		this.cardImg = fetchCardImg(false,false,true);
 		this.setBorder(null);
 		this.setIcon(cardImg);
 	}
 
-	public ImageIcon fetchCardImg(boolean isTop, boolean isLeft, boolean isVisible) {
+	public ImageIcon fetchCardImg(boolean isTop, boolean isLeft, boolean isHidden) {
 		Rank r = this.rank;
 		Suit s = this.suit;
-		StringBuilder path = new StringBuilder();		
-		path.append("asset/card/");
-		
-		if (isTop) {
-			if (isLeft) {
-				path.append("tback");
+		StringBuilder path = new StringBuilder("asset/card/");
+
+		if (isHidden) {
+
+			// If hidden, determine the correct back image
+			if (isTop) {
+
+				// Top section hidden card
+				path.append("tback"); 
+			} else if (isLeft) {
+
+				// Left section hidden card
+				path.append("lback"); 
 			} else {
-				path.append("back");
+
+				// Full card hidden
+				path.append("back");  
 			}
 		} else {
-			if (isLeft) {
-				path.append("l");
-			}
-			switch (r) {
-			case ACE: path.append("A"); break;
-			case TWO: path.append("2"); break;
-			case THREE: path.append("3"); break;
-			case FOUR: path.append("4"); break;
-			case FIVE: path.append("5"); break;
-			case SIX: path.append("6"); break;
-			case SEVEN: path.append("7"); break;
-			case EIGHT: path.append("8"); break;
-			case NINE: path.append("9"); break;
-			case TEN: path.append("1"); break;
-			case JACK: path.append("J"); break;
-			case QUEEN: path.append("Q"); break;
-			case KING: path.append("K"); break;
-			default: System.out.println("Card.fetchCardImg() failed in switch case for Rank.");
-			return null;
-			}
 
-			switch (s) {
-			case CLUBS: path.append("c"); break;
-			case DIAMONDS: path.append("d"); break;
-			case HEARTS: path.append("h"); break;
-			case SPADES: path.append("s"); break;
-			default: System.out.println("Card.fetchCardImg() failed in switch case for Suit.");
-			return null;
+			// If visible, determine the appropriate front image
+			if (isLeft) {
+
+				// Left section prefix
+				path.append("l"); 
 			}
+			path.append(rankToString(r));
+			path.append(suitToString(s));
 		}
 
 		path.append(".png");
-
+		this.setIcon(new ImageIcon(path.toString()));
 		return new ImageIcon(path.toString());
+	}
+
+
+	public void getSouthCardImg() {
+
+	}
+
+	public void getWestCardImg() {
+
+	}
+
+	public void getNorthCardImg() {
+
+	}
+
+	public void getEastCardImg() {
+
+	}
+
+	public String suitToString(Suit s) {
+		switch (s) {
+		case CLUBS: return "c";
+		case DIAMONDS: return "d";
+		case HEARTS: return "h";
+		case SPADES: return "s";
+		default:
+			System.out.println("Default switch case reached while converting Rank to String.");
+			return null;
+		}
+	}
+
+	public String rankToString(Rank r) {
+		switch (r) {
+		case ACE: return "A";
+		case TWO: return "2";
+		case THREE: return "3";
+		case FOUR: return "4";
+		case FIVE: return "5"; 
+		case SIX: return "6"; 
+		case SEVEN: return "7"; 
+		case EIGHT: return "8"; 
+		case NINE: return "9"; 
+		case TEN: return "1"; 
+		case JACK: return "J"; 
+		case QUEEN: return "Q"; 
+		case KING: return "K";
+		default:
+			System.out.println("Default switch case reached while converting Rank to String.");
+			return null;
+		}
+
 	}
 
 	public void setSuit(Suit s) {
