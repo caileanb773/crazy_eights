@@ -3,8 +3,6 @@ package system;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import sysobj.AIPlayer;
 import sysobj.Card;
@@ -32,6 +30,7 @@ public class GameController {
 		view.setSoundToggleListener(new SoundToggleListener());
 		view.setMusicToggleListener(new MusicToggleListener());
 		view.setDrawFromLibraryListener(new CardDrawListener());
+		view.setChatSendButtonListener(new ChatSendButtonListener());
 	}
 
 	/* ----------------------------------------------------------- */
@@ -46,7 +45,7 @@ public class GameController {
 		model.initRound();
 		List<Card> playedCards = model.getPlayedCards();
 		for (Player p : model.getPlayers()) {
-			view.refreshScores(model.getPlayers());
+			view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 			view.updatePlayerNames(p);
 			view.displayCardsInHand(p);
 		}
@@ -60,7 +59,8 @@ public class GameController {
 
 		// Check game state, starting with the status of the current round
 		if (model.isRoundOver()) {
-
+			
+			endRound();
 			// Check the status of the game
 			if (model.isGameOver()) {
 				endGame();
@@ -68,7 +68,6 @@ public class GameController {
 			}
 
 			// The round is over, but the game is still going, so reset the round
-			endRound();
 			handleStartRound();
 			return;
 		}
@@ -89,6 +88,7 @@ public class GameController {
 			public void actionPerformed(ActionEvent e) {
 				decideAIPlayerMove(AIPlayer);
 				model.setActivePlayer(model.getNextPlayer());
+				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				processTurn();
 			}
 		});
@@ -136,18 +136,28 @@ public class GameController {
 			totalCards += p.getHandSize();
 		}
 
-		System.out.println("AT THE END OF THE ROUND, TOTAL CARDS IN PLAY WAS " + totalCards);
+		System.out.println("The round has ended, total cards from all zones: " + totalCards);
 
 		model.setTurnOrderReversed(false);
 		model.tallyScores();
 		List<Player> players = model.getPlayers();
-		view.refreshScores(players);
+		view.refreshScores(players, model.getTurnOrderDirection());
 		view.displayRoundWinner(model.getRoundWinner());
 	}
 	
 	public void endGame() {
+		view.setPackCalls(0);
 		view.displayGameWinner(model.getGameWinner());
+		view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
+		clearView();
 		model.clearGame();
+	}
+	
+	public void clearView() {
+		for (Player p: model.getPlayers()) {
+			view.displayCardsInHand(p);	
+		}
+		view.refreshView();
 	}
 
 	/* -------------------------------------------------------------- */
@@ -156,13 +166,13 @@ public class GameController {
 
 	public void handleCardActions(Card c) {
 		switch (c.getRank()) {
-		case Rank.TWO:
+		case TWO:
 			handleForcedDraw(2);
 			break;
-		case Rank.FOUR:
+		case FOUR:
 			handleForcedDraw(4);
 			break;
-		case Rank.EIGHT: 
+		case EIGHT: 
 			handleEight();
 			break;
 		default: break;
@@ -175,36 +185,19 @@ public class GameController {
 		if (passive.isHuman()) {
 			refreshListenersInPlayerHand(passive);
 		}
-		view.refreshScores(model.getPlayers());
+		view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 	}
 
 	public void handleEight() {
 		if (model.getActivePlayer().isHuman()) {
-			System.out.println("Eight has been played, selecting suit...");
-			String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
-			String chosenSuit = (String) JOptionPane.showInputDialog(
-					null, 
-					"Choose a suit:", 
-					"Suit Selection", 
-					JOptionPane.QUESTION_MESSAGE, 
-					null, 
-					suits, 
-					suits[0]
-					);
-
+			Suit startingSuit = model.getLastPlayedCard().getSuit();
+			Suit chosenSuit = view.dialogEightSuit();
 			if (chosenSuit != null) {
-				Suit s = null;
-				switch (chosenSuit) {
-				case "Hearts": s = Suit.HEARTS; break;
-				case "Diamonds": s = Suit.DIAMONDS; break;
-				case "Clubs": s = Suit.CLUBS; break;
-				case "Spades": s = Suit.SPADES; break;
-				default: System.out.println("default reached while choosing suit for eight.");
-				}
 				System.out.println("Player chose: " + chosenSuit);
-				model.getLastPlayedCard().setSuit(s);
+				model.getLastPlayedCard().setSuit(chosenSuit);
 			} else {
 				System.out.println("No suit selected. Keeping current suit.");
+				model.getLastPlayedCard().setSuit(startingSuit);
 			}
 		}
 		view.displayLastPlayedCard(model.getLastPlayedCard());
@@ -221,6 +214,7 @@ public class GameController {
 			} else {
 				model.drawCard();
 				view.displayCardsInHand(activePlayer);
+				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				refreshListenersInPlayerHand(activePlayer);
 
 				// if their hand is full after card draw, end their turn
@@ -246,6 +240,7 @@ public class GameController {
 				view.displayCardsInHand(activePlayer);
 				view.displayLastPlayedCard(c);
 				System.out.println(activePlayer.getName() + "'s turn is now over.");
+				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				model.setActivePlayer(model.getNextPlayer());
 				processTurn();
 			}
@@ -348,7 +343,14 @@ public class GameController {
 	private class MusicToggleListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
+			// Implement logic here
+		}
+	}
+	
+	private class ChatSendButtonListener implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			view.sendChatMsg(view.fetchMsg());
 		}
 	}
 

@@ -35,9 +35,12 @@ import javax.swing.JTextPane;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
 import sysobj.Card;
 import sysobj.Player;
+import sysobj.Suit;
 
 public class GameView extends JFrame {
 
@@ -67,6 +70,7 @@ public class GameView extends JFrame {
 	private JMenuItem mMultiPlayer;
 	private JButton playedCards;
 	private JButton library;
+	private JButton chatSend;
 
 	// Player scores
 	private JLabel playerNorthScore;
@@ -78,9 +82,13 @@ public class GameView extends JFrame {
 	private Font myFont;
 	private GridBagConstraints myGBC;
 	private static final long serialVersionUID = 1L;
+	private JTextPane chatDisplay;
+	private TextField chatInput;
+	private JLabel turnOrder;
 	private Locale language;
 	private ResourceBundle translatable;
 	private boolean isSoundOn;
+	private int packCalls;
 
 	public GameView() {
 		myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
@@ -88,6 +96,10 @@ public class GameView extends JFrame {
 		myGBC.gridx = 0;
 		myGBC.gridy = GridBagConstraints.RELATIVE;
 		myGBC.anchor = GridBagConstraints.CENTER;
+		packCalls = 0;
+		
+		//TODO: uncomment shit
+		drawSplash();
 		drawMainWindow();
 	}
 
@@ -149,6 +161,8 @@ public class GameView extends JFrame {
 		playerWestScore.setFont(myFont);
 		playerSouthScore = new JLabel();
 		playerSouthScore.setFont(myFont);
+		turnOrder = new JLabel();
+		turnOrder.setFont(myFont);
 
 		// Adding elements to score box
 		scoreBox.add(scoreTitle, myGBC);
@@ -156,6 +170,7 @@ public class GameView extends JFrame {
 		scoreBox.add(playerEastScore, myGBC);
 		scoreBox.add(playerWestScore, myGBC);
 		scoreBox.add(playerSouthScore, myGBC);
+		scoreBox.add(turnOrder, myGBC);
 
 		// Adding console to wrappers
 		scoreBoxWrapper.add(scoreBox);
@@ -177,12 +192,12 @@ public class GameView extends JFrame {
 		chatDisplayWrapper.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
 		// TextArea for chat input
-		TextField chatInput = new TextField(20);
+		chatInput = new TextField(20);
 		chatInput.setBackground(Color.WHITE);
 		chatInput.setFont(new Font("Times New Roman", Font.PLAIN, 12));
 
 		// JTextArea for chat display
-		JTextPane chatDisplay = new JTextPane();
+		chatDisplay = new JTextPane();
 		chatDisplay.setEditorKit(new StyledEditorKit());
 		chatDisplay.setEditable(false);
 		chatDisplay.setBorder(BorderFactory.createLineBorder(Const.BORDER_BLUE, 2));
@@ -191,7 +206,7 @@ public class GameView extends JFrame {
 		JScrollPane chatDisplayScroll = new JScrollPane(chatDisplay);
 
 		// Chat "send" button
-		JButton chatSend = new JButton("SEND");
+		chatSend = new JButton("SEND");
 		chatSend.setFocusable(false);
 		chatSend.setFont(myFont.deriveFont(12f));
 
@@ -444,7 +459,7 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 22
 	 */
-	public static void drawSplash() {
+	public void drawSplash() {
 
 		ImageIcon splashImage = new ImageIcon("asset/img/splash.png");
 		JLabel splashImageLabel = new JLabel(splashImage);
@@ -480,7 +495,12 @@ public class GameView extends JFrame {
 
 	public void resizeWindow(JPanel panel) {
 		JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(panel);
-		frame.pack();
+		
+		// Only pack the frame during initialization; once per play-zone
+		if (packCalls != 4) {
+			frame.pack();
+			packCalls++;
+		}			
 		frame.revalidate();
 		frame.repaint();
 	}
@@ -581,7 +601,6 @@ public class GameView extends JFrame {
 		resizeWindow(handDisplay);
 	}
 
-
 	public void updatePlayerNames(Player p) {
 		String playerName = p.getName();
 		int orientation = p.getOrientation();
@@ -595,7 +614,7 @@ public class GameView extends JFrame {
 	}
 
 	private void updateScoreTable(Player p) {
-		String labelText = p.getName() + " = " + p.getScore();
+		String labelText = p.getName() + " = " + p.getScore() + ", CARDS = " + p.getHandSize();
 		switch (p.getOrientation()) {
 		case Const.NORTH: playerNorthScore.setText(labelText); break;
 		case Const.EAST: playerEastScore.setText(labelText); break;
@@ -605,10 +624,35 @@ public class GameView extends JFrame {
 		}
 	}
 
-	public void refreshScores(List<Player> players) {
+	public void refreshScores(List<Player> players, boolean isReversed) {
 		for (Player p : players) {
 			updateScoreTable(p);
 		}
+		if (isReversed) {
+			turnOrder.setText("TURNS = COUNTERCLOCKWISE");
+		} else {
+			turnOrder.setText("TURNS = CLOCKWISE");
+		}
+	}
+	
+	// TODO check if this is needed, this seems bad
+	public void refreshView() {
+		playerSouthCards.revalidate();
+		playerSouthCards.repaint();
+		playerSouthName.revalidate();
+		playerSouthName.repaint();
+		playerWestCards.revalidate();
+		playerWestCards.repaint();
+		playerWestName.revalidate();
+		playerWestName.repaint();
+		playerNorthCards.revalidate();
+		playerNorthCards.repaint();
+		playerNorthName.revalidate();
+		playerNorthName.repaint();
+		playerWestCards.revalidate();
+		playerWestCards.repaint();
+		playerWestName.revalidate();
+		playerWestName.repaint();
 	}
 
 	/* -------------------------------------------------------- */
@@ -644,10 +688,59 @@ public class GameView extends JFrame {
 		String playerName = JOptionPane.showInputDialog(null, "Enter your name:", "Player Name", JOptionPane.QUESTION_MESSAGE);
 
 		if (playerName != null && !playerName.trim().isEmpty()) {
+			if (playerName.length() > 20) {
+				return "JOHN Q. LONGNAME";
+			}
 			return playerName;
 		} else {
 			return "ALAN SMITHEE";
 		}
+	}
+	
+	public Suit dialogEightSuit() {
+		Suit s = null;
+		System.out.println("Eight has been played, selecting suit...");
+		String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
+		String chosenSuit = (String) JOptionPane.showInputDialog(
+				null, 
+				"Choose a suit:", 
+				"Suit Selection", 
+				JOptionPane.QUESTION_MESSAGE, 
+				null, 
+				suits, 
+				suits[0]
+				);
+
+		if (chosenSuit != null) {
+			switch (chosenSuit) {
+			case "Hearts": s = Suit.HEARTS; break;
+			case "Diamonds": s = Suit.DIAMONDS; break;
+			case "Clubs": s = Suit.CLUBS; break;
+			case "Spades": s = Suit.SPADES; break;
+			default: System.out.println("default reached while choosing suit for eight.");
+			return null;
+			}
+		}
+		return s;
+	}
+	
+	public void sendChatMsg(String msg) {
+        StyledDocument doc = chatDisplay.getStyledDocument();
+        try {
+            doc.insertString(doc.getLength(), msg, null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+	}
+	
+	public String fetchMsg() {
+		String msg = "";
+		msg = chatInput.getText();
+		return msg;
+	}
+	
+	public void setPackCalls(int i) {
+		this.packCalls = i;
 	}
 
 	/* --------------------------------------------------- */
@@ -700,6 +793,10 @@ public class GameView extends JFrame {
 
 	public void setDrawFromLibraryListener(ActionListener listener) {
 		library.addActionListener(listener);
+	}
+	
+	public void setChatSendButtonListener(ActionListener listener) {
+		chatSend.addActionListener(listener);
 	}
 
 }

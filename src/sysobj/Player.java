@@ -3,6 +3,12 @@ package sysobj;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Players have a name, a hand of cards, a score, an orientation in the UI, and 
+ * a flag for if they are human or not.
+ * @author Cailean Bernard
+ * @since 23
+ */
 public class Player {
 
 	protected List<Card> hand;
@@ -11,10 +17,21 @@ public class Player {
 	protected int score;
 	protected int orientation;
 
+	/**
+	 * Default Player constructor.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public Player() {
-
 	}
 
+	/**
+	 * Parameterized constructor for Player.
+	 * @param n - The name for the player.
+	 * @param orientation - The orientation in the UI that the player is occupying.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public Player(String n, int orientation) {
 		this.name = n;
 		this.hand = new ArrayList<Card>();
@@ -23,6 +40,13 @@ public class Player {
 		this.isHuman = false;
 	}
 
+	/**
+	 * Adds a card to this player's hand. Checks that the hand is not full before
+	 * adding the card to it.
+	 * @param card - The card to be added to the hand.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void addCardToHand(Card card) {
 		if (this.getHandSize() >= 12) {
 			System.out.println("Player.addCardToHand() tried to add card to full hand.");
@@ -36,10 +60,25 @@ public class Player {
 		hand.add(card);
 	}
 
+	/**
+	 * Removes a card from the player's hand.
+	 * @param card - The card to remove.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void removeCardFromHand(Card card) {
 		this.hand.remove(card);
 	}
 
+	/**
+	 * Determines if the player has any legal moves based on the status of the 
+	 * last played card. This is used to force players into certain actions or to
+	 * force the player to pass the turn.
+	 * @param lastPlayedCard - The last card on the played cards pile.
+	 * @return true if they have a legal move, false if not.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public boolean hasLegalMove(Card lastPlayedCard) {
 		if (this.hand.isEmpty()) {
 			System.out.println("Player.hasLegalMove() found no cards in hand.");
@@ -61,10 +100,22 @@ public class Player {
 		return false;
 	}
 
+	/**
+	 * Returns the value of the "isHuman" flag.
+	 * @return the value of the flag. True = human, false = AI.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public boolean isHuman() {
 		return isHuman;
 	}
 
+	/**
+	 * Set the "isHuman" flag on a Player object.
+	 * @param isHuman - Whether the flag should be set to true or false.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setHuman(boolean isHuman) {
 		this.isHuman = isHuman;
 	}

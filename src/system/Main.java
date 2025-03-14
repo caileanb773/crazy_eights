@@ -28,14 +28,19 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		// TODO:
-		// get rid of magic numbers (some exist in controller, when ai player decides turn)
-		// go through and see if patch notes can be made smaller by conforming to original plan
-		// remove redundant method calls when possible
+		// TODO: go through and see if patch notes can be made smaller by conforming to original plan
+		// TODO: translation
+		// TODO: javadoc
+		// TODO: console messages
+		// TODO: change back max points constant and dealCards(1) to max hand size
+		// TODO: batch file
+		// TODO: check that game conforms to all rules laid out in a11
+		// TODO: check the invisible border on the east/west handpanels, could remove the pack check and just trim the bottom
+		// TODO: should the active player's name be in some other font to make it clear who's turn it is?
 
-		GameModel m = new GameModel();
-		GameView v = new GameView();
-		new GameController(m, v);
+		//GameModel m = new GameModel();
+		//GameView v = new GameView();
+		new GameController(new GameModel(), new GameView());
 
 	}
 

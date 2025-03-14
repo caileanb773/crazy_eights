@@ -1,7 +1,10 @@
 --- BUGS ---
-The turn is passed (at least for the player) when their hand size == 12. I drew
-a card, my hand size went to 12, and my turn was passed, even though I had a
-legal play.
 
--when having cards redirected into your hand, actionlisteners are not added to them
--penalty points dont cause the scoreboard to be updated
+
+--- CHANGES ---
+
+-cleanup() at the end of the game needs to:
+	-remove all cards from all zones (done)
+	-repaint all cards in all zones (lastPlayedCard persists)
+	-remove all names from all zones (names persist for some reason; where are they drawn?)
+	-set all the text for the scoreboard to be blank/remove the text entirely
