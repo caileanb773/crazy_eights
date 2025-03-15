@@ -120,41 +120,96 @@ public class Player {
 		this.isHuman = isHuman;
 	}
 
+	/**
+	 * Sets the player's name.
+	 * @param name The name to set.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * Sets the player's score.
+	 * @param scr The score to set.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setScore(int scr) {
 		this.score = scr;
 	}
 
+	/**
+	 * Retrieves the player's name.
+	 * @return The player's name.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public String getName() {
 		return this.name;
 	}
 
+	/**
+	 * Retrieves the player's score.
+	 * @return The player's score.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public int getScore() {
 		return this.score;
 	}
 
+	/**
+	 * Retrieves the player's hand of cards.
+	 * @return A list of cards in the player's hand.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public List<Card> getHand(){
 		return this.hand;
 	}
 
+	/**
+	 * Retrieves the size of the player's hand.
+	 * @return The number of cards in the player's hand.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public int getHandSize() {
 		return this.hand.size();
 	}
 
+	/**
+	 * Retrieves the player's orientation.
+	 * @return The orientation of the player.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public int getOrientation() {
 		return this.orientation;
 	}
 
+	/**
+	 * Clears the player's hand, removing all cards.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void clearHand() {
 		this.hand.clear();
 	}
 
+	/**
+	 * Returns a string representation of the player.
+	 * @return A string describing the player's name, score, orientation, and 
+	 * whether they are human.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	@Override
 	public String toString() {
 		return "Player " + this.name + " current score: " + this.score + " orientation: " + this.orientation + " isHuman: " + isHuman;
 	}
+
 
 }

@@ -85,21 +85,28 @@ public class GameView extends JFrame {
 	private JTextPane chatDisplay;
 	private TextField chatInput;
 	private JLabel turnOrder;
-	private Locale language;
-	private ResourceBundle translatable;
-	private boolean isSoundOn;
 	private int packCalls;
 
+	// Internationalization + all translatable elements (that aren't above)
+	private ResourceBundle translatable;
+	private Locale language;
+	private JLabel scoreTitle;
+	private JPanel chatBox;
+
 	public GameView() {
+		// Fetch my custom font from the assets folder
 		myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
 		myGBC = new GridBagConstraints();
 		myGBC.gridx = 0;
 		myGBC.gridy = GridBagConstraints.RELATIVE;
 		myGBC.anchor = GridBagConstraints.CENTER;
 		packCalls = 0;
-		
-		//TODO: uncomment shit
-		drawSplash();
+		language = Locale.ENGLISH;
+		translatable = ResourceBundle.getBundle("resources.MessagesBundle", language);
+
+		// This is where the application is drawn. First the splash, then main window
+		// TODO: don't forget to uncomment this
+		//drawSplash();
 		drawMainWindow();
 	}
 
@@ -148,7 +155,7 @@ public class GameView extends JFrame {
 		scoreBox.setLayout(new GridBagLayout());
 
 		// Score label
-		JLabel scoreTitle = new JLabel("--- SCORE ---");
+		scoreTitle = new JLabel(translatable.getString("score"));
 		scoreTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 		scoreTitle.setFont(myFont.deriveFont(14f));
 
@@ -206,12 +213,12 @@ public class GameView extends JFrame {
 		JScrollPane chatDisplayScroll = new JScrollPane(chatDisplay);
 
 		// Chat "send" button
-		chatSend = new JButton("SEND");
+		chatSend = new JButton(translatable.getString("send").toUpperCase());
 		chatSend.setFocusable(false);
 		chatSend.setFont(myFont.deriveFont(12f));
 
 		// ChatBox = chatInput + chatSend
-		JPanel chatBox = new JPanel();
+		chatBox = new JPanel();
 		chatBox.setBackground(Color.WHITE);
 		chatBox.setLayout(new FlowLayout());
 		chatBox.setBorder(BorderFactory.createLineBorder(Const.BORDER_BLUE, 2));
@@ -376,43 +383,43 @@ public class GameView extends JFrame {
 
 		/* ----- Main menu options ----- */
 
-		mHostGame = new JMenu("Start Game");
+		mHostGame = new JMenu(translatable.getString("startGame"));
 		mHostGame.setVisible(true);
 		mHostGame.setEnabled(true);
 
-		mJoinGame = new JMenu("Join Game");
+		mJoinGame = new JMenu(translatable.getString("joinGame"));
 		mJoinGame.setVisible(true);
 		mJoinGame.setEnabled(true);
 
-		mDisconnect = new JMenu("Disconnect");
+		mDisconnect = new JMenu(translatable.getString("disconnect"));
 		mDisconnect.setVisible(true);
 		mDisconnect.setEnabled(false);
 
-		mOptions = new JMenu("Options");
+		mOptions = new JMenu(translatable.getString("options"));
 		mOptions.setVisible(true);
 		mOptions.setEnabled(true);
 
-		mAbout = new JMenuItem("About");
+		mAbout = new JMenuItem(translatable.getString("rules"));
 		mAbout.setVisible(true);
 		mAbout.setEnabled(true);
 
 		/* ----- SUBMENUS ----- */
 
-		langSelect = new JMenu("Language");
-		langEng = new JMenuItem("English");
+		langSelect = new JMenu(translatable.getString("language"));
+		langEng = new JMenuItem(translatable.getString("english"));
 
 		/*
 		 * Game will start in English by default. The language the program is currently
 		 * running in will be disabled as a selection.
 		 */
 		langEng.setEnabled(false);
-		langFr = new JMenuItem("French");
-		soundToggle = new JCheckBoxMenuItem("Sound effects on/off");
+		langFr = new JMenuItem(translatable.getString("french"));
+		soundToggle = new JCheckBoxMenuItem(translatable.getString("soundEffects"));
 		soundToggle.setSelected(true);
-		musicToggle = new JCheckBoxMenuItem("Music on/off");
+		musicToggle = new JCheckBoxMenuItem(translatable.getString("music"));
 		musicToggle.setSelected(true);
-		mSinglePlayer = new JMenuItem("Single Player");
-		mMultiPlayer = new JMenuItem("Multiplayer");
+		mSinglePlayer = new JMenuItem(translatable.getString("singlePlayer"));
+		mMultiPlayer = new JMenuItem(translatable.getString("multiplayer"));
 
 		// Add submenu items
 		mOptions.add(soundToggle);
@@ -455,9 +462,8 @@ public class GameView extends JFrame {
 
 	/**
 	 * Draws a splash screen for 3 seconds.
-	 * 
 	 * @author Cailean Bernard
-	 * @since 22
+	 * @since 23
 	 */
 	public void drawSplash() {
 
@@ -493,9 +499,18 @@ public class GameView extends JFrame {
 		splashFrame.dispose();
 	}
 
+	/**
+	 * Resizes the Frame (after components have been added to it). When the app 
+	 * is launched, there are no cards in any zones, but when the game begins,
+	 * cards are added to all game zones of the UI. This refreshes the UI once for
+	 * each zone, and calls pack each time.
+	 * @param panel The panel that is contained by the frame as an ancestor.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void resizeWindow(JPanel panel) {
 		JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(panel);
-		
+
 		// Only pack the frame during initialization; once per play-zone
 		if (packCalls != 4) {
 			frame.pack();
@@ -505,6 +520,13 @@ public class GameView extends JFrame {
 		frame.repaint();
 	}
 
+	/**
+	 * Fetches my font from the asset folder.
+	 * @param path The path to the font.
+	 * @return The font to be used.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public Font getMyFont(String path) {
 		File fontFile = new File(path);
 		Font myFont = new Font("Arial", Font.PLAIN, 12);
@@ -522,18 +544,37 @@ public class GameView extends JFrame {
 	/* -------------------- REFRESHER METHODS -------------------- */
 	/* ----------------------------------------------------------- */
 
+	/**
+	 * Refresh the card image of the last card played to the played cards pile.
+	 * This card image changes many times during the course of a game.
+	 * @param card The last played card.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void displayLastPlayedCard(Card card) {
-		ImageIcon playedCardImg = card.fetchCardImg(false, false, false);
+		// Display the full card, face-up.
+		ImageIcon playedCardImg = card.fetchCardImg(Const.FULL_CARD, Const.FULL_CARD, Const.FULL_CARD);
 		playedCards.setIcon(playedCardImg);
 		this.revalidate();
 		this.repaint();
 	}
 
+	/**
+	 * Displays all cards in a player's hand. Fetches a player's orientation (as
+	 * this changes how the card is displayed) and clears the panel that holds 
+	 * their cards. Then, the hand is rebuilt. This is called whenever a card is
+	 * removed or added to the hand, as depending on if the card is the last card
+	 * in the hand, it is drawn differently.
+	 * @param p The player who's hand is to be redrawn.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void displayCardsInHand(Player p) {
 		int handSize = p.getHandSize();
 		int orientation = p.getOrientation();
 		JPanel handDisplay = null;
 
+		// Defensive programming for future versions of this game. Never reached in current state.
 		if (orientation < 0 || orientation > 3) {
 			System.out.println("Orientation was < 0 || > 3 in displayCardsInHand");
 			return;
@@ -601,6 +642,14 @@ public class GameView extends JFrame {
 		resizeWindow(handDisplay);
 	}
 
+	/**
+	 * Update the labels that represent each player's name, i.e. when the game
+	 * begins or when a new game is started and the name on the screen is no longer
+	 * relevant.
+	 * @param p The player who's name is to be displayed.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void updatePlayerNames(Player p) {
 		String playerName = p.getName();
 		int orientation = p.getOrientation();
@@ -613,8 +662,17 @@ public class GameView extends JFrame {
 		}
 	}
 
-	private void updateScoreTable(Player p) {
-		String labelText = p.getName() + " = " + p.getScore() + ", CARDS = " + p.getHandSize();
+	/**
+	 * Updates the status of a players score, as well as cards in hand, based on
+	 * their orientation.
+	 * @param p The player to update information for.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	private void updateScoreTable(Player p) {		
+		String labelText = p.getName() + " = " + p.getScore() + ", " +
+				translatable.getString("cards").toUpperCase() + " = " +
+				p.getHandSize();
 		switch (p.getOrientation()) {
 		case Const.NORTH: playerNorthScore.setText(labelText); break;
 		case Const.EAST: playerEastScore.setText(labelText); break;
@@ -624,18 +682,32 @@ public class GameView extends JFrame {
 		}
 	}
 
+	/**
+	 * Calls updateScoreTable for every player in the list of players, and also
+	 * displays the current turn order (clockwise or counterclockwise).
+	 * @param players The collection of players.
+	 * @param isReversed The current turn order.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void refreshScores(List<Player> players, boolean isReversed) {
+
 		for (Player p : players) {
 			updateScoreTable(p);
 		}
 		if (isReversed) {
-			turnOrder.setText("TURNS = COUNTERCLOCKWISE");
+			turnOrder.setText(translatable.getString("counterclockwise"));
 		} else {
-			turnOrder.setText("TURNS = CLOCKWISE");
+			turnOrder.setText(translatable.getString("clockwise"));
 		}
 	}
-	
-	// TODO check if this is needed, this seems bad
+
+	/**
+	 * Revalidates and repaints the name and cards of each player. Used during
+	 * testing to test different approaches for ending the game gracefully.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void refreshView() {
 		playerSouthCards.revalidate();
 		playerSouthCards.repaint();
@@ -659,10 +731,23 @@ public class GameView extends JFrame {
 	/* -------------------- DIALOGS/POPUPS -------------------- */
 	/* -------------------------------------------------------- */
 
+	/**
+	 * Displays the rules of the game as a dialog.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void displayAbout() {
+		String lang = "EN";
+		
+		if (language == Locale.ENGLISH) {
+			lang = "EN";
+		} else {
+			lang = "FR";
+		}
+		
 		String line;
 		StringBuilder sb = new StringBuilder();
-		try (BufferedReader r = new BufferedReader(new FileReader("asset/Rules.txt"))){
+		try (BufferedReader r = new BufferedReader(new FileReader("asset/Rules_" + lang + ".txt"))){
 			while ((line = r.readLine()) != null) {
 				sb.append(line);
 				sb.append("\n");
@@ -673,38 +758,76 @@ public class GameView extends JFrame {
 			System.out.println("IO stream interrupted.");
 		}
 
-		JOptionPane.showMessageDialog(this, sb.toString(), "Rules", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, sb.toString(), translatable.getString("rules"), JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/**
+	 * Displays the round winner in a dialog.
+	 * @param player The winner of the round.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void displayRoundWinner(Player player) {
-		JOptionPane.showMessageDialog(this, "The winner of the round is " + player.getName() + "!", "Round Winner", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, player.getName() + " " + translatable.getString("roundWinner") +"!",
+				translatable.getString("roundWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/**
+	 * Displays the game winner in a dialog.
+	 * @param player The winner of the game.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void displayGameWinner(Player player) {
-		JOptionPane.showMessageDialog(this, "The winner of the game is " + player.getName() + "!", "Game Over", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, player.getName() + " " + translatable.getString("gameWinner") + "!",
+				translatable.getString("gameWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/**
+	 * Getter for player name.
+	 * @return The player name.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public String getPlayerName() {
-		String playerName = JOptionPane.showInputDialog(null, "Enter your name:", "Player Name", JOptionPane.QUESTION_MESSAGE);
+		String playerName = JOptionPane.showInputDialog(null, translatable.getString("enterNameSinglePlayer"),
+				translatable.getString("playerName"), JOptionPane.QUESTION_MESSAGE);
 
 		if (playerName != null && !playerName.trim().isEmpty()) {
 			if (playerName.length() > 20) {
-				return "JOHN Q. LONGNAME";
+				
+				if (language == Locale.ENGLISH) {
+					return "JOHN Q. LONGNAME";
+				} else {
+					return "JEAN Q. NOMÀRALLONGE";
+				}
 			}
 			return playerName;
 		} else {
-			return "ALAN SMITHEE";
+			if (language == Locale.ENGLISH) {
+				return "BUDDY COLE";
+			} else {
+				return "MONSIEUR PIEDLOURDE";
+			}
 		}
 	}
-	
+
+	/**
+	 * Dialog box for suit selection whenever an 8 is played by a human player.
+	 * If the player clicks cancel or x, the suit defaults to the suit displayed
+	 * on the card as it was when in the hand of the player who played it.
+	 * @return The suit chosen.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public Suit dialogEightSuit() {
 		Suit s = null;
 		System.out.println("Eight has been played, selecting suit...");
 		String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
 		String chosenSuit = (String) JOptionPane.showInputDialog(
 				null, 
-				"Choose a suit:", 
-				"Suit Selection", 
+				translatable.getString("suitChoice"), 
+				translatable.getString("suitChoiceLabel"), 
 				JOptionPane.QUESTION_MESSAGE, 
 				null, 
 				suits, 
@@ -723,78 +846,225 @@ public class GameView extends JFrame {
 		}
 		return s;
 	}
-	
+
+	/**
+	 * Sends a chat message to the chat window.
+	 * @param msg The message to be displayed in the chat box.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void sendChatMsg(String msg) {
-        StyledDocument doc = chatDisplay.getStyledDocument();
-        try {
-            doc.insertString(doc.getLength(), msg, null);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
+		StyledDocument doc = chatDisplay.getStyledDocument();
+		try {
+			doc.insertString(doc.getLength(), msg, null);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
+	/**
+	 * Fetches the message from the chat input area so that it can be displayed
+	 * in the chat box.
+	 * @return The message to be displayed.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public String fetchMsg() {
 		String msg = "";
 		msg = chatInput.getText();
 		return msg;
 	}
-	
+
+	/**
+	 * Pack should only be called 4 times while instantiating the game, this
+	 * allows the flag to be reset.
+	 * @param i The number to reset the flag to.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setPackCalls(int i) {
 		this.packCalls = i;
+	}
+
+	/**
+	 * Sets the language to French by changing the Locale and the ResourceBundle.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void setLanguageToFrench() {
+		language = Locale.FRENCH;
+		translatable = ResourceBundle.getBundle("resources.MessagesBundle", language);
+		repaintTranslatable();
+	}
+
+	/**
+	 * Sets the language to English by changing the Locale and the ResourceBundle.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void setLanguageToEnglish() {
+		language = Locale.ENGLISH;
+		translatable = ResourceBundle.getBundle("resources.MessagesBundle", language);
+		repaintTranslatable();
+	}
+	
+	/**
+	 * Some elements require revalidating/repainting after translation. This method
+	 * just repaints all those elements.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void repaintTranslatable() {
+		chatSend.revalidate();
+		chatSend.repaint();
+		chatBox.revalidate();
+		chatBox.repaint();
 	}
 
 	/* --------------------------------------------------- */
 	/* -------------------- LISTENERS -------------------- */
 	/* --------------------------------------------------- */
 
+	/**
+	 * Sets the action listener for the single-player button.
+	 *
+	 * @param listener The action listener to handle single-player selection.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setSinglePlayerListener(ActionListener listener) {
 		mSinglePlayer.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the multiplayer button.
+	 *
+	 * @param listener The action listener to handle multiplayer selection.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setMultiPlayerListener(ActionListener listener) {
 		mMultiPlayer.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the host game button.
+	 *
+	 * @param listener The action listener to handle hosting a game.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setHostGameListener(ActionListener listener) {
 		mHostGame.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the join game button.
+	 *
+	 * @param listener The action listener to handle joining a game.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setJoinGameListener(ActionListener listener) {
 		mJoinGame.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the disconnect button.
+	 *
+	 * @param listener The action listener to handle disconnection.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setDisconnectListener(ActionListener listener) {
 		mDisconnect.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the options button.
+	 *
+	 * @param listener The action listener to open the options menu.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setOptionsListener(ActionListener listener) {
 		mOptions.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the about button.
+	 *
+	 * @param listener The action listener to display the about section.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setAboutListener(ActionListener listener) {
 		mAbout.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the English language selection.
+	 *
+	 * @param listener The action listener to switch language to English.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setLangEnglishListener(ActionListener listener) {
 		langEng.addActionListener(listener);
+		System.out.println("Translating elements to English...");
 	}
 
+	/**
+	 * Sets the action listener for the French language selection.
+	 *
+	 * @param listener The action listener to switch language to French.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setLangFrenchListener(ActionListener listener) {
 		langFr.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the sound toggle button.
+	 *
+	 * @param listener The action listener to toggle sound on/off.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setSoundToggleListener(ActionListener listener) {
 		soundToggle.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for the music toggle button.
+	 *
+	 * @param listener The action listener to toggle music on/off.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setMusicToggleListener(ActionListener listener) {
 		musicToggle.addActionListener(listener);
 	}
 
+	/**
+	 * Sets the action listener for drawing a card from the library.
+	 *
+	 * @param listener The action listener to draw a card.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setDrawFromLibraryListener(ActionListener listener) {
 		library.addActionListener(listener);
 	}
-	
+
+	/**
+	 * Sets the action listener for the chat send button.
+	 *
+	 * @param listener The action listener to send a chat message.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public void setChatSendButtonListener(ActionListener listener) {
 		chatSend.addActionListener(listener);
 	}

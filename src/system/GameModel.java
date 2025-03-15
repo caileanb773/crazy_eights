@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -667,9 +669,9 @@ public class GameModel {
 		}
 	}
 
-	/* ------------------------------------------------------------- */
-	/* -------------------- GETTERS AND SETTERS -------------------- */
-	/* ------------------------------------------------------------- */
+	/* ---------------------------------------------------------------- */
+	/* -------------------- GETTERS, SETTERS, MISC -------------------- */
+	/* ---------------------------------------------------------------- */
 
 	/**
 	 * Increments a players score by a passed amount.
