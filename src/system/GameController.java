@@ -31,7 +31,20 @@ public class GameController {
 	public GameController(GameModel m, GameView v) {
 		this.model = m;
 		this.view = v;
+	}
 
+	/* ----------------------------------------------------------- */
+	/* -------------------- GAME FLOW METHODS -------------------- */
+	/* ----------------------------------------------------------- */
+
+	/**
+	 * Runs the game by drawing the splash and then the main screen.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void run() {
+		view.drawSplash();
+		view.drawMainWindow();
 		view.setSinglePlayerListener(new SinglePlayerListener());
 		view.setMultiPlayerListener(new MultiPlayerListener());
 		view.setHostGameListener(new HostGameListener());
@@ -45,11 +58,7 @@ public class GameController {
 		view.setDrawFromLibraryListener(new CardDrawListener());
 		view.setChatSendButtonListener(new ChatSendButtonListener());
 	}
-
-	/* ----------------------------------------------------------- */
-	/* -------------------- GAME FLOW METHODS -------------------- */
-	/* ----------------------------------------------------------- */
-
+	
 	/**
 	 * Handles a new round starting. If the game is not running, then the round
 	 * is the first round played, and so special initialization must take place.
@@ -106,7 +115,7 @@ public class GameController {
 
 		// Check game state, starting with the status of the current round
 		if (model.isRoundOver()) {
-			
+
 			endRound();
 			// Check the status of the game
 			if (model.isGameOver()) {
@@ -143,6 +152,7 @@ public class GameController {
 			public void actionPerformed(ActionEvent e) {
 				decideAIPlayerMove(AIPlayer);
 				model.setActivePlayer(model.getNextPlayer());
+				view.sendChatMsg("currentTurn", AIPlayer.getName(), Const.CONSOLE_MSG);
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				processTurn();
 			}
@@ -215,7 +225,7 @@ public class GameController {
 		view.refreshScores(players, model.getTurnOrderDirection());
 		view.displayRoundWinner(model.getRoundWinner());
 	}
-	
+
 	/**
 	 * Handles the end of the game. Resets the pack call flag, displays the game
 	 * winner as a dialog, refreshes the scoreboard, clears each player's hand,
@@ -225,12 +235,13 @@ public class GameController {
 	 */
 	public void endGame() {
 		view.setPackCalls(0);
-		view.displayGameWinner(model.getGameWinner());
+		view.displayGameWinners(model.getGameWinners());
 		view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
+		model.cleanUpGameState();
 		clearView();
 		model.clearGame();
 	}
-	
+
 	/**
 	 * Called when cleaning up the game state. The cards in each player's hand
 	 * are refreshed (now showing none, at the end of a game) and refreshView()
@@ -300,10 +311,12 @@ public class GameController {
 	 * @since 23
 	 */
 	public void handleEight() {
-		if (model.getActivePlayer().isHuman()) {
+		Player activePlayer = model.getActivePlayer();
+		if (activePlayer.isHuman()) {
 			Suit startingSuit = model.getLastPlayedCard().getSuit();
 			Suit chosenSuit = view.dialogEightSuit();
 			if (chosenSuit != null) {
+				view.sendChatMsg("suitChanged", chosenSuit.name(), Const.CONSOLE_MSG);
 				System.out.println("Player chose: " + chosenSuit);
 				model.getLastPlayedCard().setSuit(chosenSuit);
 			} else {
@@ -333,6 +346,7 @@ public class GameController {
 		if (activePlayer.isHuman()) {
 			// block player from drawing a card if they have a legal play in hand
 			if (activePlayer.hasLegalMove(model.getLastPlayedCard())) {
+				view.sendChatMsg("cantDraw", "", Const.CONSOLE_MSG);
 				System.out.println("Cannot draw a card if you have a legal play in hand. Play a card instead.");
 			} else {
 				model.drawCard();
@@ -343,10 +357,12 @@ public class GameController {
 				// if their hand is full after card draw, end their turn
 				if (activePlayer.getHandSize() >= Const.MAX_HAND_SIZE) {
 					model.setActivePlayer(model.getNextPlayer());
+					view.sendChatMsg("currentTurn", activePlayer.getName(), Const.CONSOLE_MSG);
 					processTurn();
 				}
 			}
 		} else {
+			view.sendChatMsg("notYourTurn", "", Const.CONSOLE_MSG);
 			System.out.println("It is not your turn!");
 		}
 	}
@@ -364,6 +380,7 @@ public class GameController {
 	 */
 	public void handleCardPlay(Card c) {
 		Player activePlayer = model.getActivePlayer();
+		String activePlayerName = activePlayer.getName();
 
 		if (activePlayer.isHuman()) {
 			if (model.playCard(c)) {
@@ -373,12 +390,14 @@ public class GameController {
 				handleCardActions(c);
 				view.displayCardsInHand(activePlayer);
 				view.displayLastPlayedCard(c);
-				System.out.println(activePlayer.getName() + "'s turn is now over.");
+				System.out.println(activePlayerName + "'s turn is now over.");
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				model.setActivePlayer(model.getNextPlayer());
+				view.sendChatMsg("currentTurn", activePlayerName, Const.CONSOLE_MSG);
 				processTurn();
 			}
 		} else {
+			view.sendChatMsg("notYourTurn", "", Const.CONSOLE_MSG);
 			System.out.println("It is not your turn!");
 		}
 	}
@@ -410,26 +429,24 @@ public class GameController {
 	 * @since 23
 	 */
 	private class CardDrawListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        handleCardDraw();
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			handleCardDraw();
+		}
 	}
 
 	/**
 	 * Listens for a card play action and triggers the corresponding action with 
 	 * the card played.
-	 * @param e the action event that contains the source of the event (the card 
-	 * played)
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	private class CardPlayListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        Card c = (Card) e.getSource();
-	        handleCardPlay(c);
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Card c = (Card) e.getSource();
+			handleCardPlay(c);
+		}
 	}
 
 	/**
@@ -438,10 +455,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class SinglePlayerListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        handleStartRound();
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			handleStartRound();
+		}
 	}
 
 	/**
@@ -450,10 +467,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class MultiPlayerListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        // Implement logic here
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Implement logic here
+		}
 	}
 
 	/**
@@ -462,10 +479,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class HostGameListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        // Implement logic here
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Implement logic here
+		}
 	}
 
 	/**
@@ -474,10 +491,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class JoinGameListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        // Implement logic here
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Implement logic here
+		}
 	}
 
 	/**
@@ -486,10 +503,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class DisconnectListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        // Implement logic here
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Implement logic here
+		}
 	}
 
 	/**
@@ -498,10 +515,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class AboutListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        view.displayAbout();
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			view.displayRules();
+		}
 	}
 
 	/**
@@ -510,11 +527,11 @@ public class GameController {
 	 * @since 23
 	 */
 	private class LangEnglishListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	    	System.out.println("Translating elements to English...");
-	        view.setLanguageToEnglish();
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			System.out.println("Translating elements to English...");
+			view.setLanguageToEnglish();
+		}
 	}
 
 	/**
@@ -523,11 +540,11 @@ public class GameController {
 	 * @since 23
 	 */
 	private class LangFrenchListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        System.out.println("Translating elements to French...");
-	        view.setLanguageToFrench();
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			System.out.println("Translating elements to French...");
+			view.setLanguageToFrench();
+		}
 	}
 
 	/**
@@ -536,10 +553,10 @@ public class GameController {
 	 * @since 23
 	 */
 	private class SoundToggleListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        // Implement logic here
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Implement logic here
+		}
 	}
 
 	/**
@@ -548,24 +565,22 @@ public class GameController {
 	 * @since 23
 	 */
 	private class MusicToggleListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        // Implement logic here
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// Implement logic here
+		}
 	}
 
 	/**
 	 * Listens for the action to send a chat message and triggers the sending of the message.
-	 * @param e the action event triggered by the user sending a message
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	private class ChatSendButtonListener implements ActionListener {
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-	        view.sendChatMsg(view.fetchMsg());
-	    }
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			view.sendChatMsg("", view.fetchMsg(), Const.CHAT_MSG);
+		}
 	}
-
-
+	
 }

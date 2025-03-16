@@ -1,0 +1,85 @@
+--- Card Class ---
+
+-added ImageIcon to represent card's default image
+-added parameterized constructor(Rank, Suit)
+-added method fetchCardImg(). dynamically determines appropriate representation of card
+-added helper methods suitToString() and rankToString() which helps fetchCardImg() instead of having duplicate code
+-added setters, getters, and a toString()
+
+--- Player Class ---
+
+-added fields isHuman:boolean and orientation:int which are used to determine certain events in the model and view, respectively
+-added parameter "orientation" to Player parameterized constructor
+-moved drawCard() to the model
+-renamed addCard() and playCard() to addCardToHand() and removeCardFromHand()
+-added method clearHand() as helper method for the model during cleanup step
+-added setters, getters, and a toString()
+
+--- AIPlayer Class ---
+
+-changed parameterized constructor to match Player's new constructor
+-renamed method decideMove() to decideCard()
+-added method chooseSuit() as helper method for when the AI plays an eight
+
+--- GameController Class ---
+
+-added method run() which displays the splash, then the main application, then initializes all buttons
+-renamed method actionPerformed() to handleCardActions()
+-moved checkForWinner() to model
+-refactored startNewGame() to handleStartRound() and moved other functionality to model
+-removed joinMultiPlayerGame(), not needed yet
+-moved handleSoundToggle() to the view (part of UI)
+-moved changeLanguage() to the view (part of UI)
+-added method processTurn() from the model, as during the course of the turn the UI needs to be updated almost constantly
+
+--- GameModel Class ---
+
+-added fields aiNames, roundWinner, gameWinner, isGameRunning, cardRedirection, numTwosPlayed, currentTurn
+-removed method processTurn()
+-renamed method checkRoundOver() to isRoundOver()
+-renamed method checkWinCon() to isGameOver()
+-renamed method resetGame() to cleanupGameState()
+-renamed method checkPlay() to isPlayLegal()
+-added methods:
+	-initGame()
+	-clearGame()
+	-instantiateDeck()
+	-shuffleDeck()
+	-createCPUOpponent
+	-loadAINames()
+	-getAIPlayerName()
+	-reshuffleSpentDeck()
+	-playCard()
+	-drawCard()
+	-isPlayLegal()
+	-applySpecialAction()
+	-playAce(), playTwo(), playFour(), playEight, playQueen()
+	-tallyScores()
+	-getWinningPlayer()
+	-getNextPlayer()
+	-peekNextPlayer()
+	-getters and setters
+	
+--- GameView Class ---
+
+-moved all constants to a separate class
+-moved all JPanels and JLabels created in drawMainApplication() to class as fields (they need to be accessible to be updated)
+-renamed drawMainApplication() to drawMainWindow()
+-added constructor
+-added method drawSplash()
+-added method resizeWindow(), the window needs to be resized when a new game is created to fit all the cards on screen
+-added getter getMyFont() which retrieves the custom font used for various UI elements
+-renamed updatePlayedCard() to displayLastCardPlayed()
+-renamed updatePlayerArea() to displayCardsInHand()
+-added method updatePlayerNames()
+-renamed updateConsole() to updateScoreTable() and refreshScores()
+-added method refreshView()
+-added method displayRules()
+-added methods displayRoundWinner(), displayGameWinner()
+-added method getPlayerName() which prompts a player to enter their name and assigns default names in certain scenarios
+-added method dialogEightSuit() for choosing the suit when an eight is played
+-added method sendChatMsg()
+-added method fetchChatMsg()
+-added method setLanguageToEnglish() and setLanguageToFrench()
+-added method repaintTranslatable() which refreshes components that have text that is part of the UI
+-added getters and methods to set listeners

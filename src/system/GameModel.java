@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -26,16 +24,17 @@ public class GameModel {
 	private List<String> aiNames;
 	private List<Card> library;
 	private List<Card> playedCards;
-	private Player pActivePlayer;
-	private Player pGameWinner;
+	private Player activePlayer;
+	private List<Player> pGameWinner;
 	private Player pRoundWinner;
 	private boolean isTurnOrderReversed;
 	private boolean isGameRunning;
 	private boolean cardRedirection;
 	private int currentTurn;
 	private int numTwosPlayed;
+	
 
-	/* -------------------- CONSTRUCTORS -------------------- */
+	/* -------------------- Constructors -------------------- */
 
 	/**
 	 * Default constructor for GameModel
@@ -76,7 +75,6 @@ public class GameModel {
 		}
 
 		int orientation = 0;
-		// TODO: replace this with a method that returns a real player's name
 		Player humanPlayer = new Player(playerName, orientation);
 		humanPlayer.setHuman(true);
 		players.add(humanPlayer);
@@ -107,6 +105,7 @@ public class GameModel {
 		playedCards = null;
 		aiNames = null;
 	}
+	
 
 	/* ------------------------------------------------------------------- */
 	/* -------------------- CARD MANIPULATION METHODS -------------------- */
@@ -229,8 +228,8 @@ public class GameModel {
 		instantiateDeck();
 		shuffleDeck();
 
-		//dealCards(Const.DEFAULT_HAND_SIZE);
-		dealCards(1);
+		// Debugging the end-game can be done by setting the cards dealt to 1, or 0
+		dealCards(Const.DEFAULT_HAND_SIZE);
 
 		// Flip the top card of the library into the played cards zone
 		playedCards.add(library.removeLast());
@@ -241,7 +240,7 @@ public class GameModel {
 		}
 
 		// Set the active player to the current turn
-		pActivePlayer = players.get(currentTurn);
+		activePlayer = players.get(currentTurn);
 		isTurnOrderReversed = false;
 		isGameRunning = true;
 	}
@@ -270,10 +269,11 @@ public class GameModel {
 		shuffleDeck();
 		playedCards.add(topCard);
 	}
+	
 
-	/* -------------------------------------------------------- */
-	/* -------------------- PLAYER ACTIONS -------------------- */
-	/* -------------------------------------------------------- */
+	/* ------------------------------------------------------------------ */
+	/* ------------------------- PLAYER ACTIONS ------------------------- */
+	/* ------------------------------------------------------------------ */
 
 	/**
 	 * Attempts to play a card onto the last card of the played cards zone. Only
@@ -285,10 +285,10 @@ public class GameModel {
 	 * */
 	public boolean playCard(Card card) {
 		// defensive programming, unlikely scenarios
-		if (!pActivePlayer.getHand().contains(card)) {
+		if (!activePlayer.getHand().contains(card)) {
 			System.out.println("Player attempted to play a card that wasn't in their hand in GameModel.playCard().");
 			return false;
-		} else if (pActivePlayer.getHandSize() == Const.HAND_EMPTY){
+		} else if (activePlayer.getHandSize() == Const.HAND_EMPTY){
 			System.out.println("Player attempted to play a card from an empty hand in GameModel.playCard().");
 			return false;
 		} else if (card == null) {
@@ -298,8 +298,8 @@ public class GameModel {
 
 			// determine legality of play
 			if (isPlayLegal(card)) {
-				System.out.println(pActivePlayer.getName() + " is playing a " + card.toString());
-				pActivePlayer.removeCardFromHand(card);
+				System.out.println(activePlayer.getName() + " is playing a " + card.toString());
+				activePlayer.removeCardFromHand(card);
 				playedCards.add(card);
 				applySpecialAction(card);
 				return true;
@@ -351,10 +351,10 @@ public class GameModel {
 		}
 
 		// DEBUG: this might be where that weird hand size bug is coming from
-		if (pActivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
+		if (activePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
 			Card drawnCard = library.removeLast();
-			pActivePlayer.addCardToHand(drawnCard);
-			System.out.println(pActivePlayer.getName() + " drew a " + drawnCard.toString());
+			activePlayer.addCardToHand(drawnCard);
+			System.out.println(activePlayer.getName() + " drew a " + drawnCard.toString());
 		} else {
 			System.out.println("Hand is full, cannot draw card");
 		}
@@ -395,15 +395,15 @@ public class GameModel {
 			// if the passive player has room in their hand, force them to draw. else, the active player must draw
 			if (passivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
 				passivePlayer.addCardToHand(library.removeLast());
-			} else if (pActivePlayer.getHandSize() < Const.MAX_HAND_SIZE){
+			} else if (activePlayer.getHandSize() < Const.MAX_HAND_SIZE){
 				System.out.println("CARDS REDIRECTED TO PLAYER WHO PLAYED CARD!");
-				pActivePlayer.addCardToHand(library.removeLast());
+				activePlayer.addCardToHand(library.removeLast());
 				cardRedirection = true;
 			} else {
 				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
 				int penaltyPoints = remainingCards;
-				System.out.println("PENALTY POINTS assigned to " + pActivePlayer + " = " + penaltyPoints);
-				incrementScore(pActivePlayer, penaltyPoints);
+				System.out.println("PENALTY POINTS assigned to " + activePlayer + " = " + penaltyPoints);
+				incrementScore(activePlayer, penaltyPoints);
 				if (isGameOver()) {
 					endGame();
 				}
@@ -412,6 +412,7 @@ public class GameModel {
 			remainingCards--;
 		}
 	}
+	
 
 	/* -------------------------------------------------------------- */
 	/* -------------------- SPECIAL CARD ACTIONS -------------------- */
@@ -475,12 +476,12 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playEight() {
-		if (pActivePlayer.isHuman()) {
+		if (activePlayer.isHuman()) {
 			// do nothing, handled by the controller
 		} else {
-			Suit s = ((AIPlayer) pActivePlayer).chooseSuit();
+			Suit s = ((AIPlayer) activePlayer).chooseSuit();
 			getLastPlayedCard().setSuit(s);
-			System.out.println(pActivePlayer.getName() + " decided to change the suit to " + s.toString());
+			System.out.println(activePlayer.getName() + " decided to change the suit to " + s.toString());
 		}
 	}
 
@@ -493,10 +494,11 @@ public class GameModel {
 		numTwosPlayed = 0;
 		skipTurn();
 	}
+	
 
-	/* ----------------------------------------------------------- */
-	/* -------------------- GAMESTATE METHODS -------------------- */
-	/* ----------------------------------------------------------- */
+	/* --------------------------------------------------------------------- */
+	/* ------------------------- GAMESTATE METHODS ------------------------- */
+	/* --------------------------------------------------------------------- */
 
 	/**
 	 * Checks if the current round is over; the round is over when any one player
@@ -550,25 +552,30 @@ public class GameModel {
 
 	/**
 	 * Determine who the winning player is. At the end of the game, the winning
-	 * player is the one with the least points.
-	 * @return Player - The winning player.
+	 * player is the one with the least points. If there are multiple players with
+	 * @return Player - The winning players. If only one, the list will only have
+	 * one element.
 	 * @author Cailean Bernard
 	 * @since 23
 	 * */
-	public Player getWinningPlayer() {
-		Player winningPlayer = null;
-
-		// arbitrarily large value
+	public List<Player> getWinningPlayers() {
+		List<Player> winningPlayers = new ArrayList<>();
 		int minScore = Integer.MAX_VALUE;
+
 		for (Player p : players) {
 			int playerScore = p.getScore();
+
 			if (playerScore < minScore) {
+				// New lowest score found, reset the list
 				minScore = playerScore;
-				winningPlayer = p;
+				winningPlayers.clear();
+				winningPlayers.add(p);
+			} else if (playerScore == minScore) {
+				// Tie: add the winning players to the list
+				winningPlayers.add(p);
 			}
 		}
-		return winningPlayer;
-		// TODO: handle edge cases where there are 2 winners?
+		return winningPlayers;
 	}
 
 	/**
@@ -601,7 +608,7 @@ public class GameModel {
 
 	/**
 	 * Looks at the next player without changing the turn order.
-	 * @param Player - The next player in the turn order.
+	 * @return the next player in the turn order
 	 * @author Cailean Bernard
 	 * @since 23
 	 * */
@@ -647,7 +654,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void endGame() {
-		pGameWinner = getWinningPlayer();
+		pGameWinner = getWinningPlayers();
 		isGameRunning = false;
 		if (pGameWinner == null) {
 			System.out.println("getWinningPlayer() returned a null winner in endGame()");
@@ -668,6 +675,7 @@ public class GameModel {
 			p.clearHand();
 		}
 	}
+	
 
 	/* ---------------------------------------------------------------- */
 	/* -------------------- GETTERS, SETTERS, MISC -------------------- */
@@ -701,7 +709,7 @@ public class GameModel {
 	 * @since 23
 	 */
 	public Player getActivePlayer() {
-		return this.pActivePlayer;
+		return this.activePlayer;
 	}
 
 	/**
@@ -711,7 +719,7 @@ public class GameModel {
 	 * @since 23
 	 */
 	public void setActivePlayer(Player p) {
-		this.pActivePlayer = p;
+		this.activePlayer = p;
 	}
 
 	/**
@@ -808,11 +816,11 @@ public class GameModel {
 
 	/**
 	 * Getter for the winner of the current game.
-	 * @return the winner of the current game as a Player object.
+	 * @return the winners of the current game as a List of Player objects.
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public Player getGameWinner() {
+	public List<Player> getGameWinners() {
 		return this.pGameWinner;
 	}
 

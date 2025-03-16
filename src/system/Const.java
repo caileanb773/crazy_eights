@@ -12,10 +12,10 @@ import java.awt.Color;
  * @since 23
  */
 public class Const {
-	
+
 	/**
 	 * The background color pink.
-	 * Default: (255, 241, 241)
+	 * Default: @value (255, 241, 241)
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -23,7 +23,7 @@ public class Const {
 
 	/**
 	 * The background color blue.
-	 * Default: (33, 65, 202)
+	 * Default: @value (33, 65, 202)
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -31,7 +31,7 @@ public class Const {
 
 	/**
 	 * The border color blue.
-	 * Default: (136, 200, 238)
+	 * Default: @value (136, 200, 238)
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -39,7 +39,7 @@ public class Const {
 
 	/**
 	 * Represents vertical orientation.
-	 * Default: {@value VERTICAL}
+	 * Default: @value false
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -47,7 +47,7 @@ public class Const {
 
 	/**
 	 * Represents horizontal orientation.
-	 * Default: {@value HORIZONTAL}
+	 * Default: @value true
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -55,7 +55,7 @@ public class Const {
 
 	/**
 	 * Represents visible state (card front).
-	 * Default: {@value VISIBLE}
+	 * Default: @value true
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -63,7 +63,7 @@ public class Const {
 
 	/**
 	 * Represents hidden state (card back).
-	 * Default: {@value HIDDEN}
+	 * Default: @value false
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -71,7 +71,7 @@ public class Const {
 
 	/**
 	 * Represents a sliced card view.
-	 * Default: {@value CARD_SLICE}
+	 * Default: @value true
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -79,7 +79,7 @@ public class Const {
 
 	/**
 	 * Represents a full card view.
-	 * Default: {@value FULL_CARD}
+	 * Default: @value false
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -87,7 +87,7 @@ public class Const {
 
 	/**
 	 * The default number of cards in hand.
-	 * Default: {@value DEFAULT_HAND_SIZE}
+	 * Default: @value 6
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -95,7 +95,7 @@ public class Const {
 
 	/**
 	 * The maximum number of cards in hand.
-	 * Default: {@value MAX_HAND_SIZE}
+	 * Default: @value 12
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -103,7 +103,7 @@ public class Const {
 
 	/**
 	 * Represents single-player mode.
-	 * Default: {@value SINGLE_PLAYER}
+	 * Default: @value 1
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -111,7 +111,7 @@ public class Const {
 
 	/**
 	 * Represents an empty hand.
-	 * Default: {@value HAND_EMPTY}
+	 * Default: @value 0
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -119,7 +119,7 @@ public class Const {
 
 	/**
 	 * The maximum possible score.
-	 * Default: {@value MAX_SCORE}
+	 * Default: @value 50
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -127,7 +127,7 @@ public class Const {
 
 	/**
 	 * Represents the South position.
-	 * Default: {@value SOUTH}
+	 * Default: @value 0
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -135,7 +135,7 @@ public class Const {
 
 	/**
 	 * Represents the West position.
-	 * Default: {@value WEST}
+	 * Default: @value 1
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -143,7 +143,7 @@ public class Const {
 
 	/**
 	 * Represents the North position.
-	 * Default: {@value NORTH}
+	 * Default: @value 2
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -151,7 +151,7 @@ public class Const {
 
 	/**
 	 * Represents the East position.
-	 * Default: {@value EAST}
+	 * Default: @value 3
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -159,7 +159,7 @@ public class Const {
 
 	/**
 	 * Represents the play action.
-	 * Default: {@value PLAY}
+	 * Default: @value 1
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -167,7 +167,7 @@ public class Const {
 
 	/**
 	 * Represents the draw action.
-	 * Default: {@value DRAW}
+	 * Default: @value 2
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
@@ -175,11 +175,24 @@ public class Const {
 
 	/**
 	 * Represents the pass action.
-	 * Default: {@value PASS}
+	 * Default: @value 3
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public static final int PASS = 3;
+	
+	/**
+	 * Represents a message being sent to the chat window as a console message.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public static final boolean CONSOLE_MSG = true;
 
+	/**
+	 * Represents a message being sent to the chat window as a chat message.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public static final boolean CHAT_MSG = false;
 
 }

@@ -13,11 +13,23 @@ public class Card extends JButton {
 
 	/**
 	 * SerialVersionID.
-	 * @value 1L
+	 * Default: @value 1L
 	 */
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Card rank
+	 */
 	private final Rank rank;
+
+	/**
+	 * Card suit
+	 */
 	private Suit suit;
+
+	/**
+	 * Card image
+	 */
 	private ImageIcon cardImg;
 
 	/**
@@ -27,16 +39,11 @@ public class Card extends JButton {
 	 * @param r The rank of the card.
 	 * @param s The suit of the card.
 	 * @author Cailean Bernard
- * @since 23
+	 * @since 23
 	 */
 	public Card(Rank r, Suit s) {
 		this.rank = r;
 		this.suit = s;
-
-		// Default orientation for a card !top, !left, !hidden = F, F, T
-		this.cardImg = fetchCardImg(false,false,true);
-		this.setBorder(null);
-		this.setIcon(cardImg);
 	}
 
 	/**
@@ -81,7 +88,7 @@ public class Card extends JButton {
 				// Left section prefix
 				path.append("l"); 
 			}
-			
+
 			// Get the rank and suit of the card as part of the path
 			path.append(rankToString(r));
 			path.append(suitToString(s));

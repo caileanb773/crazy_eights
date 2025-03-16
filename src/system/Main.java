@@ -28,17 +28,10 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		// TODO: go through and see if patch notes can be made smaller by conforming to original plan
-		// TODO: translation
-		// TODO: console messages
-		// TODO: change back max points constant and dealCards(1) to max hand size
-		// TODO: batch file
-		// TODO: check that game conforms to all rules laid out in a11
-		// TODO: check the invisible border on the east/west handpanels, could remove the pack check and just trim the bottom
-		// TODO: should the active player's name be in some other font to make it clear who's turn it is?
-
-		new GameController(new GameModel(), new GameView());
-
+		GameModel model = new GameModel();
+		GameView view = new GameView();
+		GameController game = new GameController(model, view);
+		game.run();
 	}
 
 }

@@ -1,15 +1,10 @@
-Nate
+Nathaniel
 Claire
-David
-Ruth
-Keith
-Brenda
 Gabriel
-Lisa
 Federico
 Maggie
 Billy
-Dale
+Dale Cooper
 Laura
 Bob
 Audrey
@@ -23,8 +18,8 @@ Harry
 Josie
 Hawk
 Lucy
-Windom
-Ronette
 Andy
 Dana
+Scully
 Fox
+Mulder

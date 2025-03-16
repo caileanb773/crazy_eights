@@ -35,67 +35,247 @@ import javax.swing.JTextPane;
 import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
 import sysobj.Card;
 import sysobj.Player;
 import sysobj.Suit;
 
+/**
+ * The View, where all UI elements are generated and drawn.
+ * @author Cailean Bernard
+ * @since 23
+ */
 public class GameView extends JFrame {
 
-	// Player hands and names
+	/* --------------------------------------------------------- */
+	/* ------------------------ FIELDS ------------------------- */
+	/* --------------------------------------------------------- */
+
+	/* ---------- Player Information ---------- */
+
+	/**
+	 * Panel that holds the cards for the player in the the North zone of the UI
+	 */
 	private JPanel playerNorthCards;
+
+	/**
+	 * Label for the North player's name
+	 */
 	private JLabel playerNorthName;
+
+	/**
+	 * Panel that holds the cards for the player in the the East zone of the UI
+	 */
 	private JPanel playerEastCards;
+
+	/**
+	 * Label for the East player's name
+	 */
 	private JLabel playerEastName;
+
+	/**
+	 * Panel that holds the cards for the player in the the West zone of the UI
+	 */
 	private JPanel playerWestCards;
+
+	/**
+	 * Label for the West player's name
+	 */
 	private JLabel playerWestName;
+
+	/**
+	 * Panel that holds the cards for the player in the the South zone of the UI
+	 */
 	private JPanel playerSouthCards;
+
+	/**
+	 * Label for the South player's name
+	 */
 	private JLabel playerSouthName;
 
-	// GUI Menu buttons
-	private JMenuBar mBar;
-	private JMenu mHostGame;
-	private JMenu mJoinGame;
-	private JMenu mDisconnect;
-	private JMenu mOptions;
-	private JMenuItem mAbout;
-	private JMenu langSelect;
-	private JMenuItem langEng;
-	private JMenuItem langFr;
-	private JCheckBoxMenuItem soundToggle;
-	private JCheckBoxMenuItem musicToggle;
-	private JMenuItem mSinglePlayer;
-	private JMenuItem mMultiPlayer;
-	private JButton playedCards;
-	private JButton library;
-	private JButton chatSend;
-
-	// Player scores
+	/**
+	 * Score for North player
+	 */
 	private JLabel playerNorthScore;
+
+	/**
+	 * Score for East player
+	 */
 	private JLabel playerEastScore;
+
+	/**
+	 * Score for West player
+	 */
 	private JLabel playerWestScore;
+
+	/**
+	 * Score for South player
+	 */
 	private JLabel playerSouthScore;
 
-	// Other stuff
-	private Font myFont;
-	private GridBagConstraints myGBC;
+
+	/* ---------- GUI Menu Buttons ---------- */
+
+	/**
+	 * Menu bar
+	 */
+	private JMenuBar mBar;
+
+	/**
+	 * Opens submenu for starting singleplayer/multiplayer game
+	 */
+	private JMenu mStartGame;
+
+	/**
+	 * Joins a multiplayer game that is currently running
+	 */
+	private JMenu mJoinGame;
+
+	/**
+	 * Disconnects from a running multiplayer game
+	 */
+	private JMenu mDisconnect;
+
+	/**
+	 * Submenu that contains various options
+	 */
+	private JMenu mOptions;
+
+	/**
+	 * Opens the rules
+	 */
+	private JMenuItem mRules;
+
+	/**
+	 * Submenu for language selection
+	 */
+	private JMenu langSelect;
+
+	/**
+	 * Changes language to English
+	 */
+	private JMenuItem langEng;
+
+	/**
+	 * Changes language to French
+	 */
+	private JMenuItem langFr;
+
+	/**
+	 * Toggles sound effects on or off
+	 */
+	private JCheckBoxMenuItem soundToggle;
+
+	/**
+	 * Toggles music on or off
+	 */
+	private JCheckBoxMenuItem musicToggle;
+
+	/**
+	 * Starts a new game against AI
+	 */
+	private JMenuItem mSinglePlayer;
+
+	/**
+	 * Starts a new game against humans and AI
+	 */
+	private JMenuItem mMultiPlayer;
+
+	/**
+	 * The last played (discarded) card
+	 */
+	private JButton playedCards;
+
+	/**
+	 * The stack of un-drawn cards
+	 */
+	private JButton library;
+
+	/**
+	 * Chat send button (for sending chat messages)
+	 */
+	private JButton chatSend;
+
+
+	/* ---------- Miscellaneous ---------- */
+
+	/**
+	 * SerialVersionID.
+	 * Default: @value 1L
+	 */
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Font used by UI elements
+	 */
+	private Font myFont;
+
+	/**
+	 * GridBagConstraints for vertically aligned elements
+	 */
+	private GridBagConstraints myGBC;
+
+	/**
+	 * Where chat messages appear
+	 */
 	private JTextPane chatDisplay;
+
+	/**
+	 * Where chat messages are typed before being sent
+	 */
 	private TextField chatInput;
+
+	/**
+	 * UI representation of the current turn order
+	 */
 	private JLabel turnOrder;
+
+	/**
+	 * How many times has pack() been called during game init
+	 */
 	private int packCalls;
 
-	// Internationalization + all translatable elements (that aren't above)
-	private ResourceBundle translatable;
+
+	/* ---------- Internationalization ---------- */
+
+	/**
+	 * The current resourcebundle
+	 */
+	private transient ResourceBundle translatable;
+
+	/**
+	 * The current language
+	 */
 	private Locale language;
+
+	/**
+	 * The title "score" in the scorebox
+	 */
 	private JLabel scoreTitle;
+
+	/**
+	 * The chat box (where chat messages appear/are input)
+	 */
 	private JPanel chatBox;
 
+
+	/* ------------------------- METHODS ------------------------- */
+	/* ----------------------------------------------------------- */
+	/* ----------------------------------------------------------- */
+
+	/**
+	 * Default constructor for the GameView. Initializes a few things such as the
+	 * gridbagconstraints, locale, resourcebundle, and then draws the splash and
+	 * the main UI for the application.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
 	public GameView() {
-		// Fetch my custom font from the assets folder
-		myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
 		myGBC = new GridBagConstraints();
 		myGBC.gridx = 0;
 		myGBC.gridy = GridBagConstraints.RELATIVE;
@@ -103,11 +283,6 @@ public class GameView extends JFrame {
 		packCalls = 0;
 		language = Locale.ENGLISH;
 		translatable = ResourceBundle.getBundle("resources.MessagesBundle", language);
-
-		// This is where the application is drawn. First the splash, then main window
-		// TODO: don't forget to uncomment this
-		//drawSplash();
-		drawMainWindow();
 	}
 
 	/**
@@ -122,6 +297,9 @@ public class GameView extends JFrame {
 	public void drawMainWindow() {
 
 		/* ---------- PREAMBLE ---------- */
+		
+		// Fetch my custom font from the assets folder
+		myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
 
 		// Outer panel holds play area and console
 		JPanel outerPanel = new JPanel();
@@ -155,7 +333,7 @@ public class GameView extends JFrame {
 		scoreBox.setLayout(new GridBagLayout());
 
 		// Score label
-		scoreTitle = new JLabel(translatable.getString("score"));
+		scoreTitle = new JLabel(translatable.getString("score").toUpperCase());
 		scoreTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 		scoreTitle.setFont(myFont.deriveFont(14f));
 
@@ -383,9 +561,9 @@ public class GameView extends JFrame {
 
 		/* ----- Main menu options ----- */
 
-		mHostGame = new JMenu(translatable.getString("startGame"));
-		mHostGame.setVisible(true);
-		mHostGame.setEnabled(true);
+		mStartGame = new JMenu(translatable.getString("startGame"));
+		mStartGame.setVisible(true);
+		mStartGame.setEnabled(true);
 
 		mJoinGame = new JMenu(translatable.getString("joinGame"));
 		mJoinGame.setVisible(true);
@@ -399,9 +577,9 @@ public class GameView extends JFrame {
 		mOptions.setVisible(true);
 		mOptions.setEnabled(true);
 
-		mAbout = new JMenuItem(translatable.getString("rules"));
-		mAbout.setVisible(true);
-		mAbout.setEnabled(true);
+		mRules = new JMenuItem(translatable.getString("rules"));
+		mRules.setVisible(true);
+		mRules.setEnabled(true);
 
 		/* ----- SUBMENUS ----- */
 
@@ -425,17 +603,17 @@ public class GameView extends JFrame {
 		mOptions.add(soundToggle);
 		mOptions.add(musicToggle);
 		mOptions.add(langSelect);
+		mOptions.add(mRules);
 		langSelect.add(langEng);
 		langSelect.add(langFr);
-		mHostGame.add(mSinglePlayer);
-		mHostGame.add(mMultiPlayer);
+		mStartGame.add(mSinglePlayer);
+		mStartGame.add(mMultiPlayer);
 
 		// Add menu items
-		mBar.add(mHostGame);
+		mBar.add(mStartGame);
 		mBar.add(mJoinGame);
 		mBar.add(mDisconnect);
 		mBar.add(mOptions);
-		mBar.add(mAbout);
 
 		/* ----------------------------------------------------------------------- */
 		/* ------------------------- MAIN WINDOW SECTION ------------------------- */
@@ -540,6 +718,7 @@ public class GameView extends JFrame {
 		return myFont;
 	}
 
+
 	/* ----------------------------------------------------------- */
 	/* -------------------- REFRESHER METHODS -------------------- */
 	/* ----------------------------------------------------------- */
@@ -601,6 +780,7 @@ public class GameView extends JFrame {
 
 		for (int i = 0; i < handSize; i++) {
 			Card card = p.getHand().get(i);
+			card.setBorder(null);
 			boolean isLastCard = (i == handSize - 1);
 
 			// Only South sees their cards
@@ -696,9 +876,9 @@ public class GameView extends JFrame {
 			updateScoreTable(p);
 		}
 		if (isReversed) {
-			turnOrder.setText(translatable.getString("counterclockwise"));
+			turnOrder.setText(translatable.getString("counterclockwise").toUpperCase());
 		} else {
-			turnOrder.setText(translatable.getString("clockwise"));
+			turnOrder.setText(translatable.getString("clockwise").toUpperCase());
 		}
 	}
 
@@ -727,6 +907,7 @@ public class GameView extends JFrame {
 		playerWestName.repaint();
 	}
 
+
 	/* -------------------------------------------------------- */
 	/* -------------------- DIALOGS/POPUPS -------------------- */
 	/* -------------------------------------------------------- */
@@ -736,15 +917,15 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void displayAbout() {
+	public void displayRules() {
 		String lang = "EN";
-		
+
 		if (language == Locale.ENGLISH) {
 			lang = "EN";
 		} else {
 			lang = "FR";
 		}
-		
+
 		String line;
 		StringBuilder sb = new StringBuilder();
 		try (BufferedReader r = new BufferedReader(new FileReader("asset/Rules_" + lang + ".txt"))){
@@ -774,12 +955,17 @@ public class GameView extends JFrame {
 
 	/**
 	 * Displays the game winner in a dialog.
-	 * @param player The winner of the game.
+	 * @param winners The winners of the game.
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void displayGameWinner(Player player) {
-		JOptionPane.showMessageDialog(this, player.getName() + " " + translatable.getString("gameWinner") + "!",
+	public void displayGameWinners(List<Player> winners) {
+		StringBuilder sb = new StringBuilder();
+		for (Player p : winners) {
+			sb.append(p.getName());
+			sb.append(" ");
+		}
+		JOptionPane.showMessageDialog(this, sb.toString() + translatable.getString("gameWinner") + "!",
 				translatable.getString("gameWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -790,16 +976,17 @@ public class GameView extends JFrame {
 	 * @since 23
 	 */
 	public String getPlayerName() {
+		UIManager.put("OptionPane.cancelButtonText", translatable.getString("cancel").toUpperCase());
 		String playerName = JOptionPane.showInputDialog(null, translatable.getString("enterNameSinglePlayer"),
 				translatable.getString("playerName"), JOptionPane.QUESTION_MESSAGE);
 
 		if (playerName != null && !playerName.trim().isEmpty()) {
 			if (playerName.length() > 20) {
-				
+
 				if (language == Locale.ENGLISH) {
 					return "JOHN Q. LONGNAME";
 				} else {
-					return "JEAN Q. NOMÀRALLONGE";
+					return "JEAN Q. NOMARALLONGE";
 				}
 			}
 			return playerName;
@@ -849,14 +1036,46 @@ public class GameView extends JFrame {
 
 	/**
 	 * Sends a chat message to the chat window.
-	 * @param msg The message to be displayed in the chat box.
+	 * @param prefix Optional prefix. Used to display translatable console messages.
+	 * @param msg The message content.
+	 * @param isConsoleMsg If the message should be displayed as a console message
+	 * or as a regular chat message.
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void sendChatMsg(String msg) {
+	public void sendChatMsg(String prefix, String msg, boolean isConsoleMsg) {
 		StyledDocument doc = chatDisplay.getStyledDocument();
+		SimpleAttributeSet attrs = new SimpleAttributeSet();
+
+		// Console messages appear in bolded red font
+		if (isConsoleMsg) {
+			String translated = "";
+			StyleConstants.setForeground(attrs, Color.RED);
+			StyleConstants.setBold(attrs, true);
+			
+			switch (prefix) {
+			case "currentTurn": translated = translatable.getString("currentTurn"); break;
+			case "suitChanged": translated = translatable.getString("suitChanged"); break; 
+			case "cantDraw": translated = translatable.getString("cantDraw"); break;
+			case "notYourTurn": translated = translatable.getString("notYourTurn"); break;
+			}
+			
+			translated = translated + " " + msg;
+			
+			try {
+				doc.insertString(doc.getLength(), translated + "\n", attrs);
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+			return;
+
+			// All other messages appear in regular black font
+		} else {
+			StyleConstants.setForeground(attrs, Color.BLACK);
+		}
+
 		try {
-			doc.insertString(doc.getLength(), msg, null);
+			doc.insertString(doc.getLength(), msg, attrs);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -876,17 +1095,6 @@ public class GameView extends JFrame {
 	}
 
 	/**
-	 * Pack should only be called 4 times while instantiating the game, this
-	 * allows the flag to be reset.
-	 * @param i The number to reset the flag to.
-	 * @author Cailean Bernard
-	 * @since 23
-	 */
-	public void setPackCalls(int i) {
-		this.packCalls = i;
-	}
-
-	/**
 	 * Sets the language to French by changing the Locale and the ResourceBundle.
 	 * @author Cailean Bernard
 	 * @since 23
@@ -894,6 +1102,8 @@ public class GameView extends JFrame {
 	public void setLanguageToFrench() {
 		language = Locale.FRENCH;
 		translatable = ResourceBundle.getBundle("resources.MessagesBundle", language);
+		langFr.setEnabled(false);
+		langEng.setEnabled(true);
 		repaintTranslatable();
 	}
 
@@ -904,10 +1114,12 @@ public class GameView extends JFrame {
 	 */
 	public void setLanguageToEnglish() {
 		language = Locale.ENGLISH;
+		langFr.setEnabled(true);
+		langEng.setEnabled(false);
 		translatable = ResourceBundle.getBundle("resources.MessagesBundle", language);
 		repaintTranslatable();
 	}
-	
+
 	/**
 	 * Some elements require revalidating/repainting after translation. This method
 	 * just repaints all those elements.
@@ -915,15 +1127,40 @@ public class GameView extends JFrame {
 	 * @since 23
 	 */
 	public void repaintTranslatable() {
-		chatSend.revalidate();
-		chatSend.repaint();
-		chatBox.revalidate();
-		chatBox.repaint();
+		scoreTitle.revalidate();
+		scoreTitle.repaint();
+		turnOrder.revalidate();
+		turnOrder.repaint();
+		chatSend.setText(translatable.getString("send").toUpperCase());
+		mStartGame.setText(translatable.getString("startGame"));
+		mJoinGame.setText(translatable.getString("joinGame"));
+		mDisconnect.setText(translatable.getString("disconnect"));
+		mOptions.setText(translatable.getString("options"));
+		mRules.setText(translatable.getString("rules"));
+		langSelect.setText(translatable.getString("language"));
+		langEng.setText(translatable.getString("english"));
+		langFr.setText(translatable.getString("french"));
+		soundToggle.setText(translatable.getString("soundEffects"));
+		musicToggle.setText(translatable.getString("music"));
+		mSinglePlayer.setText(translatable.getString("singlePlayer"));
+		mMultiPlayer.setText(translatable.getString("multiplayer"));
 	}
 
-	/* --------------------------------------------------- */
-	/* -------------------- LISTENERS -------------------- */
-	/* --------------------------------------------------- */
+
+	/* ----------------------------------------------------------- */
+	/* -------------------- LISTENERS & OTHER -------------------- */
+	/* ----------------------------------------------------------- */
+
+	/**
+	 * Pack should only be called 4 times while instantiating the game, this
+	 * allows the flag to be reset.
+	 * @param i The number to reset the flag to.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void setPackCalls(int i) {
+		this.packCalls = i;
+	}
 
 	/**
 	 * Sets the action listener for the single-player button.
@@ -955,7 +1192,7 @@ public class GameView extends JFrame {
 	 * @since 23
 	 */
 	public void setHostGameListener(ActionListener listener) {
-		mHostGame.addActionListener(listener);
+		mStartGame.addActionListener(listener);
 	}
 
 	/**
@@ -999,7 +1236,7 @@ public class GameView extends JFrame {
 	 * @since 23
 	 */
 	public void setAboutListener(ActionListener listener) {
-		mAbout.addActionListener(listener);
+		mRules.addActionListener(listener);
 	}
 
 	/**
@@ -1011,7 +1248,6 @@ public class GameView extends JFrame {
 	 */
 	public void setLangEnglishListener(ActionListener listener) {
 		langEng.addActionListener(listener);
-		System.out.println("Translating elements to English...");
 	}
 
 	/**
