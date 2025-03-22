@@ -23,3 +23,8 @@ Dana
 Scully
 Fox
 Mulder
+Carlie
+Snake
+Otacon
+Raiden
+Auron

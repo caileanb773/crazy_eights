@@ -301,6 +301,19 @@ public class GameModel {
 				System.out.println(activePlayer.getName() + " is playing a " + card.toString());
 				activePlayer.removeCardFromHand(card);
 				playedCards.add(card);
+				
+				/* ---------------------------------------------------------- */
+				
+				if (card.getRank() != Rank.TWO) {
+					forceDraw(activePlayer, 2*numTwosPlayed);
+					numTwosPlayed = 0;
+				}
+				
+				// reset all special card actions
+				// delete commented line in drawCard()
+				
+				/* ---------------------------------------------------------- */
+				
 				applySpecialAction(card);
 				return true;
 			} else {
@@ -395,9 +408,10 @@ public class GameModel {
 			// if the passive player has room in their hand, force them to draw. else, the active player must draw
 			if (passivePlayer.getHandSize() < Const.MAX_HAND_SIZE) {
 				passivePlayer.addCardToHand(library.removeLast());
+				System.out.println(passivePlayer.getName() + " was forced to draw a card!");
 			} else if (activePlayer.getHandSize() < Const.MAX_HAND_SIZE){
-				System.out.println("CARDS REDIRECTED TO PLAYER WHO PLAYED CARD!");
 				activePlayer.addCardToHand(library.removeLast());
+				System.out.println("Card redirection occurred!");
 				cardRedirection = true;
 			} else {
 				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
@@ -434,7 +448,8 @@ public class GameModel {
 		case FOUR: playFour(); break;
 		case EIGHT: playEight(); break;
 		case QUEEN: playQueen(); break;
-		default: numTwosPlayed = 0; break;
+		default: //numTwosPlayed = 0; 
+			break;
 		}
 	}
 
@@ -444,7 +459,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playAce() {
-		numTwosPlayed = 0;
+		//numTwosPlayed = 0;
 		isTurnOrderReversed = !isTurnOrderReversed;
 	}
 
@@ -456,7 +471,7 @@ public class GameModel {
 	 * */
 	public void playTwo() {
 		numTwosPlayed++;
-		forceDraw(peekNextPlayer(), 2*numTwosPlayed);
+		//forceDraw(peekNextPlayer(), 2*numTwosPlayed);
 	}
 
 	/**
@@ -465,7 +480,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playFour() {
-		numTwosPlayed = 0;
+		//numTwosPlayed = 0;
 		forceDraw(peekNextPlayer(), 4);
 	}
 
@@ -491,7 +506,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playQueen() {
-		numTwosPlayed = 0;
+		//numTwosPlayed = 0;
 		skipTurn();
 	}
 	

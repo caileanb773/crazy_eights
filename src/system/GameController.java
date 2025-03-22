@@ -1,9 +1,16 @@
 package system;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
+
+import javax.swing.BorderFactory;
 import javax.swing.Timer;
+import javax.swing.border.Border;
+
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -18,6 +25,7 @@ public class GameController {
 
 	private GameModel model;
 	private GameView view;
+	private String hostName;
 
 	/**
 	 * Parameterized constructor for GameController. GameController acts as a
@@ -31,6 +39,7 @@ public class GameController {
 	public GameController(GameModel m, GameView v) {
 		this.model = m;
 		this.view = v;
+		this.hostName = "host";
 	}
 
 	/* ----------------------------------------------------------- */
@@ -74,8 +83,8 @@ public class GameController {
 	 */
 	public void handleStartRound() {
 		if (!model.isGameRunning()) {
-			String name = view.getPlayerName();
-			model.initGame(Const.SINGLE_PLAYER, name);
+			hostName = view.getPlayerName();
+			model.initGame(Const.SINGLE_PLAYER, hostName);
 		}
 		model.initRound();
 		List<Card> playedCards = model.getPlayedCards();
@@ -111,7 +120,9 @@ public class GameController {
 	 */
 	public void processTurn() {
 		Player activePlayer = model.getActivePlayer();
-		System.out.println("It is now " + activePlayer.getName() + "'s turn.");
+		String playerName = activePlayer.getName();
+		view.sendConsoleMsg(playerName, "currentTurn", "");
+		System.out.println("It is now " + playerName + "'s turn.");
 
 		// Check game state, starting with the status of the current round
 		if (model.isRoundOver()) {
@@ -128,6 +139,7 @@ public class GameController {
 			return;
 		}
 
+		// If the active Player is human, clear the call stack by returning
 		if (activePlayer.isHuman()) {
 			refreshListenersInPlayerHand(activePlayer);
 			return;
@@ -152,7 +164,6 @@ public class GameController {
 			public void actionPerformed(ActionEvent e) {
 				decideAIPlayerMove(AIPlayer);
 				model.setActivePlayer(model.getNextPlayer());
-				view.sendChatMsg("currentTurn", AIPlayer.getName(), Const.CONSOLE_MSG);
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				processTurn();
 			}
@@ -172,6 +183,7 @@ public class GameController {
 	 * @since 23
 	 */
 	public void decideAIPlayerMove(AIPlayer AIPlayer) {
+		String playerName = AIPlayer.getName();
 		Card lastPlayedCard = model.getLastPlayedCard();
 		Card cardToPlay = null;
 		int choice = 0;
@@ -181,21 +193,24 @@ public class GameController {
 
 			switch (choice) {
 			case Const.PASS:
+				view.sendConsoleMsg(playerName, "passTurn", "");
 				System.out.println(AIPlayer.getName() + " is passing their turn.");
 				return;
 			case Const.PLAY:
 				cardToPlay = AIPlayer.decideCard(lastPlayedCard);
 				if (model.playCard(cardToPlay)) {
+					view.sendConsoleMsg(playerName, "playCard", cardToPlay.toString());
 					handleCardActions(cardToPlay);
 					view.displayCardsInHand(AIPlayer);
 					view.displayLastPlayedCard(model.getLastPlayedCard());
 				} else {
-					System.out.println(AIPlayer.getName() + " tried to break the rules by playing an illegal card.");
+					System.out.println(playerName + " tried to break the rules by playing an illegal card.");
 				}
 				return;
 
 			case Const.DRAW:
 				model.drawCard();
+				view.sendConsoleMsg(playerName, "drawCard", "");
 				view.displayCardsInHand(AIPlayer);
 				break;
 			default: System.out.println("Default switch case reached while AI was deciding move."); return;
@@ -316,7 +331,7 @@ public class GameController {
 			Suit startingSuit = model.getLastPlayedCard().getSuit();
 			Suit chosenSuit = view.dialogEightSuit();
 			if (chosenSuit != null) {
-				view.sendChatMsg("suitChanged", chosenSuit.name(), Const.CONSOLE_MSG);
+				view.sendConsoleMsg("", "suitChanged", chosenSuit.toString());
 				System.out.println("Player chose: " + chosenSuit);
 				model.getLastPlayedCard().setSuit(chosenSuit);
 			} else {
@@ -341,28 +356,30 @@ public class GameController {
 	 */
 	public void handleCardDraw() {
 		Player activePlayer = model.getActivePlayer();
+		String playerName = activePlayer.getName();
 
 		// check that the activeplayer is human before allowing them to draw a card
 		if (activePlayer.isHuman()) {
 			// block player from drawing a card if they have a legal play in hand
 			if (activePlayer.hasLegalMove(model.getLastPlayedCard())) {
-				view.sendChatMsg("cantDraw", "", Const.CONSOLE_MSG);
+				view.sendConsoleMsg("", "cantDraw", "");
 				System.out.println("Cannot draw a card if you have a legal play in hand. Play a card instead.");
 			} else {
 				model.drawCard();
+				view.sendConsoleMsg(playerName, "drawCard", "");
 				view.displayCardsInHand(activePlayer);
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				refreshListenersInPlayerHand(activePlayer);
 
 				// if their hand is full after card draw, end their turn
 				if (activePlayer.getHandSize() >= Const.MAX_HAND_SIZE) {
+					view.sendConsoleMsg(activePlayer.getName(), "passTurn", "");
 					model.setActivePlayer(model.getNextPlayer());
-					view.sendChatMsg("currentTurn", activePlayer.getName(), Const.CONSOLE_MSG);
 					processTurn();
 				}
 			}
 		} else {
-			view.sendChatMsg("notYourTurn", "", Const.CONSOLE_MSG);
+			view.sendConsoleMsg("", "notYourTurn", "");
 			System.out.println("It is not your turn!");
 		}
 	}
@@ -387,17 +404,17 @@ public class GameController {
 				for (ActionListener al : c.getActionListeners()) {
 					c.removeActionListener(al);
 				}
+				view.sendConsoleMsg(activePlayerName, "playCard", c.toString());
 				handleCardActions(c);
 				view.displayCardsInHand(activePlayer);
 				view.displayLastPlayedCard(c);
 				System.out.println(activePlayerName + "'s turn is now over.");
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				model.setActivePlayer(model.getNextPlayer());
-				view.sendChatMsg("currentTurn", activePlayerName, Const.CONSOLE_MSG);
 				processTurn();
 			}
 		} else {
-			view.sendChatMsg("notYourTurn", "", Const.CONSOLE_MSG);
+			view.sendConsoleMsg("", "notYourTurn", "");
 			System.out.println("It is not your turn!");
 		}
 	}
@@ -416,6 +433,17 @@ public class GameController {
 				c.removeActionListener(al);
 			}
 			c.addActionListener(new CardPlayListener());
+			
+			// everything below here is testing drawing the border around a card that has been moused-over
+			c.addMouseListener(new MouseAdapter() {
+				public void mouseEntered(MouseEvent e) {
+			        c.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+				}
+				
+				public void mouseExited(MouseEvent e) {
+					c.setBorder(null);
+				}
+			});
 		}
 	}
 
@@ -579,7 +607,7 @@ public class GameController {
 	private class ChatSendButtonListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			view.sendChatMsg("", view.fetchMsg(), Const.CHAT_MSG);
+			view.sendChatMsg(view.fetchMsg(hostName));
 		}
 	}
 	

@@ -297,7 +297,7 @@ public class GameView extends JFrame {
 	public void drawMainWindow() {
 
 		/* ---------- PREAMBLE ---------- */
-		
+
 		// Fetch my custom font from the assets folder
 		myFont = getMyFont("asset/font/snes-fonts-mario-paint.ttf");
 
@@ -901,10 +901,10 @@ public class GameView extends JFrame {
 		playerNorthCards.repaint();
 		playerNorthName.revalidate();
 		playerNorthName.repaint();
-		playerWestCards.revalidate();
-		playerWestCards.repaint();
-		playerWestName.revalidate();
-		playerWestName.repaint();
+		playerEastCards.revalidate();
+		playerEastCards.repaint();
+		playerEastName.revalidate();
+		playerEastName.repaint();
 	}
 
 
@@ -1036,43 +1036,14 @@ public class GameView extends JFrame {
 
 	/**
 	 * Sends a chat message to the chat window.
-	 * @param prefix Optional prefix. Used to display translatable console messages.
 	 * @param msg The message content.
-	 * @param isConsoleMsg If the message should be displayed as a console message
-	 * or as a regular chat message.
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void sendChatMsg(String prefix, String msg, boolean isConsoleMsg) {
+	public void sendChatMsg(String msg) {
 		StyledDocument doc = chatDisplay.getStyledDocument();
 		SimpleAttributeSet attrs = new SimpleAttributeSet();
-
-		// Console messages appear in bolded red font
-		if (isConsoleMsg) {
-			String translated = "";
-			StyleConstants.setForeground(attrs, Color.RED);
-			StyleConstants.setBold(attrs, true);
-			
-			switch (prefix) {
-			case "currentTurn": translated = translatable.getString("currentTurn"); break;
-			case "suitChanged": translated = translatable.getString("suitChanged"); break; 
-			case "cantDraw": translated = translatable.getString("cantDraw"); break;
-			case "notYourTurn": translated = translatable.getString("notYourTurn"); break;
-			}
-			
-			translated = translated + " " + msg;
-			
-			try {
-				doc.insertString(doc.getLength(), translated + "\n", attrs);
-			} catch (BadLocationException e) {
-				e.printStackTrace();
-			}
-			return;
-
-			// All other messages appear in regular black font
-		} else {
-			StyleConstants.setForeground(attrs, Color.BLACK);
-		}
+		StyleConstants.setForeground(attrs, Color.BLACK);
 
 		try {
 			doc.insertString(doc.getLength(), msg, attrs);
@@ -1082,15 +1053,75 @@ public class GameView extends JFrame {
 	}
 
 	/**
+	 * Sends a console message to the chat window (an update from the game informing
+	 * players of actions taking place).
+	 * @param optName Optional prefix. Used to display translatable console messages.
+	 * @param msg The message content.
+	 * @param optCard An optional suffix for console messages.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void sendConsoleMsg(String optName, String msg, String optCard) {
+		StyledDocument doc = chatDisplay.getStyledDocument();
+		SimpleAttributeSet attrs = new SimpleAttributeSet();
+
+		// Console messages appear in bold-ed red font and are assembled by passed arguments
+		String translatedStr = "";
+		String completedStr = "";
+		StyleConstants.setForeground(attrs, Color.RED);
+		StyleConstants.setBold(attrs, true);
+
+		// This is where console messages are assembled
+		switch (msg) {
+		case "currentTurn":
+			translatedStr = translatable.getString("currentTurn");
+			completedStr = translatedStr + ": " + optName;
+			break;
+		case "suitChanged":
+			translatedStr = translatable.getString("suitChanged");
+			completedStr = translatedStr + " " + optCard;
+			break; 
+		case "cantDraw":
+			translatedStr = translatable.getString("cantDraw");
+			completedStr = translatedStr;
+			break;
+		case "notYourTurn":
+			translatedStr = translatable.getString("notYourTurn");
+			completedStr = translatedStr;
+			break;
+		case "passTurn":
+			translatedStr = translatable.getString("passTurn");
+			completedStr = optName + " " + translatedStr;
+			break;
+		case "playCard":
+			translatedStr = translatable.getString("playCard");
+			completedStr = optName + " " + translatedStr + " " + optCard;
+			break;
+		case "drawCard":
+			translatedStr = translatable.getString("drawCard");
+			completedStr = optName + " " + translatedStr;
+			break;
+		}
+
+		try {
+			doc.insertString(doc.getLength(), completedStr + "\n", attrs);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		return;
+	}
+
+	/**
 	 * Fetches the message from the chat input area so that it can be displayed
 	 * in the chat box.
 	 * @return The message to be displayed.
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public String fetchMsg() {
+	public String fetchMsg(String name) {
 		String msg = "";
-		msg = chatInput.getText();
+		msg = name + ": " + chatInput.getText() + "\n";
+		chatInput.setText("");
 		return msg;
 	}
 

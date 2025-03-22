@@ -180,19 +180,5 @@ public class Const {
 	 * @since 23
 	 */
 	public static final int PASS = 3;
-	
-	/**
-	 * Represents a message being sent to the chat window as a console message.
-	 * @author Cailean Bernard
-	 * @since 23
-	 */
-	public static final boolean CONSOLE_MSG = true;
-
-	/**
-	 * Represents a message being sent to the chat window as a chat message.
-	 * @author Cailean Bernard
-	 * @since 23
-	 */
-	public static final boolean CHAT_MSG = false;
 
 }

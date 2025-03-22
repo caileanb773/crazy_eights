@@ -3,6 +3,8 @@
 
 --- CHANGES ---
 
+-when a card is moused over, it would be nice to paint a border around it
+
 -cleanup() at the end of the game needs to:
 	-repaint all cards in all zones (lastPlayedCard persists)
 	-remove all names from all zones (names persist for some reason; where are they drawn?)
