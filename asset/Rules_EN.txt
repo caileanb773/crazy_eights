@@ -12,6 +12,9 @@ another 2 is played, then the next player in the turn order picks up 4 cards, an
 4: If a 4 is played, the next player must pick up 4 cards. This effect is not cumulative.
 If a forced draw (from playing a 2 or a 4) would force a player to pick up cards that would make their
 hand size more than 12, the surplus go back to the player who played the "force draw" card (2, 4).
+If the player who played the card that initiated the forced draw has cards redirected
+to them, but their hand is also full, then they are punished by having the amount
+of cards redirected to them turned into penalty points.
 Ace: Reverse the turn order.
 Queen: Skip the turn of the next player.
 Winning:

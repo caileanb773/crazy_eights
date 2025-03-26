@@ -28,6 +28,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
+		// don't forget to uncomment the splash
+		
 		GameModel model = new GameModel();
 		GameView view = new GameView();
 		GameController game = new GameController(model, view);

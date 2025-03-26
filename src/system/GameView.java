@@ -6,15 +6,19 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.TextField;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -22,6 +26,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -134,7 +139,7 @@ public class GameView extends JFrame {
 	/**
 	 * Joins a multiplayer game that is currently running
 	 */
-	private JMenu mJoinGame;
+	private JMenuItem mJoinGame;
 
 	/**
 	 * Disconnects from a running multiplayer game
@@ -239,6 +244,9 @@ public class GameView extends JFrame {
 	 * How many times has pack() been called during game init
 	 */
 	private int packCalls;
+
+	private JLabel connectionStatus;
+	private JDialog waitingDialog;
 
 
 	/* ---------- Internationalization ---------- */
@@ -565,7 +573,7 @@ public class GameView extends JFrame {
 		mStartGame.setVisible(true);
 		mStartGame.setEnabled(true);
 
-		mJoinGame = new JMenu(translatable.getString("joinGame"));
+		mJoinGame = new JMenuItem(translatable.getString("joinGame"));
 		mJoinGame.setVisible(true);
 		mJoinGame.setEnabled(true);
 
@@ -912,6 +920,60 @@ public class GameView extends JFrame {
 	/* -------------------- DIALOGS/POPUPS -------------------- */
 	/* -------------------------------------------------------- */
 
+	public void awaitConnectionsDialog(int port, ActionListener cancelAction) {
+		waitingDialog = new JDialog((Frame) null, "Hosting Game", true);
+		waitingDialog.setLayout(new BorderLayout());
+
+		connectionStatus = new JLabel("Waiting for connections (0/3)...");
+		waitingDialog.add(connectionStatus, BorderLayout.CENTER);
+		String ip;
+
+		// Get IP dynamically, should always be localhost but good for if this changes
+		try {
+			ip = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			// default to localhost
+			ip = "127.0.0.1";
+		}
+
+		JLabel info = new JLabel("Connect at: " + ip + ":" + port, SwingConstants.CENTER);
+		waitingDialog.add(info, BorderLayout.NORTH);
+
+		// cancel button
+		JButton btnCancel = new JButton("Cancel");
+		btnCancel.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				cancelAction.actionPerformed(e);
+				waitingDialog.dispose();
+			}
+		});
+
+		JPanel cancelPanel = new JPanel();
+		cancelPanel.add(btnCancel);
+		waitingDialog.add(cancelPanel, BorderLayout.SOUTH);
+
+		waitingDialog.pack();
+		waitingDialog.setLocationRelativeTo(null);
+		waitingDialog.setVisible(true);
+
+	}
+
+	public void updateWaitingStatus(int playerCount) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				if (connectionStatus != null) {
+					connectionStatus.setText("Waiting for connections (" + playerCount + "/3)...");
+				}
+			}
+		});
+	}
+
+	public void closeWaitingDialog() {
+		if (waitingDialog != null) {
+			waitingDialog.dispose();
+		}
+	}
+
 	/**
 	 * Displays the rules of the game as a dialog.
 	 * @author Cailean Bernard
@@ -1011,26 +1073,29 @@ public class GameView extends JFrame {
 		Suit s = null;
 		System.out.println("Eight has been played, selecting suit...");
 		String[] suits = { "Hearts", "Diamonds", "Clubs", "Spades" };
-		String chosenSuit = (String) JOptionPane.showInputDialog(
-				null, 
-				translatable.getString("suitChoice"), 
-				translatable.getString("suitChoiceLabel"), 
-				JOptionPane.QUESTION_MESSAGE, 
-				null, 
-				suits, 
-				suits[0]
-				);
 
-		if (chosenSuit != null) {
-			switch (chosenSuit) {
-			case "Hearts": s = Suit.HEARTS; break;
-			case "Diamonds": s = Suit.DIAMONDS; break;
-			case "Clubs": s = Suit.CLUBS; break;
-			case "Spades": s = Suit.SPADES; break;
-			default: System.out.println("default reached while choosing suit for eight.");
-			return null;
+		while (s == null) {
+			int choice = JOptionPane.showOptionDialog(
+					null, 
+					translatable.getString("suitChoice"), 
+					translatable.getString("suitChoiceLabel"), 
+					JOptionPane.DEFAULT_OPTION, 
+					JOptionPane.QUESTION_MESSAGE, 
+					null, 
+					suits, 
+					suits[0]
+					);
+
+			if (choice >= 0) {
+				switch (suits[choice]) {
+				case "Hearts": s = Suit.HEARTS; break;
+				case "Diamonds": s = Suit.DIAMONDS; break;
+				case "Clubs": s = Suit.CLUBS; break;
+				case "Spades": s = Suit.SPADES; break;
+				}
 			}
 		}
+
 		return s;
 	}
 
@@ -1040,13 +1105,13 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void sendChatMsg(String msg) {
+	public void displayChat(String msg) {
 		StyledDocument doc = chatDisplay.getStyledDocument();
 		SimpleAttributeSet attrs = new SimpleAttributeSet();
 		StyleConstants.setForeground(attrs, Color.BLACK);
 
 		try {
-			doc.insertString(doc.getLength(), msg, attrs);
+			doc.insertString(doc.getLength(), msg + "\n", attrs);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -1101,6 +1166,18 @@ public class GameView extends JFrame {
 			translatedStr = translatable.getString("drawCard");
 			completedStr = optName + " " + translatedStr;
 			break;
+		case "forceDraw":
+			translatedStr = translatable.getString("forceDraw");
+			completedStr = optName + " " + translatedStr + optCard;
+			break;
+		case "turnReversed":
+			translatedStr = translatable.getString("turnReversed");
+			completedStr = optName + " " + translatedStr;
+			break;
+		case "turnSkipped":
+			translatedStr = translatable.getString("turnSkipped");
+			completedStr = optName + " " + translatedStr;
+			break;
 		}
 
 		try {
@@ -1118,9 +1195,8 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public String fetchMsg(String name) {
-		String msg = "";
-		msg = name + ": " + chatInput.getText() + "\n";
+	public String fetchMsg() {
+		String msg = chatInput.getText();
 		chatInput.setText("");
 		return msg;
 	}
@@ -1215,16 +1291,16 @@ public class GameView extends JFrame {
 		mMultiPlayer.addActionListener(listener);
 	}
 
-	/**
-	 * Sets the action listener for the host game button.
-	 *
-	 * @param listener The action listener to handle hosting a game.
-	 * @author Cailean Bernard
-	 * @since 23
-	 */
-	public void setHostGameListener(ActionListener listener) {
-		mStartGame.addActionListener(listener);
-	}
+	//	/**
+	//	 * Sets the action listener for the host game button.
+	//	 *
+	//	 * @param listener The action listener to handle hosting a game.
+	//	 * @author Cailean Bernard
+	//	 * @since 23
+	//	 */
+	//	public void setHostGameListener(ActionListener listener) {
+	//		mStartGame.addActionListener(listener);
+	//	}
 
 	/**
 	 * Sets the action listener for the join game button.
@@ -1334,6 +1410,7 @@ public class GameView extends JFrame {
 	 */
 	public void setChatSendButtonListener(ActionListener listener) {
 		chatSend.addActionListener(listener);
+		chatInput.addActionListener(listener);
 	}
 
 }

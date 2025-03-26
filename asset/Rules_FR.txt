@@ -13,6 +13,9 @@ cumulatif: si un autre 2 est joué, le joueur suivant pioche 4 cartes, puis 6, p
 4: Lorsqu'un 4 est joué, le joueur suivant doit piocher 4 cartes. Cet effet n'est pas cumulatif.
 Pioche forcée (2 ou 4): Si une pioche forcée fait dépasser la limite de 12 cartes,
 les cartes excédentaires reviennent au joueur qui a joué la carte de pioche forcée (2 ou 4).
+Si le joueur qui a joué la carte ayant déclenché la pioche forcée se voit rediriger 
+des cartes, mais que sa main est déjà pleine, il est alors pénalisé en transformant 
+le nombre de cartes redirigées en points de pénalité.
 As: Inverse le sens du jeu.
 Dame: Le joueur suivant perd son tour.
 Victoire: 

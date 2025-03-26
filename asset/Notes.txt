@@ -1,7 +1,10 @@
 --- BUGS ---
 
+-if you start a new game in the middle of an ai player's turn, they keep playing
 
 --- CHANGES ---
+
+-probably need to change the way playing twos works to fit prof's rules better.
 
 -when a card is moused over, it would be nice to paint a border around it
 

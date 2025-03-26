@@ -1,3 +1,5 @@
+Assignment 2.2 Patchnotes:
+
 --- Card Class ---
 
 -added ImageIcon to represent card's default image
@@ -83,3 +85,24 @@
 -added method setLanguageToEnglish() and setLanguageToFrench()
 -added method repaintTranslatable() which refreshes components that have text that is part of the UI
 -added getters and methods to set listeners
+
+################################################################################
+
+Assignment 3.2 Patchnotes:
+
+-moved the Server and Client from the Model to the Controller. This was a typo and they should have been in the controller to begin with
+-added method gatherNetworkInfo() to controller
+-added "port" and "ip" fields to controller
+-added method awaitConnectionsDialog() in view
+-added mathod cancelHosting() to controller
+-added method shutdown() to gameserver
+-renamed onplayerjoined to onplayerconnected() in gamecontrollerlistener
+-added field acceptThread in gameserver
+-added field connectionStatus in gameview
+-added method updateWaitingStatus() in gameview
+-added method shutdown() to gameclient
+-added method ongamestateupdated() to gamecontrollerlistener
+-added method closewaitingdialog() to view
+-added private class clienthandler in gameserver to handle incoming packets from connected clients
+-added field receiveThread in gameclient, for listening to incoming chat messages
+-added simpledateformat field to controller to add timestamps to chat messages

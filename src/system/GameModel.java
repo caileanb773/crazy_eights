@@ -4,9 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -20,12 +20,12 @@ import sysobj.Suit;
  * */
 public class GameModel {
 
-	private List<Player> players;
-	private List<String> aiNames;
-	private List<Card> library;
-	private List<Card> playedCards;
+	private Vector<Player> players;
+	private Vector<String> aiNames;
+	private Vector<Card> library;
+	private Vector<Card> playedCards;
 	private Player activePlayer;
-	private List<Player> pGameWinner;
+	private Vector<Player> pGameWinner;
 	private Player pRoundWinner;
 	private boolean isTurnOrderReversed;
 	private boolean isGameRunning;
@@ -54,11 +54,11 @@ public class GameModel {
 	 * */
 	public void initGame(int numHumanPlayers, String playerName) {
 		int numAIPlayers = 0;
-		players = new ArrayList<Player>();
+		players = new Vector<Player>();
 		pGameWinner = null;
 		pRoundWinner = null;
-		playedCards = new ArrayList<Card>();
-		aiNames = new ArrayList<String>();
+		playedCards = new Vector<Card>();
+		aiNames = new Vector<String>();
 		isTurnOrderReversed = false;
 		currentTurn = 0;
 		numTwosPlayed = 0;
@@ -121,7 +121,7 @@ public class GameModel {
 		if (library != null)
 			library.clear();
 
-		library = new ArrayList<Card>();
+		library = new Vector<Card>();
 		for (Suit s : Suit.values()) {
 			for (Rank r : Rank.values()) {
 				library.add(new Card(r, s));
@@ -302,12 +302,13 @@ public class GameModel {
 				activePlayer.removeCardFromHand(card);
 				playedCards.add(card);
 				
+				// Testing implementing professor's weird play-2 mechanic
 				/* ---------------------------------------------------------- */
 				
-				if (card.getRank() != Rank.TWO) {
-					forceDraw(activePlayer, 2*numTwosPlayed);
-					numTwosPlayed = 0;
-				}
+//				if (card.getRank() != Rank.TWO) {
+//					forceDraw(activePlayer, 2*numTwosPlayed);
+//					numTwosPlayed = 0;
+//				}
 				
 				// reset all special card actions
 				// delete commented line in drawCard()
@@ -396,11 +397,11 @@ public class GameModel {
 		// while there are still cards left to be drawn
 		while (remainingCards > 0) {
 
-			// check that the deck is not empty. if it is, reshuffle all but the last played card into a new deck
+			// if deck is empty, reshuffle all but the last played card into a new deck
 			if (library.isEmpty()) {
 				reshuffleSpentDeck();
 				if (library.isEmpty()) {
-					System.out.println("Deck remains empty after reshuffling. Ending this madness.");
+					System.out.println("Deck remains empty after reshuffling.");
 					break;
 				}
 			}
@@ -414,7 +415,6 @@ public class GameModel {
 				System.out.println("Card redirection occurred!");
 				cardRedirection = true;
 			} else {
-				// TODO: this method will need to check if incrementing a player's score caused them to go above 50 points
 				int penaltyPoints = remainingCards;
 				System.out.println("PENALTY POINTS assigned to " + activePlayer + " = " + penaltyPoints);
 				incrementScore(activePlayer, penaltyPoints);
@@ -448,7 +448,7 @@ public class GameModel {
 		case FOUR: playFour(); break;
 		case EIGHT: playEight(); break;
 		case QUEEN: playQueen(); break;
-		default: //numTwosPlayed = 0; 
+		default: numTwosPlayed = 0; 
 			break;
 		}
 	}
@@ -459,7 +459,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playAce() {
-		//numTwosPlayed = 0;
+		numTwosPlayed = 0;
 		isTurnOrderReversed = !isTurnOrderReversed;
 	}
 
@@ -471,7 +471,7 @@ public class GameModel {
 	 * */
 	public void playTwo() {
 		numTwosPlayed++;
-		//forceDraw(peekNextPlayer(), 2*numTwosPlayed);
+		forceDraw(peekNextPlayer(), 2*numTwosPlayed);
 	}
 
 	/**
@@ -480,7 +480,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playFour() {
-		//numTwosPlayed = 0;
+		numTwosPlayed = 0;
 		forceDraw(peekNextPlayer(), 4);
 	}
 
@@ -506,7 +506,7 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public void playQueen() {
-		//numTwosPlayed = 0;
+		numTwosPlayed = 0;
 		skipTurn();
 	}
 	
@@ -573,8 +573,8 @@ public class GameModel {
 	 * @author Cailean Bernard
 	 * @since 23
 	 * */
-	public List<Player> getWinningPlayers() {
-		List<Player> winningPlayers = new ArrayList<>();
+	public Vector<Player> getWinningPlayers() {
+		Vector<Player> winningPlayers = new Vector<>();
 		int minScore = Integer.MAX_VALUE;
 
 		for (Player p : players) {
@@ -858,6 +858,16 @@ public class GameModel {
 	 */
 	public boolean getCardRedirection() {
 		return this.cardRedirection;
+	}
+	
+	/**
+	 * Getter for the number of twos played.
+	 * @return the current value of how many twos have been played in sequence.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public int getNumTwosPlayed() {
+		return this.numTwosPlayed;
 	}
 
 }
