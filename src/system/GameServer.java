@@ -83,7 +83,7 @@ public class GameServer {
 	}
 	
 	public void broadcastChat(String msg) {
-		System.out.println("Broadcasting: " + msg);
+		System.out.println("Broadcasting Chat: " + msg);
 		for (Socket client : connectedPlayers) {
 			try {
 				PrintWriter out = new PrintWriter(client.getOutputStream(), true);

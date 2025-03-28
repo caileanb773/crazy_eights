@@ -92,7 +92,7 @@ public class GameController implements GameControllerListener {
 					return;
 				}
 				int port = Integer.parseInt(portInput);
-				if (port < 1024 || port > 65535) {
+				if (port < 10000 || port > 65535) {
 					JOptionPane.showMessageDialog(null, "Port must be between 1024 and 65535", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
