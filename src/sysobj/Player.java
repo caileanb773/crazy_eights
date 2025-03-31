@@ -1,7 +1,7 @@
 package sysobj;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Players have a name, a hand of cards, a score, an orientation in the UI, and 
@@ -11,11 +11,12 @@ import java.util.List;
  */
 public class Player {
 
-	protected List<Card> hand;
+	protected Vector<Card> hand;
 	protected boolean isHuman;
 	protected String name;
 	protected int score;
 	protected int orientation;
+	protected int id;
 
 	/**
 	 * Default Player constructor.
@@ -23,6 +24,18 @@ public class Player {
 	 * @since 23
 	 */
 	public Player() {
+	}
+	
+	/***
+	 * Name-only constructor for a Player.
+	 * @param name of the player
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public Player(String name) {
+		this.name = name;
+		this.score = 0;
+		this.hand = new Vector<Card>();
 	}
 
 	/**
@@ -34,10 +47,19 @@ public class Player {
 	 */
 	public Player(String n, int orientation) {
 		this.name = n;
-		this.hand = new ArrayList<Card>();
+		this.hand = new Vector<Card>();
 		this.score = 0;
 		this.orientation = orientation;
 		this.isHuman = false;
+	}
+	
+	public Player(String n, int orientation, int id, boolean isHuman) {
+		this.name = n;
+		this.hand = new Vector<Card>();
+		this.score = 0;
+		this.orientation = orientation;
+		this.id = id;
+		this.isHuman = isHuman;
 	}
 
 	/**
@@ -166,8 +188,26 @@ public class Player {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public List<Card> getHand(){
+	public Vector<Card> getHand(){
 		return this.hand;
+	}
+	
+	public void setHand(Vector<Card> hand) {
+		this.hand = hand;
+	}
+	
+	public void setOrientation(int orienttn) {
+		this.orientation = orienttn;
+	}
+	
+	public String stringifyHand() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < hand.size(); i++) {
+			sb.append(hand.get(i).toString());
+			sb.append(",");
+		}
+		
+		return sb.substring(0, sb.toString().length() - 1);
 	}
 
 	/**
@@ -199,6 +239,14 @@ public class Player {
 		this.hand.clear();
 	}
 
+	public void setID(int id) {
+		this.id = id;
+	}
+	
+	public int getId() {
+		return this.id;
+	}
+	
 	/**
 	 * Returns a string representation of the player.
 	 * @return A string describing the player's name, score, orientation, and 
@@ -208,7 +256,7 @@ public class Player {
 	 */
 	@Override
 	public String toString() {
-		return "Player " + this.name + " current score: " + this.score + " orientation: " + this.orientation + " isHuman: " + isHuman;
+		return "Player " + this.name + " current score: " + this.score + " orientation: " + this.orientation + " isHuman: " + isHuman + " id: " + this.id;
 	}
 
 

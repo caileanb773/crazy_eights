@@ -106,3 +106,28 @@ Assignment 3.2 Patchnotes:
 -added private class clienthandler in gameserver to handle incoming packets from connected clients
 -added field receiveThread in gameclient, for listening to incoming chat messages
 -added simpledateformat field to controller to add timestamps to chat messages
+-added method gameStartDialog() to the view
+-added field playerName in controller
+-added field numHumanPlayers in controller
+-added getter for the size of the vector of connected players in server
+-added Player(String) constructor to Player and AIPlayer
+-added method getClientNames() in server
+-added clientNames to server class
+-changed client constructor to take a string parameter playername
+-added method getcardfromString() to card
+-added method onviewrefresh() to controller/listener
+-added method refreshclienthand() to view (less complicated method)
+-added method refreshopponenthands() to view
+-added private helper method for refreshopponenthands to cut down duplicate code
+-added method refreshclientscoretable() and helper method in view
+-added setter for orientation in player
+-added method processconsolemsg() to controller so the host can blast it to all players as well as itself
+-split sendMove() into sendDraw() and sendPlay() in client
+-added setter for hand in player
+-added method onmovereceived() to gamecontrollerlistener
+-added getter for connected clients in server
+-overloaded isPlayLegal() in gamemodel()
+-added setter for the last played card to model
+-added field nextclientid in server
+-added new field gamemode to controller
+-added new method removeCardFromHand() to gameview

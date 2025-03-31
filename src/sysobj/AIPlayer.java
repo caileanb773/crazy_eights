@@ -19,6 +19,16 @@ public class AIPlayer extends Player {
 	 */
 	public AIPlayer() {
 	}
+	
+	/***
+	 * Name-only constructor for an AI player.
+	 * @param name of the AI player
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public AIPlayer(String name) {
+		super(name);
+	}
 
 	/**
 	 * Parameterized constructor for AIPlayer, setting their name and orientation

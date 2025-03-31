@@ -149,7 +149,7 @@ public class Card extends JButton {
 		}
 
 	}
-
+	
 	/**
 	 * Setter for the Suit.
 	 * @param s The suit to set the card to.
@@ -211,6 +211,22 @@ public class Card extends JButton {
 	@Override
 	public String toString() {
 		return this.rank + " of " + this.suit;
+	}
+	
+	public static Card getCardFromStr(String cardStr) {
+		if (cardStr == null || !cardStr.contains(" of ")) {
+            throw new IllegalArgumentException("Invalid card format");
+        }
+
+        String[] parts = cardStr.split(" of ");
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid card format");
+        }
+
+        Rank rank = Rank.valueOf(parts[0]);
+        Suit suit = Suit.valueOf(parts[1]);
+
+        return new Card(rank, suit);
 	}
 
 }

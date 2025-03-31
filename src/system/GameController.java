@@ -6,15 +6,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
+
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.Timer;
+
 import sysobj.AIPlayer;
 import sysobj.Card;
 import sysobj.Player;
@@ -33,9 +37,11 @@ public class GameController implements GameControllerListener {
 	private String playerName;
 	private GameServer server;
 	private GameClient client;
+	private int numHumanPlayers;
 	private int port;
 	private String ip;
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+	private int gameMode;
 
 	/**
 	 * Parameterized constructor for GameController. GameController acts as a bridge
@@ -60,9 +66,10 @@ public class GameController implements GameControllerListener {
 
 	public void gatherNetworkInfo(boolean isHost) {
 		// Set up the panel dynamically based on role
-		JPanel panel = new JPanel(new GridLayout(isHost ? 2 : 3, 2));
+		JPanel panel = new JPanel(new GridLayout(3, 2));
 		JTextField nameField = new JTextField(10);
 		JTextField portField = new JTextField(10);
+		JTextField numPlField = new JTextField(10);
 
 		// Only for client
 		JTextField ipField = isHost ? null : new JTextField(15);
@@ -71,9 +78,13 @@ public class GameController implements GameControllerListener {
 		panel.add(nameField);
 		panel.add(new JLabel("Port:"));
 		panel.add(portField);
+
 		if (!isHost) {
 			panel.add(new JLabel("IP Address:"));
 			panel.add(ipField);
+		} else {
+			panel.add(new JLabel("# of Human Opponents: "));
+			panel.add(numPlField);
 		}
 
 		// Show dialog
@@ -88,21 +99,37 @@ public class GameController implements GameControllerListener {
 
 				// Validate name and port
 				if (nameInput.isEmpty()) {
-					JOptionPane.showMessageDialog(null, "Name cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Name cannot be empty",
+							"Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				int port = Integer.parseInt(portInput);
 				if (port < 10000 || port > 65535) {
-					JOptionPane.showMessageDialog(null, "Port must be between 1024 and 65535", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null,
+							"Port must be between 10000 and 65535",
+							"Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
-				// Store name
+				// Store name locally
 				playerName = nameInput;
 
 				// Instantiate based on role
 				if (isHost) {
-					server = new GameServer(port, this);
+					String numPlInput = numPlField.getText().trim();
+					int numHumanOpponents = Integer.parseInt(numPlInput);
+
+					if (numHumanOpponents < 1 || numHumanOpponents > 3) {
+						JOptionPane.showMessageDialog(null,
+								"You can only play against 1-3 human players.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+
+					// store the number of human players locally, will be used later
+					numHumanPlayers = numHumanOpponents;
+
+					server = new GameServer(port, this, numHumanOpponents);
 					client = null;
 					System.out.println("Hosting as: " + playerName + " on port: " + port);
 
@@ -113,21 +140,28 @@ public class GameController implements GameControllerListener {
 						}
 					};
 
-					view.awaitConnectionsDialog(port, cancelAction);
+					view.awaitConnectionsDialog(port, cancelAction, numHumanOpponents);
 				} else {
 					String ipInput = ipField.getText().trim();
 					if (ipInput.isEmpty()) {
-						JOptionPane.showMessageDialog(null, "IP cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, "IP cannot be empty",
+								"Error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					client = new GameClient(port, ipInput, this);
+
+					// create a new client, send client's name to the server
+					client = new GameClient(port, ipInput, this, playerName);
+					client.sendName();
 					server = null;
-					System.out.println("Joining as: " + playerName + " at " + ipInput + ":" + port);
+					System.out.println("Joining as: " + playerName + " at " +
+							ipInput + ":" + port);
 				}
 			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(null, "Port must be a valid number", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Port must be a valid number",
+						"Error", JOptionPane.ERROR_MESSAGE);
 			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, "Error setting up network: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Error setting up network: " +
+						e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		} else {
 			System.out.println((isHost ? "Host" : "Join") + " Game canceled");
@@ -136,69 +170,232 @@ public class GameController implements GameControllerListener {
 
 	public void cancelHosting() {
 		if (server != null) {
-			// TODO: implmenet this
 			server.shutdown();
 			server = null;
 		}
 	}
-	
+
 	public void sendChat(String msg) {
-        String formattedMsg = playerName + ": " + msg; // Add player name
-        if (server != null) {
-            // Host: Broadcast to all clients and update own UI
-            server.broadcastChat(formattedMsg);
-            view.displayChat(formattedMsg);
-        } else if (server != null) {
-            // Client: Send to host
-            server.broadcastChat(formattedMsg);
-        }
-    }
-	
-	/* ---------- Methods Implemented from GameControllerListener ---------- */
-	
+		String formattedMsg = playerName + ": " + msg; // Add player name
+		if (server != null) {
+			// Host: Broadcast to all clients and update own UI
+			server.broadcastChat(formattedMsg);
+			view.displayChat(formattedMsg);
+		} else if (server != null) {
+			// Client: Send to host
+			server.broadcastChat(formattedMsg);
+		}
+	}
+
+	public void testingnewshit() {
+
+	}
+
+	public void startMultiplayerGame() {
+		gameMode = Const.MULTI_PLAYER;
+		int numHumanPlayers = 1 + server.getClientCount();
+		int numAiPlayers = 4 - numHumanPlayers;
+		int id = 0;
+
+		Vector<Player> players = new Vector<>();
+		players.add(new Player(playerName, id, id++, true)); // Host
+		for (int i = 0; i < server.getConnectedClients().size(); i++) {
+			Player newPlayer = new Player(server.getClientNames().get(i), id, id++, true);
+			players.add(newPlayer);
+		}
+
+		if (numAiPlayers > 0) {
+			model.loadAINames();
+			for (int i = 0; i < numAiPlayers; i++) {
+				Player AI = new AIPlayer(model.getAIPlayerName());
+				AI.setOrientation(id);
+				AI.setID(id++);
+				players.add(AI);
+			}
+		}
+
+		model.initMultiplayerGame(players);
+		model.initRound();
+
+		for (Player p : model.getPlayers()) {
+			view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
+			view.updatePlayerNames(p);
+			view.displayCardsInHand(p);
+		}
+		view.displayLastPlayedCard(model.getLastPlayedCard());
+
+		refreshListenersInPlayerHand(model.getActivePlayer());
+
+		server.requestViewRefresh(players, model.getLastPlayedCard(), model.getTurnOrderDirection());
+		processConsoleMsg(playerName, "currentTurn", "");
+	}
+
+
+	/* --------------------------------------------------------------------- */
+	/* ---------- METHODS IMPLEMENTED FROM GAMECONTROLLERLISTENER ---------- */
+	/* --------------------------------------------------------------------- */
+
 	@Override
-    public void onChatReceived(String msg) {
-        view.displayChat(msg); // Update UI for all players
-        if (server != null) {
-            server.broadcastChat(msg); // Host rebroadcasts to clients
-        }
-    }
+	public void onChatReceived(String msg) {
+		view.displayChat(msg); // Update UI for all players
+		if (server != null) {
+			server.broadcastChat(msg); // Host rebroadcasts to clients	
+		}
+	}
+
+	@Override
+	public void onConsoleMsgReceived(String optName, String msg, String optCard) {
+		view.sendConsoleMsg(optName, msg, optCard);
+		if (server != null) {
+
+			// Host rebroadcasts to clients
+			server.broadcastConsoleMsg(optName, msg, optCard);	
+		}
+	}
 
 	@Override
 	public void onPlayerMove(String move) {
-		// TODO Auto-generated method stub
+		System.out.println("onPlayerMove called: " + move);
+		if (client != null) {
+			//client.sendMove(move);
+		}
+	}
+
+	@Override
+	public void onClientDrawReceived() {
 
 	}
 
 	@Override
-	public void onPlayerConnected(int playerCount) {
-		view.updateWaitingStatus(playerCount);
+	public void onClientPlayReceived(String playData) {
+	    System.out.println("Playdata received from client: " + playData);
+	    String[] parts = playData.split("\\|"); // "MOVE|1|5 of Spades"
+	    int clientId = Integer.parseInt(parts[1]);
+	    Card playedCard = Card.getCardFromStr(parts[2]);
+	    Player activePlayer = model.getActivePlayer();
+	    
+	    System.out.println("Client id: " + clientId + " active Player Id: " + activePlayer.getId());
+
+	    if (activePlayer.getId() == clientId) {
+	        if (model.isPlayLegal(playedCard)) {
+	            System.out.println("Client successfully played card.");
+	            // Find and remove the matching card
+	            Vector<Card> playerHand = activePlayer.getHand();
+	            Card cardToRemove = null;
+	            for (Card c : playerHand) {
+	                if (c.toString().equals(playedCard.toString())) { // Or override equals()
+	                    cardToRemove = c;
+	                    break;
+	                }
+	            }
+	            if (cardToRemove != null) {
+	                playerHand.remove(cardToRemove);
+	                activePlayer.setHand(playerHand);
+	            } else {
+	                System.out.println("Card not found in hand: " + playedCard);
+	            }
+	            
+	            handleCardPlay(playedCard);
+	            processConsoleMsg(activePlayer.getName(), "playCard", playedCard.toString());
+	            model.setActivePlayer(model.getNextPlayer());
+	            server.requestViewRefresh(model.getPlayers(), playedCard, model.getTurnOrderDirection());
+	        } else {
+	            System.out.println("Client could not successfully play card.");
+	            //server.sendToClient(server.getConnectedClients().get(clientId - 1), "ERROR|Invalid move");
+	        }
+	    } else {
+	        System.out.println("Active player ID did not match client ID.");
+	    }
+	}
+
+	@Override
+	public void onPlayerConnected(int playerCount, int maxPlayers) {
+		view.updateWaitingStatus(playerCount, maxPlayers);
 
 	}
 
 	@Override
 	public void onPlayerDisconnect() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void onRoundOver() {
-		// TODO Auto-generated method stub
-
+		server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
 	}
 
 	@Override
 	public void onGameOver() {
-		// TODO Auto-generated method stub
 
 	}
-	
+
+	@Override
+	public void onViewRefresh(String idStr, String hand, String playedCard, String counts,
+			String playerNames, String playerScores, String turnDirection) {
+		int id = Integer.parseInt(idStr);
+		view.refreshClientHand(hand, this);
+
+		Card lastPlayed = Card.getCardFromStr(playedCard);
+		System.out.println("Setting the last played card in CLIENT'S model to: " + lastPlayed);
+		model.setLastPlayedCard(lastPlayed);
+		view.displayLastPlayedCard(lastPlayed);
+
+		String[] countArr = counts.split(",");
+		String[] nameArr = playerNames.split(",");
+		StringBuilder opponentCounts = new StringBuilder();
+		for (int i = 0; i < countArr.length; i++) {
+			if (i != id) {
+				opponentCounts.append(countArr[i]).append(",");
+			}
+		}
+		String oppCounts = opponentCounts.length() > 0 ? 
+				opponentCounts.substring(0, opponentCounts.length() - 1) : "0,0,0";
+		view.refreshOpponentHands(oppCounts);
+
+		String southName = nameArr[id];
+		view.refreshClientScoreTable(southName, id, nameArr, playerScores, counts, turnDirection);
+	}
+
 	@Override
 	public void onGameStateUpdated(String state) {
+		System.out.println("Game state update invoked.");
 		if (state.equals("Game Starting")) {
 			view.closeWaitingDialog();
-			
+			view.gameStartDialog();
+			startMultiplayerGame();
+		}
+	}
+
+	public void processConsoleMsg(String optName, String msg, String optCard) {
+		view.sendConsoleMsg(optName, msg, optCard);
+		if (optCard.isEmpty()) {
+			optCard = " ";
+		}
+		if (server != null) {
+			server.broadcastConsoleMsg(optName, msg, optCard);
+			server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
+		}
+
+	}
+
+	public void onHandRefreshed(Vector<Card> hand) {
+		for (Card c : hand) {
+			for (ActionListener al : c.getActionListeners()) {
+				c.removeActionListener(al);
+			}
+			c.addActionListener(new CardPlayListener());
+
+			// everything below here is testing drawing the border around a card that has
+			// been moused-over
+			c.addMouseListener(new MouseAdapter() {
+				public void mouseEntered(MouseEvent e) {
+					c.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+				}
+
+				public void mouseExited(MouseEvent e) {
+					c.setBorder(null);
+				}
+			});
 		}
 	}
 
@@ -213,12 +410,11 @@ public class GameController implements GameControllerListener {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void run() {
+	public void launchGame() {
 		// view.drawSplash();
 		view.drawMainWindow();
 		view.setSinglePlayerListener(new SinglePlayerListener());
 		view.setMultiPlayerListener(new MultiPlayerListener());
-		//view.setHostGameListener(new HostGameListener());
 		view.setJoinGameListener(new JoinGameListener());
 		view.setDisconnectListener(new DisconnectListener());
 		view.setAboutListener(new AboutListener());
@@ -246,6 +442,7 @@ public class GameController implements GameControllerListener {
 	public void handleStartRound() {
 		if (!model.isGameRunning()) {
 			playerName = view.getPlayerName();
+			gameMode = Const.SINGLE_PLAYER;
 			model.initGame(Const.SINGLE_PLAYER, playerName);
 		}
 		model.initRound();
@@ -284,12 +481,13 @@ public class GameController implements GameControllerListener {
 	public void processTurn() {
 		Player activePlayer = model.getActivePlayer();
 		String playerName = activePlayer.getName();
-		view.sendConsoleMsg(playerName, "currentTurn", "");
+		processConsoleMsg(playerName, "currentTurn", "");
 		System.out.println("It is now " + playerName + "'s turn.");
 
 		// Check game state, starting with the status of the current round
 		if (model.isRoundOver()) {
 
+			onRoundOver();
 			endRound();
 			// Check the status of the game
 			if (model.isGameOver()) {
@@ -358,13 +556,13 @@ public class GameController implements GameControllerListener {
 
 			switch (choice) {
 			case Const.PASS:
-				view.sendConsoleMsg(playerName, "passTurn", "");
+				processConsoleMsg(playerName, "passTurn", "");
 				System.out.println(AIPlayer.getName() + " is passing their turn.");
 				return;
 			case Const.PLAY:
 				cardToPlay = AIPlayer.decideCard(lastPlayedCard);
 				if (model.playCard(cardToPlay)) {
-					view.sendConsoleMsg(playerName, "playCard", cardToPlay.toString());
+					processConsoleMsg(playerName, "playCard", cardToPlay.toString());
 					handleCardActions(cardToPlay);
 					view.displayCardsInHand(AIPlayer);
 					view.displayLastPlayedCard(model.getLastPlayedCard());
@@ -375,7 +573,7 @@ public class GameController implements GameControllerListener {
 
 			case Const.DRAW:
 				model.drawCard();
-				view.sendConsoleMsg(playerName, "drawCard", "");
+				processConsoleMsg(playerName, "drawCard", "");
 				view.displayCardsInHand(AIPlayer);
 				break;
 			default:
@@ -404,7 +602,7 @@ public class GameController implements GameControllerListener {
 
 		model.setTurnOrderReversed(false);
 		model.tallyScores();
-		List<Player> players = model.getPlayers();
+		Vector<Player> players = model.getPlayers();
 		view.refreshScores(players, model.getTurnOrderDirection());
 		view.displayRoundWinner(model.getRoundWinner());
 	}
@@ -459,21 +657,21 @@ public class GameController implements GameControllerListener {
 		switch (c.getRank()) {
 		case TWO:
 			handleForcedDraw(2);
-			view.sendConsoleMsg(model.peekNextPlayer().getName(), "forceDraw",
+			processConsoleMsg(model.peekNextPlayer().getName(), "forceDraw",
 					(model.getNumTwosPlayed() * 2) + " cards!");
 			break;
 		case FOUR:
 			handleForcedDraw(4);
-			view.sendConsoleMsg(model.peekNextPlayer().getName(), "forceDraw", 4 + " cards!");
+			processConsoleMsg(model.peekNextPlayer().getName(), "forceDraw", 4 + " cards!");
 			break;
 		case EIGHT:
 			handleEight();
 			break;
 		case ACE:
-			view.sendConsoleMsg(model.getActivePlayer().getName(), "turnReversed", "");
+			processConsoleMsg(model.getActivePlayer().getName(), "turnReversed", "");
 			break;
 		case QUEEN:
-			view.sendConsoleMsg(model.getActivePlayer().getName(), "turnSkipped", "");
+			processConsoleMsg(model.getActivePlayer().getName(), "turnSkipped", "");
 			break;
 		default:
 			break;
@@ -514,7 +712,7 @@ public class GameController implements GameControllerListener {
 			Suit startingSuit = model.getLastPlayedCard().getSuit();
 			Suit chosenSuit = view.dialogEightSuit();
 			if (chosenSuit != null) {
-				view.sendConsoleMsg("", "suitChanged", chosenSuit.toString());
+				processConsoleMsg("", "suitChanged", chosenSuit.toString());
 				System.out.println("Player chose: " + chosenSuit);
 				model.getLastPlayedCard().setSuit(chosenSuit);
 			} else {
@@ -539,6 +737,10 @@ public class GameController implements GameControllerListener {
 	 * @since 23
 	 */
 	public void handleCardDraw() {
+		if (model.getActivePlayer() == null) {
+			System.out.println("Active Player is null in handleCardDraw()");
+			return;
+		}
 		Player activePlayer = model.getActivePlayer();
 		String playerName = activePlayer.getName();
 
@@ -546,24 +748,24 @@ public class GameController implements GameControllerListener {
 		if (activePlayer.isHuman()) {
 			// block player from drawing a card if they have a legal play in hand
 			if (activePlayer.hasLegalMove(model.getLastPlayedCard())) {
-				view.sendConsoleMsg("", "cantDraw", "");
+				processConsoleMsg("", "cantDraw", "");
 				System.out.println("Cannot draw a card if you have a legal play in hand. Play a card instead.");
 			} else {
 				model.drawCard();
-				view.sendConsoleMsg(playerName, "drawCard", "");
+				processConsoleMsg(playerName, "drawCard", "");
 				view.displayCardsInHand(activePlayer);
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 				refreshListenersInPlayerHand(activePlayer);
 
 				// if their hand is full after card draw, end their turn
 				if (activePlayer.getHandSize() >= Const.MAX_HAND_SIZE) {
-					view.sendConsoleMsg(activePlayer.getName(), "passTurn", "");
+					processConsoleMsg(activePlayer.getName(), "passTurn", "");
 					model.setActivePlayer(model.getNextPlayer());
 					processTurn();
 				}
 			}
 		} else {
-			view.sendConsoleMsg("", "notYourTurn", "");
+			processConsoleMsg("", "notYourTurn", "");
 			System.out.println("It is not your turn!");
 		}
 	}
@@ -584,22 +786,26 @@ public class GameController implements GameControllerListener {
 		Player activePlayer = model.getActivePlayer();
 		String activePlayerName = activePlayer.getName();
 
+		System.out.println("Inside hendleCardPlay, just before checking if active player is human: "+ activePlayer.isHuman());
 		if (activePlayer.isHuman()) {
 			if (model.playCard(c)) {
 				for (ActionListener al : c.getActionListeners()) {
 					c.removeActionListener(al);
 				}
-				view.sendConsoleMsg(activePlayerName, "playCard", c.toString());
+				processConsoleMsg(activePlayerName, "playCard", c.toString());
 				handleCardActions(c);
 				view.displayCardsInHand(activePlayer);
 				view.displayLastPlayedCard(c);
-				System.out.println(activePlayerName + "'s turn is now over.");
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
+				if (server != null) {
+					server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
+				}
 				model.setActivePlayer(model.getNextPlayer());
+				System.out.println("About to call processturn, next up is " + model.getActivePlayer().getName());
 				processTurn();
 			}
 		} else {
-			view.sendConsoleMsg("", "notYourTurn", "");
+			processConsoleMsg("", "notYourTurn", "");
 			System.out.println("It is not your turn!");
 		}
 	}
@@ -634,6 +840,38 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	public void refreshListenersInPlayerHand(String hand) {
+		// Dummy player - doesn’t need real one
+		Player tempPlayer = new Player("Temp", -1); 
+		String[] cardStrs = hand.split(",");
+		Vector<Card> cards = new Vector<>();
+		for (String cardStr : cardStrs) {
+			cards.add(Card.getCardFromStr(cardStr));
+		}
+		tempPlayer.setHand(cards);
+
+		for (Card c : tempPlayer.getHand()) {
+			for (ActionListener al : c.getActionListeners()) {
+				c.removeActionListener(al);
+			}
+			c.addActionListener(new CardPlayListener());
+
+			// everything below here is testing drawing the border around a card that has
+			// been moused-over
+			c.addMouseListener(new MouseAdapter() {
+				public void mouseEntered(MouseEvent e) {
+					c.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+				}
+
+				public void mouseExited(MouseEvent e) {
+					c.setBorder(null);
+				}
+			});
+		}
+	}
+
+
+
 	/* --------------------------------------------------- */
 	/* -------------------- LISTENERS -------------------- */
 	/* --------------------------------------------------- */
@@ -662,7 +900,23 @@ public class GameController implements GameControllerListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Card c = (Card) e.getSource();
-			handleCardPlay(c);
+
+			if (gameMode == Const.SINGLE_PLAYER) {
+				handleCardPlay(c);
+			} else {
+				if (server != null) {
+					handleCardPlay(c);
+				} else {
+					if (model.isPlayLegal(c, model.getLastPlayedCard())) {
+						
+						// this seems problematic, should check if its the client's turn too
+						view.removeCardFromHand(c);
+						client.sendPlay(c.toString());
+					} else {
+						System.out.println("Client tried to send a packet containing an illegal move to server.");
+					}
+				}
+			}
 		}
 	}
 
@@ -691,19 +945,6 @@ public class GameController implements GameControllerListener {
 			gatherNetworkInfo(true);
 		}
 	}
-
-	//	/**
-	//	 * Listens for a host game action.
-	//	 * 
-	//	 * @author Cailean Bernard
-	//	 * @since 23
-	//	 */
-	//	private class HostGameListener implements ActionListener {
-	//		@Override
-	//		public void actionPerformed(ActionEvent e) {
-	//			// Implement logic here
-	//		}
-	//	}
 
 	/**
 	 * Listens for a join game action.

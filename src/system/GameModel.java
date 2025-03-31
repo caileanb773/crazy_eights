@@ -42,6 +42,9 @@ public class GameModel {
 	 * @since 23
 	 * */
 	public GameModel() {
+		this.players = new Vector<>();
+		this.playedCards = new Vector<>();
+		this.aiNames = new Vector<>();
 	}
 
 	/**
@@ -54,11 +57,11 @@ public class GameModel {
 	 * */
 	public void initGame(int numHumanPlayers, String playerName) {
 		int numAIPlayers = 0;
-		players = new Vector<Player>();
+		players = new Vector<>();
 		pGameWinner = null;
 		pRoundWinner = null;
-		playedCards = new Vector<Card>();
-		aiNames = new Vector<String>();
+		playedCards = new Vector<>();
+		aiNames = new Vector<>();
 		isTurnOrderReversed = false;
 		currentTurn = 0;
 		numTwosPlayed = 0;
@@ -70,6 +73,10 @@ public class GameModel {
 			numAIPlayers = 3;
 		} else if (numHumanPlayers == 2) {
 			numAIPlayers = 2;
+			
+			//TODO: this might be a spot where i introduced a bug
+		} else if (numHumanPlayers == 3) {
+			numAIPlayers = 1;
 		} else {
 			System.out.println("GameModel constructor tried to set numAIPlayers to number other than 2/3.");
 		}
@@ -82,6 +89,17 @@ public class GameModel {
 		for (int i = 0; i < numAIPlayers; i++) {
 			this.players.add(createCPUOpponent(++orientation));
 		}
+	}
+	
+	public void initMultiplayerGame(Vector<Player> players) {
+		this.players = players;
+		playedCards = new Vector<>();
+		pGameWinner = null;
+		pRoundWinner = null;
+		isTurnOrderReversed = false;
+		currentTurn = 0;
+		numTwosPlayed = 0;
+		isGameRunning = false;
 	}
 
 	/**
@@ -285,10 +303,12 @@ public class GameModel {
 	 * */
 	public boolean playCard(Card card) {
 		// defensive programming, unlikely scenarios
-		if (!activePlayer.getHand().contains(card)) {
-			System.out.println("Player attempted to play a card that wasn't in their hand in GameModel.playCard().");
-			return false;
-		} else if (activePlayer.getHandSize() == Const.HAND_EMPTY){
+		/*
+		 * if (!activePlayer.getHand().contains(card)) { System.out.
+		 * println("Player attempted to play a card that wasn't in their hand in GameModel.playCard()."
+		 * ); return false; } else
+		 */
+		if (activePlayer.getHandSize() == Const.HAND_EMPTY){
 			System.out.println("Player attempted to play a card from an empty hand in GameModel.playCard().");
 			return false;
 		} else if (card == null) {
@@ -340,6 +360,22 @@ public class GameModel {
 		}
 
 		Card lastPlayedCard = playedCards.getLast();
+		Rank cardRank = card.getRank();
+		if (cardRank == Rank.EIGHT
+				|| cardRank == lastPlayedCard.getRank()
+				|| card.getSuit() == lastPlayedCard.getSuit()) {
+			return true;
+		}
+		System.out.println("Illegal move!");
+		return false;
+	}
+	
+	public boolean isPlayLegal(Card card, Card lastPlayedCard) {
+		if (card == null) {
+			System.out.println("GameModel.isPlayLegal() passed null card.");
+			return false;
+		}
+
 		Rank cardRank = card.getRank();
 		if (cardRank == Rank.EIGHT
 				|| cardRank == lastPlayedCard.getRank()
@@ -743,7 +779,7 @@ public class GameModel {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public List<Player> getPlayers() {
+	public Vector<Player> getPlayers() {
 		return this.players;
 	}
 
@@ -753,7 +789,7 @@ public class GameModel {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public List<Card> getDeck() {
+	public Vector<Card> getDeck() {
 		return this.library;
 	}
 
@@ -763,7 +799,7 @@ public class GameModel {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public List<Card> getPlayedCards() {
+	public Vector<Card> getPlayedCards() {
 		return this.playedCards;
 	}
 
@@ -835,7 +871,7 @@ public class GameModel {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public List<Player> getGameWinners() {
+	public Vector<Player> getGameWinners() {
 		return this.pGameWinner;
 	}
 
@@ -868,6 +904,10 @@ public class GameModel {
 	 */
 	public int getNumTwosPlayed() {
 		return this.numTwosPlayed;
+	}
+	
+	public void setLastPlayedCard(Card c) {
+		this.playedCards.add(c);
 	}
 
 }

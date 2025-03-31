@@ -19,9 +19,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Vector;
+
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -46,8 +47,10 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
+
 import sysobj.Card;
 import sysobj.Player;
+import sysobj.Rank;
 import sysobj.Suit;
 
 /**
@@ -829,6 +832,111 @@ public class GameView extends JFrame {
 		handDisplay.repaint();
 		resizeWindow(handDisplay);
 	}
+	
+	public void removeCardFromHand(Card card) {
+	    playerSouthCards.remove(card);
+	    playerSouthCards.revalidate();
+	    playerSouthCards.repaint();
+	}
+
+	public void refreshClientHand(String hand, GameControllerListener listener) {
+		String[] handStrArr = hand.split(",");
+		Vector<Card> newHand = new Vector<>();
+
+		playerSouthCards.removeAll();
+
+		// convert the string representatoins of cards to card objects, add to temp hand
+		for (String c : handStrArr) {
+			newHand.add(Card.getCardFromStr(c));
+		}
+
+		// remove border, fetch the image, and add card imgs to the panel for the player
+		for (int i = 0; i < newHand.size()-1; i++) {
+			Card c = newHand.get(i);
+			c.setBorder(null);
+			c.fetchCardImg(false, true, false);
+			playerSouthCards.add(c);
+		}
+		Card lastCard = newHand.getLast();
+		lastCard.setBorder(null);
+		lastCard.fetchCardImg(false, false, false);
+		playerSouthCards.add(lastCard);
+
+		listener.onHandRefreshed(newHand);
+		playerSouthCards.revalidate();
+		playerSouthCards.repaint();
+		resizeWindow(playerSouthCards);
+	}
+
+	public void refreshOpponentHands(String opponentCardCount) {
+		
+		// remove the cards existing in each zone
+		playerEastCards.removeAll();
+		playerNorthCards.removeAll();
+		playerWestCards.removeAll();
+		
+		// fall back on displaying 0 cards for each player if the string is empty
+	    if (opponentCardCount.isEmpty()) {
+	    	System.out.println("refreshOpponentHands() was passed an empty string.");
+	        refreshOppHandsHelper(0, Const.EAST, playerEastCards);
+	        refreshOppHandsHelper(0, Const.NORTH, playerNorthCards);
+	        refreshOppHandsHelper(0, Const.WEST, playerWestCards);
+	        return;
+	    }
+	    String[] oppCardCountArr = opponentCardCount.split(",");
+	    int oppEast = oppCardCountArr.length > 0 ? Integer.parseInt(oppCardCountArr[0]) : 0;
+	    int oppNorth = oppCardCountArr.length > 1 ? Integer.parseInt(oppCardCountArr[1]) : 0;
+	    int oppWest = oppCardCountArr.length > 2 ? Integer.parseInt(oppCardCountArr[2]) : 0;
+	    
+	    refreshOppHandsHelper(oppEast, Const.EAST, playerEastCards);
+	    refreshOppHandsHelper(oppNorth, Const.NORTH, playerNorthCards);
+	    refreshOppHandsHelper(oppWest, Const.WEST, playerWestCards);
+	}
+
+	private void refreshOppHandsHelper(int numCards, int orientation, JPanel panel) {
+		for (int i = 0; i < numCards; i++) {
+			Card card = new Card(Rank.TWO, Suit.HEARTS);
+			card.setBorder(null);
+			boolean isLastCard = (i == numCards - 1);
+
+			// Only South sees their cards
+			boolean isHidden = (orientation != Const.SOUTH); 
+
+			if (orientation == Const.NORTH || orientation == Const.SOUTH) {
+				// FlowLayout (Left-to-right)
+				if (!isLastCard) {
+
+					// Left slice for all but last card
+					card.fetchCardImg(false, true, isHidden);  
+				} else {
+
+					// Full card for last card
+					card.fetchCardImg(false, false, isHidden); 
+				}
+			} else if (orientation == Const.EAST || orientation == Const.WEST) {
+				// GridBagLayout (Top-to-bottom)
+				if (!isLastCard) {
+
+					// Top slice for all but last card
+					card.fetchCardImg(true, false, isHidden);  
+				} else {
+
+					// Full card for last card
+					card.fetchCardImg(false, false, isHidden); 
+				}
+			}
+
+			if (orientation == Const.EAST || orientation == Const.WEST) {
+				panel.add(card, myGBC);
+			} else {
+				panel.add(card);
+			}
+		}
+		
+		panel.revalidate();
+		panel.repaint();
+		resizeWindow(panel);
+	}
 
 	/**
 	 * Update the labels that represent each player's name, i.e. when the game
@@ -878,15 +986,58 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void refreshScores(List<Player> players, boolean isReversed) {
-
+	public void refreshScores(Vector<Player> players, boolean isReversed) {
 		for (Player p : players) {
 			updateScoreTable(p);
 		}
-		if (isReversed) {
-			turnOrder.setText(translatable.getString("counterclockwise").toUpperCase());
-		} else {
-			turnOrder.setText(translatable.getString("clockwise").toUpperCase());
+		
+		turnOrder.setText(isReversed ? translatable.getString("counterclockwise").toUpperCase() : 
+			translatable.getString("clockwise").toUpperCase());
+		
+	}
+	
+	public void refreshClientScoreTable(String southName, int id, String[] names, String scores, String counts, String turnDirection) {
+	    String[] scoreArr = scores.split(",");	    
+	    String[] countArr = counts.split(",");
+	    boolean isReversed = Boolean.parseBoolean(turnDirection);
+	    
+	    turnOrder.setText(isReversed ? translatable.getString("counterclockwise").toUpperCase() : 
+			translatable.getString("clockwise").toUpperCase());
+	    
+	    // South = local player. Display name + card count
+	    playerSouthName.setText(southName + " (" + countArr[id] + ")");
+	    
+	    // Rotate others: West, North, East. Modulus is less readable imo but it keeps the code neater
+	    int playerCount = names.length;
+	    int westIdx = (id + 1) % playerCount;
+	    int northIdx = (id + 2) % playerCount;
+	    int eastIdx = (id + 3) % playerCount;
+	    
+	    playerWestName.setText(names[westIdx] + " (" + countArr[westIdx] + ")");
+	    playerNorthName.setText(names[northIdx] + " (" + countArr[northIdx] + ")");
+	    playerEastName.setText(names[eastIdx] + " (" + countArr[eastIdx] + ")");
+	    
+	    for (int i = 0; i < names.length; i++) {
+			refreshClientScoreHelper(names[i], countArr[i], scoreArr[i], i);
+		}
+	}
+	
+	private void refreshClientScoreHelper(String name, String numCards, String score, int orientation) {
+		switch (orientation) {
+		case 0: 
+			playerSouthScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
+			break;
+		case 1:
+			playerEastScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
+			break;
+		case 2:
+			playerNorthScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
+			break;
+		case 3: 
+			playerWestScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
+			break;
+			default:
+				System.out.println("Default case reached in GameView.refreshClientScoreHelper().");
 		}
 	}
 
@@ -920,11 +1071,11 @@ public class GameView extends JFrame {
 	/* -------------------- DIALOGS/POPUPS -------------------- */
 	/* -------------------------------------------------------- */
 
-	public void awaitConnectionsDialog(int port, ActionListener cancelAction) {
+	public void awaitConnectionsDialog(int port, ActionListener cancelAction, int maxPlayers) {
 		waitingDialog = new JDialog((Frame) null, "Hosting Game", true);
 		waitingDialog.setLayout(new BorderLayout());
 
-		connectionStatus = new JLabel("Waiting for connections (0/3)...");
+		connectionStatus = new JLabel("Waiting for connections (0/" + maxPlayers + ")...");
 		waitingDialog.add(connectionStatus, BorderLayout.CENTER);
 		String ip;
 
@@ -951,18 +1102,17 @@ public class GameView extends JFrame {
 		JPanel cancelPanel = new JPanel();
 		cancelPanel.add(btnCancel);
 		waitingDialog.add(cancelPanel, BorderLayout.SOUTH);
-
 		waitingDialog.pack();
 		waitingDialog.setLocationRelativeTo(null);
 		waitingDialog.setVisible(true);
-
 	}
 
-	public void updateWaitingStatus(int playerCount) {
+	public void updateWaitingStatus(int playerCount, int maxPlayers) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				if (connectionStatus != null) {
-					connectionStatus.setText("Waiting for connections (" + playerCount + "/3)...");
+					connectionStatus.setText("Waiting for connections (" + 
+							playerCount + "/" + maxPlayers + ")...");
 				}
 			}
 		});
@@ -1021,7 +1171,7 @@ public class GameView extends JFrame {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void displayGameWinners(List<Player> winners) {
+	public void displayGameWinners(Vector<Player> winners) {
 		StringBuilder sb = new StringBuilder();
 		for (Player p : winners) {
 			sb.append(p.getName());
@@ -1251,6 +1401,10 @@ public class GameView extends JFrame {
 		musicToggle.setText(translatable.getString("music"));
 		mSinglePlayer.setText(translatable.getString("singlePlayer"));
 		mMultiPlayer.setText(translatable.getString("multiplayer"));
+	}
+
+	public void gameStartDialog() {
+		JOptionPane.showMessageDialog(null, "Game is starting!", "Let's play!", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 

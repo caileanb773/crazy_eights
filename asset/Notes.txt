@@ -1,6 +1,7 @@
 --- BUGS ---
 
 -if you start a new game in the middle of an ai player's turn, they keep playing
+-when the player draws their 12th card, if that card is playable, their turn is still passed
 
 --- CHANGES ---
 
@@ -12,3 +13,5 @@
 	-repaint all cards in all zones (lastPlayedCard persists)
 	-remove all names from all zones (names persist for some reason; where are they drawn?)
 	-set all the text for the scoreboard to be blank/remove the text entirely
+	
+-if there is a single player game running, block out multipllayer option, and vice versa

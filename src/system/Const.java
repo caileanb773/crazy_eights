@@ -108,6 +108,14 @@ public class Const {
 	 * @since 23
 	 */
 	public static final int SINGLE_PLAYER = 1;
+	
+	/**
+	 * Represents multi-player mode.
+	 * Default: @value 2
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public static final int MULTI_PLAYER = 2;
 
 	/**
 	 * Represents an empty hand.

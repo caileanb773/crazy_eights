@@ -33,7 +33,7 @@ public class Main {
 		GameModel model = new GameModel();
 		GameView view = new GameView();
 		GameController game = new GameController(model, view);
-		game.run();
+		game.launchGame();
 	}
 
 }
