@@ -32,14 +32,6 @@ public class GameServer {
 		acceptConnections();
 	}
 
-	public void createGame() {
-
-	}
-
-	public void startServer(int numPlayers) {
-
-	}
-
 	public void acceptConnections() {
 		acceptThread = new Thread(new Runnable() {
 			public void run() {
@@ -74,45 +66,54 @@ public class GameServer {
 		public void run() {
 			try {
 				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-                out.println("ID|" + clientId);
+				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out.println("ID|" + clientId);
 				String line;
 				while ((line = in.readLine()) != null && !client.isClosed()) {
 					String[] packet = line.split("\\|");
 
-					// if the packet length is less than 2, packet length is malformed somehow
-					if (packet.length >= 2) {
-						switch (packet[0]) {
-						case "NAME":
+					// switching on packet type (CHAT, TURN, PLAY, DRAW, etc...)
+					switch (packet[0]) {
 
-							// synchronize this so that multiple threads don't access at once
-							synchronized (clientNames) {
-								clientNames.add(packet[1]);
-								System.out.println("Client name added: " + packet[1]);
-							}
-							break;
-						case "CHAT":
-							if (packet.length != 2) {
-								StringBuilder sb = new StringBuilder();
-								for (int i=1;i<packet.length;i++) {
-									sb.append(packet[i]);
-								}
-								listener.onChatReceived(sb.toString());
-							} else {
-								listener.onChatReceived(packet[1]);
-							}
-							System.out.println("Chat received: " + packet[1]);
-							break;
-						case "PLAY":
-							System.out.println("Client " + packet[1] + " is trying to play card: " + packet[2]);
-							listener.onClientPlayReceived(line);
-							break;
-						default:
-							System.out.println("Unknown packet type: " + packet[0]);
-							break;
+					case "NAME":
+						// synchronize this so that multiple threads don't access at once
+						synchronized (clientNames) {
+							System.out.println("Client name added: " + packet[1]);
+							clientNames.add(packet[1]);
 						}
-					} else {
-						System.out.println("Malformed packet: " + line);
+						break;
+
+					case "CHAT":
+
+						// In case users include the '|' char in their chat msg
+						if (packet.length != 2) {
+							StringBuilder sb = new StringBuilder();
+							for (int i=1;i<packet.length;i++) {
+								sb.append(packet[i]);
+							}
+							listener.onChatReceived(sb.toString());
+							System.out.println("Chat received: " + sb.toString());
+
+						} else {
+							listener.onChatReceived(packet[1]);
+							System.out.println("Chat received: " + packet[1]);
+						}
+						break;
+
+					case "PLAY":
+						System.out.println("Server received a play request packet: " +
+								packet[1] + " is trying to play card: " + packet[2]);
+						listener.onClientPlayReceived(line);
+						break;
+
+					case "DRAW":
+						System.out.println("Server received a draw request packet: " );
+						listener.onClientDrawReceived(line);
+						break;
+
+					default:
+						System.out.println("Unknown packet type: " + packet[0]);
+						break;
 					}
 				}
 			} catch (IOException e) {
@@ -122,27 +123,52 @@ public class GameServer {
 	}
 
 	public void broadcastChat(String msg) {
+		System.out.println("Server is broadcasting a chat to all connected clients: " + msg);
 		for (Socket client : connectedPlayers) {
 			try {
 				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
 				out.println("CHAT|" + msg);
-				System.out.println("Broadcasting chat: " + msg + " to " + client.getInetAddress());
 			} catch (IOException e) {
-				System.out.println("Failed to broadcast chat to a client.");
+				System.out.println("Failed to broadcast chat to a client." + e.getStackTrace());
 			}
 		}
 	}
 
 	public void broadcastConsoleMsg(String optName, String msg, String optCard) {
+		System.out.println("Server is broadcasting console message to all connected clients: " +
+				optName + " " + msg + " " + optCard);
 		for (Socket client : connectedPlayers) {
 			try {
 				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
 				out.println("CONSOLE|" + optName + "|" + msg + "|" + optCard);
-				System.out.println("Broadcasting console message: " + optName +
-						" " + msg + " " + optCard + " to " + client.getInetAddress());
 			} catch (IOException e) {
-				System.out.println("Failed to broadcast chat to a client.");
+				System.out.println("Failed to broadcast chat to a client." + e.getStackTrace());
 			}
+		}
+	}
+
+	public void broadcastRoundWinner(String winnerName) {
+		System.out.println("Server is broadcasting round winner to all connected clients.");
+		for (Socket client : connectedPlayers) {
+			try {
+				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out.println("ROUNDOVER" + "|" + winnerName);
+			} catch (IOException e) {
+				System.out.println("Failed to broadcast round winner to client." + e.getStackTrace());
+			}
+		}
+	}
+	
+	public void requestSuitChoice(int clientId) {
+		System.out.println("Server is sending a request to client " + clientId + " to choose a suit.");
+
+		// connectedPlayers doesn't have the host, so subtract 1 from client Id
+		Socket client = connectedPlayers.get(clientId - 1);
+		try {
+			PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+			out.println("SUIT" + "|" + client);
+		} catch (IOException e) {
+			System.out.println("Failed to request suit from client " + clientId);
 		}
 	}
 
@@ -153,39 +179,42 @@ public class GameServer {
 	public void terminateGame() {
 
 	}
-	
+
 	public Vector<Socket> getConnectedClients(){
 		return this.connectedPlayers;
 	}
 
 	public void requestViewRefresh(Vector<Player> players, Card lastPlayedCard, boolean turnDirection) {
-	    for (int i = 0; i < connectedPlayers.size(); i++) {
-	        try {
-	            PrintWriter out = new PrintWriter(connectedPlayers.get(i).getOutputStream(), true);
-	            Player clientPlayer = players.get(i + 1);
-	            String hand = clientPlayer.stringifyHand();
-	            String played = lastPlayedCard.toString();
-	            
-	            StringBuilder sbCardCount = new StringBuilder();
-	            StringBuilder sbPlayerNames = new StringBuilder();
-	            StringBuilder sbPlayerScores = new StringBuilder();
-	            
-	            for (int j = 0; j < players.size(); j++) {
-	                sbCardCount.append(players.get(j).getHand().size()).append(",");
-	                sbPlayerNames.append(players.get(j).getName().trim().replace(",", ";")).append(",");
-	                sbPlayerScores.append(players.get(j).getScore()).append(",");
-	            }
-	            
-	            String counts = sbCardCount.substring(0, sbCardCount.length() - 1);
-	            String names = sbPlayerNames.substring(0, sbPlayerNames.length() - 1);
-	            String scores = sbPlayerScores.substring(0, sbPlayerScores.length() - 1);
-	            
-	            out.println("REFRESH|" + (i + 1) + "|" + hand + "|" + played + "|" + counts + "|" + names + "|" + scores + "|" + turnDirection);
-	            System.out.println("Refresh sent to client " + i + ": " + hand);
-	        } catch (IOException e) {
-	            System.out.println("Failed to refresh client " + i + ": " + e.getMessage());
-	        }
-	    }
+		for (int i = 0; i < connectedPlayers.size(); i++) {
+			try {
+				PrintWriter out = new PrintWriter(connectedPlayers.get(i).getOutputStream(), true);
+				Player clientPlayer = players.get(i + 1);
+				String hand = clientPlayer.stringifyHand();
+				String played = lastPlayedCard.toString();
+
+				StringBuilder sbCardCount = new StringBuilder();
+				StringBuilder sbPlayerNames = new StringBuilder();
+				StringBuilder sbPlayerScores = new StringBuilder();
+
+				// build string versions of each player's information
+				for (int j = 0; j < players.size(); j++) {
+					sbCardCount.append(players.get(j).getHand().size()).append(",");
+					sbPlayerNames.append(players.get(j).getName().trim().replace(",", ";")).append(",");
+					sbPlayerScores.append(players.get(j).getScore()).append(",");
+				}
+
+				// remove the trailing comma from all
+				String counts = sbCardCount.substring(0, sbCardCount.length() - 1);
+				String names = sbPlayerNames.substring(0, sbPlayerNames.length() - 1);
+				String scores = sbPlayerScores.substring(0, sbPlayerScores.length() - 1);
+
+				// 			packetType	 clientID		hand		lastPlayed		no. cards	  playerNames	playerScores	turnDir
+				out.println("REFRESH|" + (i + 1) + "|" + hand + "|" + played + "|" + counts + "|" + names + "|" + scores + "|" + turnDirection);
+				System.out.println("Refresh sent to client " + i + ": " + hand);
+			} catch (IOException e) {
+				System.out.println("Failed to refresh client " + i + ": " + e.getMessage());
+			}
+		}
 	}
 
 	public void shutdown() {

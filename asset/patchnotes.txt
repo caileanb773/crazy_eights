@@ -131,3 +131,14 @@ Assignment 3.2 Patchnotes:
 -added field nextclientid in server
 -added new field gamemode to controller
 -added new method removeCardFromHand() to gameview
+-added field BOOLEAN isHost in player
+-added getter and setter for isHost
+-removed method onplayermove() from listener interface, split into play/draw methods instead
+-added method getHost() to the model
+-added method broadcastRoundWinner() to server
+-removed methods startGame() and createServer() from server
+-added overloaded displayRoundWinner(String name) in view
+-card counts are now displayed with player names in the game area, instead of the score box. all information in one place
+-added method requestSuitChoice() to server; sends a jdialog popup to a single client whenever they play an 8
+-added method endMultiPlayerGame() in controller
+-added method endmultiplayerround() in controller

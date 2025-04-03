@@ -701,7 +701,7 @@ public class GameView extends JFrame {
 		JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(panel);
 
 		// Only pack the frame during initialization; once per play-zone
-		if (packCalls != 4) {
+		if (packCalls <= 4) {
 			frame.pack();
 			packCalls++;
 		}			
@@ -832,14 +832,23 @@ public class GameView extends JFrame {
 		handDisplay.repaint();
 		resizeWindow(handDisplay);
 	}
-	
+
 	public void removeCardFromHand(Card card) {
-	    playerSouthCards.remove(card);
-	    playerSouthCards.revalidate();
-	    playerSouthCards.repaint();
+		playerSouthCards.remove(card);
+		playerSouthCards.revalidate();
+		playerSouthCards.repaint();
 	}
 
 	public void refreshClientHand(String hand, GameControllerListener listener) {
+
+		if (hand.isEmpty()) {
+			// No cards to display
+			playerSouthCards.removeAll();
+			playerSouthCards.revalidate();
+			playerSouthCards.repaint();
+			return;
+		}
+
 		String[] handStrArr = hand.split(",");
 		Vector<Card> newHand = new Vector<>();
 
@@ -857,40 +866,56 @@ public class GameView extends JFrame {
 			c.fetchCardImg(false, true, false);
 			playerSouthCards.add(c);
 		}
+
+		// last card in hand is displayed as a full card image
 		Card lastCard = newHand.getLast();
 		lastCard.setBorder(null);
 		lastCard.fetchCardImg(false, false, false);
 		playerSouthCards.add(lastCard);
 
+		// add listeners to the client's hand
 		listener.onHandRefreshed(newHand);
 		playerSouthCards.revalidate();
 		playerSouthCards.repaint();
 		resizeWindow(playerSouthCards);
 	}
 
-	public void refreshOpponentHands(String opponentCardCount) {
-		
-		// remove the cards existing in each zone
+	public void refreshOpponentHands(String opponentCardCount, int clientId) {
+		// Remove existing cards
 		playerEastCards.removeAll();
 		playerNorthCards.removeAll();
 		playerWestCards.removeAll();
-		
-		// fall back on displaying 0 cards for each player if the string is empty
-	    if (opponentCardCount.isEmpty()) {
-	    	System.out.println("refreshOpponentHands() was passed an empty string.");
-	        refreshOppHandsHelper(0, Const.EAST, playerEastCards);
-	        refreshOppHandsHelper(0, Const.NORTH, playerNorthCards);
-	        refreshOppHandsHelper(0, Const.WEST, playerWestCards);
-	        return;
-	    }
-	    String[] oppCardCountArr = opponentCardCount.split(",");
-	    int oppEast = oppCardCountArr.length > 0 ? Integer.parseInt(oppCardCountArr[0]) : 0;
-	    int oppNorth = oppCardCountArr.length > 1 ? Integer.parseInt(oppCardCountArr[1]) : 0;
-	    int oppWest = oppCardCountArr.length > 2 ? Integer.parseInt(oppCardCountArr[2]) : 0;
-	    
-	    refreshOppHandsHelper(oppEast, Const.EAST, playerEastCards);
-	    refreshOppHandsHelper(oppNorth, Const.NORTH, playerNorthCards);
-	    refreshOppHandsHelper(oppWest, Const.WEST, playerWestCards);
+
+		// Handle empty string. highly unlikely
+		if (opponentCardCount.isEmpty()) {
+			System.out.println("refreshOpponentHands() was passed an empty string.");
+			refreshOppHandsHelper(0, Const.EAST, playerEastCards);
+			refreshOppHandsHelper(0, Const.NORTH, playerNorthCards);
+			refreshOppHandsHelper(0, Const.WEST, playerWestCards);
+			return;
+		}
+
+		String[] oppCardCountArr = opponentCardCount.split(",");
+
+		// Total opponents (should be 3: 4 players - 1 self)
+		int numOpponents = oppCardCountArr.length;
+		// Rotate indices based on clientId
+		// East: Previous player (clientId - 1)
+		// West: Next player (clientId + 1)
+		// North: Next + 1 player (clientId + 2)
+		int eastIdx = (clientId - 1 + numOpponents) % numOpponents;
+		int westIdx = (clientId + 1) % numOpponents;
+		int northIdx = (clientId + 2) % numOpponents;
+
+		int oppEast = Integer.parseInt(oppCardCountArr[eastIdx]);
+		int oppWest = Integer.parseInt(oppCardCountArr[westIdx]);
+		int oppNorth = Integer.parseInt(oppCardCountArr[northIdx]);
+
+		System.out.println("Client ID: " + clientId + ", East: " + oppEast + ", West: " + oppWest + ", North: " + oppNorth);
+
+		refreshOppHandsHelper(oppEast, Const.EAST, playerEastCards);
+		refreshOppHandsHelper(oppNorth, Const.NORTH, playerNorthCards);
+		refreshOppHandsHelper(oppWest, Const.WEST, playerWestCards);
 	}
 
 	private void refreshOppHandsHelper(int numCards, int orientation, JPanel panel) {
@@ -932,7 +957,7 @@ public class GameView extends JFrame {
 				panel.add(card);
 			}
 		}
-		
+
 		panel.revalidate();
 		panel.repaint();
 		resizeWindow(panel);
@@ -950,10 +975,10 @@ public class GameView extends JFrame {
 		String playerName = p.getName();
 		int orientation = p.getOrientation();
 		switch (orientation) {
-		case Const.NORTH: playerNorthName.setText(playerName); break;
-		case Const.EAST: playerEastName.setText(playerName); break;
-		case Const.SOUTH: playerSouthName.setText(playerName); break;
-		case Const.WEST: playerWestName.setText(playerName); break;
+		case Const.NORTH: playerNorthName.setText(playerName + " (" + p.getHandSize() + ")"); break;
+		case Const.EAST: playerEastName.setText(playerName + " (" + p.getHandSize() + ")"); break;
+		case Const.SOUTH: playerSouthName.setText(playerName + " (" + p.getHandSize() + ")"); break;
+		case Const.WEST: playerWestName.setText(playerName + " (" + p.getHandSize() + ")"); break;
 		default: System.out.println("Default case reached in GameView.updateNames().");
 		}
 	}
@@ -966,9 +991,7 @@ public class GameView extends JFrame {
 	 * @since 23
 	 */
 	private void updateScoreTable(Player p) {		
-		String labelText = p.getName() + " = " + p.getScore() + ", " +
-				translatable.getString("cards").toUpperCase() + " = " +
-				p.getHandSize();
+		String labelText = p.getName() + " = " + p.getScore();
 		switch (p.getOrientation()) {
 		case Const.NORTH: playerNorthScore.setText(labelText); break;
 		case Const.EAST: playerEastScore.setText(labelText); break;
@@ -989,55 +1012,47 @@ public class GameView extends JFrame {
 	public void refreshScores(Vector<Player> players, boolean isReversed) {
 		for (Player p : players) {
 			updateScoreTable(p);
+			updatePlayerNames(p);
 		}
-		
+
 		turnOrder.setText(isReversed ? translatable.getString("counterclockwise").toUpperCase() : 
 			translatable.getString("clockwise").toUpperCase());
-		
+
 	}
-	
+
 	public void refreshClientScoreTable(String southName, int id, String[] names, String scores, String counts, String turnDirection) {
-	    String[] scoreArr = scores.split(",");	    
-	    String[] countArr = counts.split(",");
-	    boolean isReversed = Boolean.parseBoolean(turnDirection);
-	    
-	    turnOrder.setText(isReversed ? translatable.getString("counterclockwise").toUpperCase() : 
+		String[] scoreArr = scores.split(",");	    
+		String[] countArr = counts.split(",");
+		boolean isReversed = Boolean.parseBoolean(turnDirection);
+
+		turnOrder.setText(isReversed ? translatable.getString("counterclockwise").toUpperCase() : 
 			translatable.getString("clockwise").toUpperCase());
-	    
-	    // South = local player. Display name + card count
-	    playerSouthName.setText(southName + " (" + countArr[id] + ")");
-	    
-	    // Rotate others: West, North, East. Modulus is less readable imo but it keeps the code neater
-	    int playerCount = names.length;
-	    int westIdx = (id + 1) % playerCount;
-	    int northIdx = (id + 2) % playerCount;
-	    int eastIdx = (id + 3) % playerCount;
-	    
-	    playerWestName.setText(names[westIdx] + " (" + countArr[westIdx] + ")");
-	    playerNorthName.setText(names[northIdx] + " (" + countArr[northIdx] + ")");
-	    playerEastName.setText(names[eastIdx] + " (" + countArr[eastIdx] + ")");
-	    
-	    for (int i = 0; i < names.length; i++) {
-			refreshClientScoreHelper(names[i], countArr[i], scoreArr[i], i);
+
+		// South = local player. Display name + card count
+		playerSouthName.setText(southName + " (" + countArr[id] + ")");
+
+		// Rotate others: West, North, East. Modulus is less readable imo but it keeps the code neater
+		int playerCount = names.length;
+		int westIdx = (id + 1) % playerCount;
+		int northIdx = (id + 2) % playerCount;
+		int eastIdx = (id + 3) % playerCount;
+
+		playerWestName.setText(names[westIdx] + " (" + countArr[westIdx] + ")");
+		playerNorthName.setText(names[northIdx] + " (" + countArr[northIdx] + ")");
+		playerEastName.setText(names[eastIdx] + " (" + countArr[eastIdx] + ")");
+
+		for (int i = 0; i < names.length; i++) {
+			refreshClientScoreHelper(names[i], scoreArr[i], i);
 		}
 	}
-	
-	private void refreshClientScoreHelper(String name, String numCards, String score, int orientation) {
-		switch (orientation) {
-		case 0: 
-			playerSouthScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
-			break;
-		case 1:
-			playerEastScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
-			break;
-		case 2:
-			playerNorthScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
-			break;
-		case 3: 
-			playerWestScore.setText(name + " = " + score + ", " + translatable.getString("cards").toUpperCase() + " = " + numCards);
-			break;
-			default:
-				System.out.println("Default case reached in GameView.refreshClientScoreHelper().");
+
+	private void refreshClientScoreHelper(String name, String score, int orientation) {
+		switch (orientation) {		
+		case 0: playerSouthScore.setText(name + " = " + score); break;
+		case 1: playerWestScore.setText(name + " = " + score); break;
+		case 2: playerNorthScore.setText(name + " = " + score); break;
+		case 3: playerEastScore.setText(name + " = " + score); break;
+		default: System.out.println("Default case reached in GameView.refreshClientScoreHelper().");
 		}
 	}
 
@@ -1166,6 +1181,17 @@ public class GameView extends JFrame {
 	}
 
 	/**
+	 * Displays the round winner in a dialog.
+	 * @param player The winner of the round.
+	 * @author Cailean Bernard
+	 * @since 23
+	 */
+	public void displayRoundWinner(String playerName) {
+		JOptionPane.showMessageDialog(this, playerName + " " + translatable.getString("roundWinner") +"!",
+				translatable.getString("roundWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	/**
 	 * Displays the game winner in a dialog.
 	 * @param winners The winners of the game.
 	 * @author Cailean Bernard
@@ -1262,6 +1288,7 @@ public class GameView extends JFrame {
 
 		try {
 			doc.insertString(doc.getLength(), msg + "\n", attrs);
+			chatDisplay.setCaretPosition(doc.getLength());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -1328,10 +1355,15 @@ public class GameView extends JFrame {
 			translatedStr = translatable.getString("turnSkipped");
 			completedStr = optName + " " + translatedStr;
 			break;
+		case "newRound":
+			translatedStr = translatable.getString("newRound");
+			completedStr = translatedStr;
+			break;
 		}
 
 		try {
 			doc.insertString(doc.getLength(), completedStr + "\n", attrs);
+			chatDisplay.setCaretPosition(doc.getLength());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}

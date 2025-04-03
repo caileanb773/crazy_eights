@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Vector;
 import sysobj.AIPlayer;
 import sysobj.Card;
@@ -84,6 +83,7 @@ public class GameModel {
 		int orientation = 0;
 		Player humanPlayer = new Player(playerName, orientation);
 		humanPlayer.setHuman(true);
+		humanPlayer.setHost(true);
 		players.add(humanPlayer);
 
 		for (int i = 0; i < numAIPlayers; i++) {
@@ -320,21 +320,7 @@ public class GameModel {
 			if (isPlayLegal(card)) {
 				System.out.println(activePlayer.getName() + " is playing a " + card.toString());
 				activePlayer.removeCardFromHand(card);
-				playedCards.add(card);
-				
-				// Testing implementing professor's weird play-2 mechanic
-				/* ---------------------------------------------------------- */
-				
-//				if (card.getRank() != Rank.TWO) {
-//					forceDraw(activePlayer, 2*numTwosPlayed);
-//					numTwosPlayed = 0;
-//				}
-				
-				// reset all special card actions
-				// delete commented line in drawCard()
-				
-				/* ---------------------------------------------------------- */
-				
+				playedCards.add(card);			
 				applySpecialAction(card);
 				return true;
 			} else {
@@ -908,6 +894,15 @@ public class GameModel {
 	
 	public void setLastPlayedCard(Card c) {
 		this.playedCards.add(c);
+	}
+	
+	public Player getHost() {
+		for (Player p : players) {
+			if (p.isHost()) {
+				return p;
+			}
+		}
+		return null;
 	}
 
 }

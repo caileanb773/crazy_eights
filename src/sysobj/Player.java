@@ -13,6 +13,7 @@ public class Player {
 
 	protected Vector<Card> hand;
 	protected boolean isHuman;
+	protected boolean isHost;
 	protected String name;
 	protected int score;
 	protected int orientation;
@@ -60,6 +61,9 @@ public class Player {
 		this.orientation = orientation;
 		this.id = id;
 		this.isHuman = isHuman;
+		
+		// Human players are clients unless explicitly specified otherwise
+		isHost = false;
 	}
 
 	/**
@@ -141,6 +145,14 @@ public class Player {
 	public void setHuman(boolean isHuman) {
 		this.isHuman = isHuman;
 	}
+	
+	public boolean isHost() {
+		return this.isHost;
+	}
+	
+	public void setHost(boolean isHost) {
+		this.isHost = isHost;
+	}
 
 	/**
 	 * Sets the player's name.
@@ -201,6 +213,9 @@ public class Player {
 	}
 	
 	public String stringifyHand() {
+		if (hand.isEmpty()) {
+			return "";
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < hand.size(); i++) {
 			sb.append(hand.get(i).toString());

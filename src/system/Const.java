@@ -91,7 +91,7 @@ public class Const {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public static final int DEFAULT_HAND_SIZE = 6;
+	public static final int DEFAULT_HAND_SIZE = 2;
 
 	/**
 	 * The maximum number of cards in hand.

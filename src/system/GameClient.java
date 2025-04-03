@@ -8,6 +8,8 @@ import java.net.Socket;
 
 import javax.swing.SwingUtilities;
 
+import sysobj.Suit;
+
 public class GameClient {
 
 	private Socket clientSocket;
@@ -38,29 +40,56 @@ public class GameClient {
 					while ((line = in.readLine()) != null && !clientSocket.isClosed()) {
 						System.out.println("Client received packet: " + line);
 						String[] packet = line.split("\\|");
-						if (packet.length >= 2) {
-							switch (packet[0]) {
-							case "ID":
-								clientId = Integer.parseInt(packet[1]);
-								System.out.println("Assigned ID: " + packet[1]);
-								break;
-							case "CHAT":
-								listener.onChatReceived(packet[1]);
-								break;
-							case "REFRESH":
-								if (packet.length == 8) {
-									SwingUtilities.invokeLater(new Runnable() {
-										public void run() {
-											listener.onViewRefresh(packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7]);
-										}
-									});
-								}
-								break;
-							case "CONSOLE":
-								listener.onConsoleMsgReceived(packet[1], packet[2], packet[3]);
-								break;
+
+						switch (packet[0]) {
+
+						case "ID":
+							System.out.println("Client: " + clientName + " received a packet assigning them the ID: " + packet[1]);
+							clientId = Integer.parseInt(packet[1]);
+							break;
+
+						case "CHAT":
+							System.out.println("Client received a request from Server to display a chat: " + packet[1]);
+							listener.onChatReceived(packet[1]);
+							break;
+
+						case "REFRESH":
+							if (packet.length == 8) {
+								System.out.println("Client received a request to refresh its UI: " + line);
+								SwingUtilities.invokeLater(new Runnable() {
+									public void run() {		// id		  hand	 	 lastPlayed no. Cards  plyrNames  plyrScore	 turnDir
+										listener.onViewRefresh(packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7]);
+									}
+								});
+							} else {
+								System.out.println("Client received a refresh packet with an invalid length.");
 							}
+							break;
+
+						case "CONSOLE":
+							System.out.println("Client has received a console message from the Server.");
+							listener.onConsoleMsgReceived(packet[1], packet[2], packet[3]);
+							break;
+
+						case "ROUNDOVER":
+							System.out.println("Client has received a request to display the round winner " + packet[1]);
+							listener.onRoundOver(packet[1]);
+							break;
+
+						case "SUIT":
+							SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+									System.out.println("Client has received a request to choose a suit.");
+									Suit s = listener.onClientSuitRequest();
+								}
+							});
+							break;
+
+						default:
+							System.out.println("Client received packet of unknown type: " + packet[0]);
+							break;
 						}
+
 					}
 				} catch (IOException e) {
 					System.out.println("Client receive error: " + e.getMessage());
@@ -71,22 +100,22 @@ public class GameClient {
 	}
 
 	public void sendChat(String msg) {
-		// formatting a chat packet, with '|' as a separator
+		System.out.println("Client " + clientName + " is sending a chat to the Server: " + msg);
 		out.println("CHAT" + "|" + msg);
-
-		// Protocol: MSG_TYPE|MSG_CONTENTS
 	}
 
 	public void sendName() {
+		System.out.println("Client " + clientName + " is sending their name to the Server.");
 		out.println("NAME" + "|" + clientName);
 	}
 
-	public void sendDraw(String card) {
-		out.println("DRAW" + "|" + clientName + "|" + card);
+	public void sendDraw() {
+		System.out.println("Client " + clientName + " is sending a draw request to Server.");
+		out.println("DRAW" + "|" + clientId );
 	}
 
 	public void sendPlay(String card) {
-		System.out.println("Sending play packet: PLAY" + "|" + clientId + "|" + card);
+		System.out.println("Client " + clientName + " is sending a play request to Server: " + card);
 		out.println("PLAY" + "|" + clientId + "|" + card);
 	}
 
@@ -99,6 +128,7 @@ public class GameClient {
 	}
 
 	public void shutdown() {
+		System.out.println("Client has called shutdown(), closing 'out' and the clientSocket...");
 		try {
 			out.close();
 			clientSocket.close();
@@ -109,11 +139,11 @@ public class GameClient {
 			System.out.println("IO Exception encountered while shutting down client socket.");
 		}
 	}
-	
+
 	public int getClientId() {
 		return this.clientId;
 	}
-	
+
 	public String getName() {
 		return this.clientName;
 	}
