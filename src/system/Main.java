@@ -30,6 +30,8 @@ public class Main {
 
 		// don't forget to uncomment the splash
 		
+		/* this is a constant that has the value of {@value} */
+		
 		GameModel model = new GameModel();
 		GameView view = new GameView();
 		GameController game = new GameController(model, view);
