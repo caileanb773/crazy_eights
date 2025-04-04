@@ -237,11 +237,6 @@ public class GameController implements GameControllerListener {
 		model.setGameRunning(true);
 	}
 
-	public void endMultiPlayerGame() {
-		System.out.println("Endmultiplayergame called");
-		model.setGameRunning(false);
-	}
-
 	/* --------------------------------------------------------------------- */
 	/* ---------- METHODS IMPLEMENTED FROM GAMECONTROLLERLISTENER ---------- */
 	/* --------------------------------------------------------------------- */
@@ -542,7 +537,7 @@ public class GameController implements GameControllerListener {
 
 				// check if the game is over
 				if (model.isGameOver()) {
-					endMultiPlayerGame();
+					endMultiplayerGame();
 					return;
 				}
 
@@ -735,7 +730,8 @@ public class GameController implements GameControllerListener {
 			}
 			server.broadcastGameWinners(winnerNames.toString());
 		}
-		// TODO finish
+		
+		// TODO finish cleaning up
 	}
 
 	/**

@@ -183,6 +183,10 @@ public class GameServer {
 			System.out.println("Failed to request suit from client " + clientId);
 		}
 	}
+	
+	public void broadCastButtonMode(String mode) {
+		
+	}
 
 	public void replacePlayer(Player disconnectedPlayer) {
 

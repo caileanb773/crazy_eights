@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -42,6 +43,7 @@ import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -192,7 +194,7 @@ public class GameView extends JFrame {
 	/**
 	 * Starts a new game against humans and AI
 	 */
-	private JMenuItem mMultiPlayer;
+	private JMenuItem mHostGame;
 
 	/**
 	 * The last played (discarded) card
@@ -274,9 +276,9 @@ public class GameView extends JFrame {
 	 */
 	private JPanel chatBox;
 
-
-	/* ------------------------- METHODS ------------------------- */
+	
 	/* ----------------------------------------------------------- */
+	/* ------------------------- METHODS ------------------------- */
 	/* ----------------------------------------------------------- */
 
 	/**
@@ -608,7 +610,7 @@ public class GameView extends JFrame {
 		musicToggle = new JCheckBoxMenuItem(translatable.getString("music"));
 		musicToggle.setSelected(true);
 		mSinglePlayer = new JMenuItem(translatable.getString("singlePlayer"));
-		mMultiPlayer = new JMenuItem(translatable.getString("multiplayer"));
+		mHostGame = new JMenuItem(translatable.getString("hostGame"));
 
 		// Add submenu items
 		mOptions.add(soundToggle);
@@ -618,11 +620,11 @@ public class GameView extends JFrame {
 		langSelect.add(langEng);
 		langSelect.add(langFr);
 		mStartGame.add(mSinglePlayer);
-		mStartGame.add(mMultiPlayer);
+		mStartGame.add(mHostGame);
+		mStartGame.add(mJoinGame);
 
 		// Add menu items
 		mBar.add(mStartGame);
-		mBar.add(mJoinGame);
 		mBar.add(mDisconnect);
 		mBar.add(mOptions);
 
@@ -1090,7 +1092,7 @@ public class GameView extends JFrame {
 		waitingDialog = new JDialog((Frame) null, "Hosting Game", true);
 		waitingDialog.setLayout(new BorderLayout());
 
-		connectionStatus = new JLabel("Waiting for connections (0/" + maxPlayers + ")...");
+		connectionStatus = new JLabel(translatable.getString("waitingForOpponents") + " (0/" + maxPlayers + ")...");
 		waitingDialog.add(connectionStatus, BorderLayout.CENTER);
 		String ip;
 
@@ -1102,7 +1104,7 @@ public class GameView extends JFrame {
 			ip = "127.0.0.1";
 		}
 
-		JLabel info = new JLabel("Connect at: " + ip + ":" + port, SwingConstants.CENTER);
+		JLabel info = new JLabel(translatable.getString("ipAddress") + " " + ip + ":" + port, SwingConstants.CENTER);
 		waitingDialog.add(info, BorderLayout.NORTH);
 
 		// cancel button
@@ -1437,11 +1439,21 @@ public class GameView extends JFrame {
 		soundToggle.setText(translatable.getString("soundEffects"));
 		musicToggle.setText(translatable.getString("music"));
 		mSinglePlayer.setText(translatable.getString("singlePlayer"));
-		mMultiPlayer.setText(translatable.getString("multiplayer"));
+		mHostGame.setText(translatable.getString("hostGame"));
 	}
 
 	public void gameStartDialog() {
 		JOptionPane.showMessageDialog(null, "Game is starting!", "Let's play!", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	public void toggleBtnsSingleplayer() {
+		mHostGame.setEnabled(mHostGame.isEnabled());
+		mJoinGame.setEnabled(mJoinGame.isEnabled());
+	}
+	
+	public void toggleBtnsMultiplayer() {
+		mDisconnect.setEnabled(mDisconnect.isEnabled());
+		mSinglePlayer.setEnabled(mSinglePlayer.isEnabled());
 	}
 
 
@@ -1479,7 +1491,7 @@ public class GameView extends JFrame {
 	 * @since 23
 	 */
 	public void setMultiPlayerListener(ActionListener listener) {
-		mMultiPlayer.addActionListener(listener);
+		mHostGame.addActionListener(listener);
 	}
 
 	//	/**

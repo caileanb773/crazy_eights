@@ -143,3 +143,5 @@ Assignment 3.2 Patchnotes:
 -added method endmultiplayerround() in controller
 -added method endmultiplayergame() to controller
 -overloaded displayGameWinners() in view 
+-added method broadcastButtonMode() to server. clients need to know which buttons need to be enabled/disabled based on gamemode
+-changed the menu items a little to make things more compact and improve UX
