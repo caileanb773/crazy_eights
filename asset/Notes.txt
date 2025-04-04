@@ -2,6 +2,8 @@
 
 -if you start a new game in the middle of an ai player's turn, they keep playing
 -when the player draws their 12th card, if that card is playable, their turn is still passed
+-"round over" dialog should happen after ui refresh
+-clicking cancel on singleplayer name starts game anyway w/ default name
 
 --- CHANGES ---
 

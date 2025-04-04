@@ -52,10 +52,10 @@ public class GameController implements GameControllerListener {
 	 * @since 23
 	 */
 	public GameController(GameModel m, GameView v) {
-		this.model = m;
-		this.view = v;
-		this.playerName = "host";
-		this.gameMode = 1;
+		model = m;
+		view = v;
+		playerName = "host";
+		gameMode = Const.SINGLE_PLAYER;
 	}
 
 	/* --------------------------------------------------------------- */
@@ -168,6 +168,8 @@ public class GameController implements GameControllerListener {
 			server.shutdown();
 			server = null;
 		}
+		gameMode = Const.SINGLE_PLAYER;
+		model.setGameRunning(false);
 	}
 
 	public void sendChat(String msg) {
@@ -360,9 +362,11 @@ public class GameController implements GameControllerListener {
 	}
 
 	@Override
-	public void onGameOver() {
+	public void onGameOver(String gameWinnerNames) {
 		if (server != null) {
 			server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
+		} else {
+			view.displayGameWinners(gameWinnerNames);
 		}
 	}
 
@@ -708,12 +712,30 @@ public class GameController implements GameControllerListener {
 	 * @since 23
 	 */
 	public void endGame() {
-		view.setPackCalls(0);
+		//view.setPackCalls(0);
 		view.displayGameWinners(model.getGameWinners());
 		view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
 		model.cleanUpGameState();
 		clearView();
 		model.clearGame();
+	}
+	
+	public void endMultiplayerGame() {
+		view.setPackCalls(0);
+		
+		// display game winner for host and clients
+		view.displayGameWinners(model.getGameWinners());
+		if (server != null) {
+			StringBuilder winnerNames = new StringBuilder();
+			Vector<Player> winners = model.getGameWinners();
+			
+			for (Player p : winners) {
+				winnerNames.append(p.getName());
+				winnerNames.append(" ");
+			}
+			server.broadcastGameWinners(winnerNames.toString());
+		}
+		// TODO finish
 	}
 
 	/**
@@ -1117,6 +1139,8 @@ public class GameController implements GameControllerListener {
 	private class SinglePlayerListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			gameMode = Const.SINGLE_PLAYER;
+			model.setGameRunning(false);
 			handleStartRound();
 		}
 	}

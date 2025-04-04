@@ -16,7 +16,7 @@ public interface GameControllerListener extends Listener {
 	public void onPlayerConnected(int numPlayers, int maxPlayers);
 	public void onPlayerDisconnect();
 	public void onRoundOver(String roundWinnerName);
-	public void onGameOver();
+	public void onGameOver(String gameWinnerName);
 	public void onHandRefreshed(Vector<Card> hand);
 	public void onGameStateUpdated(String state);
 	public void onViewRefresh(String hand, String id, String playedCard, String opponentCardCount, String playerNames, String playerScores, String turnDirection);

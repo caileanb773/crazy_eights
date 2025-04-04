@@ -91,7 +91,7 @@ public class Const {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public static final int DEFAULT_HAND_SIZE = 6;
+	public static final int DEFAULT_HAND_SIZE = 2;
 
 	/**
 	 * The maximum number of cards in hand.
@@ -131,7 +131,7 @@ public class Const {
 	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public static final int MAX_SCORE = 50;
+	public static final int MAX_SCORE = 5;
 
 	/**
 	 * Represents the South position.

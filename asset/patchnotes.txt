@@ -140,5 +140,6 @@ Assignment 3.2 Patchnotes:
 -added overloaded displayRoundWinner(String name) in view
 -card counts are now displayed with player names in the game area, instead of the score box. all information in one place
 -added method requestSuitChoice() to server; sends a jdialog popup to a single client whenever they play an 8
--added method endMultiPlayerGame() in controller
 -added method endmultiplayerround() in controller
+-added method endmultiplayergame() to controller
+-overloaded displayGameWinners() in view 

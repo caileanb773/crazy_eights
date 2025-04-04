@@ -1206,6 +1206,11 @@ public class GameView extends JFrame {
 		JOptionPane.showMessageDialog(this, sb.toString() + translatable.getString("gameWinner") + "!",
 				translatable.getString("gameWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
 	}
+	
+	public void displayGameWinners(String winnerNames) {
+		JOptionPane.showMessageDialog(this, winnerNames + translatable.getString("gameWinner") + "!",
+				translatable.getString("gameWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
+	}
 
 	/**
 	 * Getter for player name.

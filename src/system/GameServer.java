@@ -159,6 +159,18 @@ public class GameServer {
 		}
 	}
 	
+	public void broadcastGameWinners(String winnerNames) {
+		System.out.println("Server is broadcasting game winner to all connected clients.");
+		for (Socket client : connectedPlayers) {
+			try {
+				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out.println("GAMEOVER" + "|" + winnerNames);
+			} catch (IOException e) {
+				System.out.println("Failed to broadcast game winner to client." + e.getStackTrace());
+			}
+		}
+	}
+	
 	public void requestSuitChoice(int clientId) {
 		System.out.println("Server is sending a request to client " + clientId + " to choose a suit.");
 

@@ -75,6 +75,11 @@ public class GameClient {
 							System.out.println("Client has received a request to display the round winner " + packet[1]);
 							listener.onRoundOver(packet[1]);
 							break;
+							
+						case "GAMEOVER":
+							System.out.println("Client has received a request to display the game winner.");
+							listener.onGameOver(packet[1]);
+							break;
 
 						case "SUIT":
 							SwingUtilities.invokeLater(new Runnable() {
