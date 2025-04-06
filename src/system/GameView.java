@@ -1749,7 +1749,7 @@ public class GameView extends JFrame {
 	public void soundTurnSkipped(boolean is8bit) {
 		String fileName;
 		if (is8bit) {
-			fileName = "crushed_reverseTurn.wav";
+			fileName = "crushed_jump.wav";
 		} else {
 			fileName = "jump.wav";
 		}
