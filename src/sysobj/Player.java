@@ -1,27 +1,38 @@
 package sysobj;
 
-import java.util.List;
 import java.util.Vector;
 
 /**
  * Players have a name, a hand of cards, a score, an orientation in the UI, and 
  * a flag for if they are human or not.
- * @author Cailean Bernard
+ * 
  * @since 23
  */
 public class Player {
 
+	/** The list of cards held by the player. */
 	protected Vector<Card> hand;
+
+	/** Indicates whether the player is human. */
 	protected boolean isHuman;
+
+	/** Indicates whether the player is the host. */
 	protected boolean isHost;
+
+	/** The name of the player. */
 	protected String name;
+
+	/** The current score of the player. */
 	protected int score;
+
+	/** The orientation of the player (e.g., vertical or horizontal). */
 	protected int orientation;
+
+	/** The unique ID of the player. */
 	protected int id;
 
 	/**
 	 * Default Player constructor.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public Player() {
@@ -30,7 +41,6 @@ public class Player {
 	/***
 	 * Name-only constructor for a Player.
 	 * @param name of the player
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public Player(String name) {
@@ -43,7 +53,7 @@ public class Player {
 	 * Parameterized constructor for Player.
 	 * @param n - The name for the player.
 	 * @param orientation - The orientation in the UI that the player is occupying.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Player(String n, int orientation) {
@@ -54,6 +64,14 @@ public class Player {
 		this.isHuman = false;
 	}
 	
+	/**
+	 * Constructor for a player.
+	 * 
+	 * @param n name
+	 * @param orientation player orientation
+	 * @param id player id
+	 * @param isHuman are they human or not 
+	 */
 	public Player(String n, int orientation, int id, boolean isHuman) {
 		this.name = n;
 		this.hand = new Vector<Card>();
@@ -70,7 +88,6 @@ public class Player {
 	 * Adds a card to this player's hand. Checks that the hand is not full before
 	 * adding the card to it.
 	 * @param card - The card to be added to the hand.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void addCardToHand(Card card) {
@@ -89,7 +106,6 @@ public class Player {
 	/**
 	 * Removes a card from the player's hand.
 	 * @param card - The card to remove.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void removeCardFromHand(Card card) {
@@ -102,7 +118,6 @@ public class Player {
 	 * force the player to pass the turn.
 	 * @param lastPlayedCard - The last card on the played cards pile.
 	 * @return true if they have a legal move, false if not.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public boolean hasLegalMove(Card lastPlayedCard) {
@@ -129,7 +144,6 @@ public class Player {
 	/**
 	 * Returns the value of the "isHuman" flag.
 	 * @return the value of the flag. True = human, false = AI.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public boolean isHuman() {
@@ -139,17 +153,25 @@ public class Player {
 	/**
 	 * Set the "isHuman" flag on a Player object.
 	 * @param isHuman - Whether the flag should be set to true or false.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setHuman(boolean isHuman) {
 		this.isHuman = isHuman;
 	}
 	
+	/**
+	 * Checks if the player is the host
+	 * @return boolean true if host, false if not
+	 * @since 23
+	 */
 	public boolean isHost() {
 		return this.isHost;
 	}
 	
+	/**
+	 * Getter for if the player is a host or not.
+	 * @param isHost are they the host or not
+	 */
 	public void setHost(boolean isHost) {
 		this.isHost = isHost;
 	}
@@ -157,7 +179,6 @@ public class Player {
 	/**
 	 * Sets the player's name.
 	 * @param name The name to set.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setName(String name) {
@@ -167,7 +188,6 @@ public class Player {
 	/**
 	 * Sets the player's score.
 	 * @param scr The score to set.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setScore(int scr) {
@@ -177,7 +197,6 @@ public class Player {
 	/**
 	 * Retrieves the player's name.
 	 * @return The player's name.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public String getName() {
@@ -187,7 +206,6 @@ public class Player {
 	/**
 	 * Retrieves the player's score.
 	 * @return The player's score.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public int getScore() {
@@ -197,21 +215,35 @@ public class Player {
 	/**
 	 * Retrieves the player's hand of cards.
 	 * @return A list of cards in the player's hand.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public Vector<Card> getHand(){
 		return this.hand;
 	}
 	
+	/**
+	 * Setter for a player's hand
+	 * @param hand Vector of Cards (the hand)
+	 * @since 23
+	 */
 	public void setHand(Vector<Card> hand) {
 		this.hand = hand;
 	}
 	
+	/**
+	 * Setter for a player's orientation
+	 * @param orienttn from 0 to 3; S, W, N, E
+	 * @since 23
+	 */
 	public void setOrientation(int orienttn) {
 		this.orientation = orienttn;
 	}
 	
+	/**
+	 * Returns a string representation of all cards in a player's hand.
+	 * @return String
+	 * @since 23
+	 */
 	public String stringifyHand() {
 		if (hand.isEmpty()) {
 			return "";
@@ -228,7 +260,6 @@ public class Player {
 	/**
 	 * Retrieves the size of the player's hand.
 	 * @return The number of cards in the player's hand.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public int getHandSize() {
@@ -238,7 +269,6 @@ public class Player {
 	/**
 	 * Retrieves the player's orientation.
 	 * @return The orientation of the player.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public int getOrientation() {
@@ -247,17 +277,26 @@ public class Player {
 
 	/**
 	 * Clears the player's hand, removing all cards.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void clearHand() {
 		this.hand.clear();
 	}
 
+	/**
+	 * Setter for player ID
+	 * @param id int to set the ID as
+	 * @since 23
+	 */
 	public void setID(int id) {
 		this.id = id;
 	}
 	
+	/**
+	 * Getter for player ID
+	 * @return the player's ID
+	 * @since 23
+	 */
 	public int getId() {
 		return this.id;
 	}
@@ -266,13 +305,12 @@ public class Player {
 	 * Returns a string representation of the player.
 	 * @return A string describing the player's name, score, orientation, and 
 	 * whether they are human.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	@Override
 	public String toString() {
-		return "Player " + this.name + " current score: " + this.score + " orientation: " + this.orientation + " isHuman: " + isHuman + " id: " + this.id;
+		return "Player " + this.name + " current score: " + this.score + " orientation: " 
+	+ this.orientation + " isHuman: " + isHuman + " id: " + this.id;
 	}
-
 
 }

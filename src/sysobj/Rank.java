@@ -7,70 +7,43 @@ package sysobj;
  * */
 public enum Rank {
 
-	/**
-	 * The Ace card, often valued as either the highest or lowest rank.
-	 */
+	/** The Ace card, often valued as either the highest or lowest rank. */
 	ACE,
 
-	/**
-	 * The Two card.
-	 */
+	/** The Two card. */
 	TWO,
 
-	/**
-	 * The Three card.
-	 */
+	/** The Three card. */
 	THREE,
 
-	/**
-	 * The Four card.
-	 */
+	/** The Four card. */
 	FOUR,
 
-	/**
-	 * The Five card.
-	 */
+	/** The Five card. */
 	FIVE,
 
-	/**
-	 * The Six card.
-	 */
+	/** The Six card. */
 	SIX,
 
-	/**
-	 * The Seven card.
-	 */
+	/** The Seven card. */
 	SEVEN,
 
-	/**
-	 * The Eight card.
-	 */
+	/** The Eight card. */
 	EIGHT,
 
-	/**
-	 * The Nine card.
-	 */
+	/** The Nine card. */
 	NINE,
 
-	/**
-	 * The Ten card.
-	 */
+	/** The Ten card. */
 	TEN,
 
-	/**
-	 * The Jack card, a face card.
-	 */
+	/** The Jack card, a face card. */
 	JACK,
 
-	/**
-	 * The Queen card, a face card.
-	 */
+	/** The Queen card, a face card. */
 	QUEEN,
 
-	/**
-	 * The King card, a face card.
-	 */
+	/** The King card, a face card. */
 	KING;
 
 }
-

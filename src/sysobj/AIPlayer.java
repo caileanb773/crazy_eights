@@ -7,14 +7,13 @@ import system.Const;
  * AI Player extends Player, but implements a few methods that Player doesn't
  * need, mainly to do with determining if they have a legal move, what move they
  * should take, and what card they should play if they choose to play a card.
- * @author Cailean Bernard
+ * 
  * @since 23
  */
 public class AIPlayer extends Player {
 
 	/**
 	 * Default constructor.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public AIPlayer() {
@@ -23,11 +22,11 @@ public class AIPlayer extends Player {
 	/***
 	 * Name-only constructor for an AI player.
 	 * @param name of the AI player
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public AIPlayer(String name) {
 		super(name);
+		isHuman = false;
 	}
 
 	/**
@@ -35,7 +34,6 @@ public class AIPlayer extends Player {
 	 * in the UI.
 	 * @param name The name of the player.
 	 * @param orientation Where in the UI they are occupying.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public AIPlayer(String name, int orientation) {
@@ -47,7 +45,6 @@ public class AIPlayer extends Player {
 	 * or to draw a card, or to pass the turn.
 	 * @param lastPlayedCard The last card played to the discard pile.
 	 * @return an integer representing which choice they made.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public int decidePlayDraw(Card lastPlayedCard) {
@@ -70,7 +67,7 @@ public class AIPlayer extends Player {
 	 * slider, this is where that implementation would go.
 	 * @param lastPlayedCard The last card played to the discard pile.
 	 * @return The Card the AI player has decided to play.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Card decideCard(Card lastPlayedCard) {
@@ -97,8 +94,7 @@ public class AIPlayer extends Player {
 	 * they choose one at random. If I wanted to modify the difficulty of the AI,
 	 * I could get it to take into account how many of x suit they have in their
 	 * hand and change the suit to match that suit.
-	 * @return The suit that they are changing the 8 to.
-	 * @author Cailean Bernard
+	 * @return Suit The suit that they are changing the 8 to.
 	 * @since 23
 	 */
 	public Suit chooseSuit() {

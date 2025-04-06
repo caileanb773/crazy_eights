@@ -145,3 +145,16 @@ Assignment 3.2 Patchnotes:
 -overloaded displayGameWinners() in view 
 -added method broadcastButtonMode() to server. clients need to know which buttons need to be enabled/disabled based on gamemode
 -changed the menu items a little to make things more compact and improve UX
+-added methods to view that enable/disable buttons depending on what "state" the game is in
+-added method resetplayernames() and resetscoreboard() anmd resetplayedcards() to view
+-added methods for playing sound effects to the view (method names start with "sound")
+-added getter for soundfx status
+-added method sendSuit() to client
+-added method getSuitFromStr() to Card class
+-added method onbuttonstatusreceived() to lisstener
+-added method onterminategamerequest() to listener
+-added method resethands() to view
+-added method terminatethreads() to server
+-added method cleanup() to controller
+-added method closesocket() to server
+-moved replaceplayer() from server to controller

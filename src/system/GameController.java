@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -24,22 +25,31 @@ import sysobj.Suit;
 
 /**
  * Controller for the game, which calls methods in both the view and model.
- * 
- * @author Cailean Bernard
  * @since 23
  */
 public class GameController implements GameControllerListener {
 
+	/** The game model containing game logic and state. */
 	private GameModel model;
+
+	/** The view component handling the UI. */
 	private GameView view;
+
+	/** The name of the current player. */
 	private String playerName;
+
+	/** The server instance for multiplayer games. */
 	private GameServer server;
+
+	/** The client instance for connecting to a server. */
 	private GameClient client;
-	private int numHumanPlayers;
-	private int port;
-	private String ip;
+
+	/** Formatter for displaying timestamps in "HH:mm" format. */
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
+	/** The selected game mode (e.g., single-player or multiplayer). */
 	private int gameMode;
+
 
 	/**
 	 * Parameterized constructor for GameController. GameController acts as a bridge
@@ -48,20 +58,33 @@ public class GameController implements GameControllerListener {
 	 * 
 	 * @param m The model.
 	 * @param v The view.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public GameController(GameModel m, GameView v) {
 		model = m;
 		view = v;
-		playerName = "host";
+		playerName = "defaultName";
 		gameMode = Const.SINGLE_PLAYER;
 	}
+
 
 	/* --------------------------------------------------------------- */
 	/* ------------------- MULTIPLAYER FLOW METHODS ------------------ */
 	/* --------------------------------------------------------------- */
 
+	/**
+	 * Collects "network info" from clients or host, depending on the boolean
+	 * passed to it. If isHost, creates a new server object and starts listening
+	 * for connections on that port. If not, starts a new client and tries to 
+	 * connect to a server at a specific port/ip.
+	 * 
+	 * 
+	 * @since 23
+	 * @param isHost determines which object the user will be instantiated as; if they
+	 * want to host a new game, they are the host (server). If they are joining
+	 * a game, they are a client.
+	 */
 	public void gatherNetworkInfo(boolean isHost) {
 
 		// set gamemode
@@ -75,22 +98,24 @@ public class GameController implements GameControllerListener {
 
 		// Only for client
 		JTextField ipField = isHost ? null : new JTextField(15);
+		ResourceBundle translatable = view.getTranslatable();
 
-		panel.add(new JLabel("Player Name:"));
+		panel.add(new JLabel(translatable.getString("playerName")));
 		panel.add(nameField);
-		panel.add(new JLabel("Port:"));
+		panel.add(new JLabel(translatable.getString("portNumber")));
 		panel.add(portField);
 
 		if (!isHost) {
-			panel.add(new JLabel("IP Address:"));
+			panel.add(new JLabel(translatable.getString("ipAddress")));
 			panel.add(ipField);
 		} else {
-			panel.add(new JLabel("# of Human Opponents: "));
+			panel.add(new JLabel(translatable.getString("numOpponents")));
 			panel.add(numPlField);
 		}
 
 		// Show dialog
-		int result = JOptionPane.showConfirmDialog(null, panel, isHost ? "Host Game Setup" : "Join Game Setup",
+		int result = JOptionPane.showConfirmDialog(null, panel, isHost ? 
+				translatable.getString("hostGame") : translatable.getString("joinGame"),
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
 		if (result == JOptionPane.OK_OPTION) {
@@ -100,12 +125,14 @@ public class GameController implements GameControllerListener {
 
 				// Validate name and port
 				if (nameInput.isEmpty()) {
-					JOptionPane.showMessageDialog(null, "Name cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, translatable.getString("nameErr"),
+							translatable.getString("error"), JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				int port = Integer.parseInt(portInput);
 				if (port < 10000 || port > 65535) {
-					JOptionPane.showMessageDialog(null, "Port must be between 10000 and 65535", "Error",
+					JOptionPane.showMessageDialog(null, translatable.getString("portErr"),
+							translatable.getString("error"),
 							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
@@ -119,17 +146,16 @@ public class GameController implements GameControllerListener {
 					int numHumanOpponents = Integer.parseInt(numPlInput);
 
 					if (numHumanOpponents < 1 || numHumanOpponents > 3) {
-						JOptionPane.showMessageDialog(null, "You can only play against 1-3 human players.", "Error",
+						JOptionPane.showMessageDialog(null, translatable.getString("playerErr"),
+								translatable.getString("error"),
 								JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 
-					// store the number of human players locally, will be used later
-					numHumanPlayers = numHumanOpponents;
-
 					server = new GameServer(port, this, numHumanOpponents);
 					client = null;
-					System.out.println("Hosting as: " + playerName + " on port: " + port);
+					System.out.println(translatable.getString("hostingAs") +
+							playerName + translatable.getString("onPort") + port);
 
 					// define an action listener specifically for the cancel button
 					ActionListener cancelAction = new ActionListener() {
@@ -142,7 +168,8 @@ public class GameController implements GameControllerListener {
 				} else {
 					String ipInput = ipField.getText().trim();
 					if (ipInput.isEmpty()) {
-						JOptionPane.showMessageDialog(null, "IP cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, translatable.getString("ipErr"),
+								translatable.getString("error"), JOptionPane.ERROR_MESSAGE);
 						return;
 					}
 
@@ -153,9 +180,11 @@ public class GameController implements GameControllerListener {
 					System.out.println("Joining as: " + playerName + " at " + ipInput + ":" + port);
 				}
 			} catch (NumberFormatException e) {
-				JOptionPane.showMessageDialog(null, "Port must be a valid number", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, translatable.getString("portErr"),
+						translatable.getString("error"), JOptionPane.ERROR_MESSAGE);
 			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, "Error setting up network: " + e.getMessage(), "Error",
+				JOptionPane.showMessageDialog(null, translatable.getString("networkErr") +
+						e.getMessage(), translatable.getString("error"),
 						JOptionPane.ERROR_MESSAGE);
 			}
 		} else {
@@ -163,6 +192,11 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	/**
+	 * Cancels the hosting dialog and resets any flags that were set in the interim.
+	 * 
+	 * @since 23
+	 */
 	public void cancelHosting() {
 		if (server != null) {
 			server.shutdown();
@@ -172,6 +206,13 @@ public class GameController implements GameControllerListener {
 		model.setGameRunning(false);
 	}
 
+	/**
+	 * Sends a chat message to the host's UI and tells the server to send it to
+	 * all clients.
+	 * 
+	 * @since 23
+	 * @param msg the chat msg
+	 */
 	public void sendChat(String msg) {
 		String formattedMsg = playerName + ": " + msg; // Add player name
 		if (server != null) {
@@ -184,9 +225,21 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
-	// TODO: split this up
+	/**
+	 * Sets flags for the multiplayer game mode, syncs clients with new Player
+	 * objects that map to the client ID, and then clears some additional flags
+	 * and fields by calling initMultiPlayerRound() before starting a new round.
+	 * 
+	 * @since 23
+	 */
 	public void startMultiplayerGame() {
 		gameMode = Const.MULTI_PLAYER;
+		view.setBtnsMultiplayer();
+
+		if (server != null) {
+			server.broadCastButtonMode("MULTIPLAYER");
+		}
+
 		int numHumanPlayers = 1 + server.getClientCount();
 		int numAiPlayers = 4 - numHumanPlayers;
 		int id = 0;
@@ -237,18 +290,109 @@ public class GameController implements GameControllerListener {
 		model.setGameRunning(true);
 	}
 
+	/**
+	 * Logic that picks up after a client has picked a suit for an eight.
+	 * 
+	 * @since 23
+	 * @param cardToPlay: the original card (eight)
+	 * @param suitChoice: the replacing suit
+	 */
+	public void handleClientPostSuitChoice(Card cardToPlay, Suit suitChoice) {
+		Player activePlayer = model.getActivePlayer();
+
+		handleCardPlay(cardToPlay);
+
+		// Find and remove the matching card
+		Vector<Card> playerHand = activePlayer.getHand();
+		Card cardToRemove = null;
+		for (Card c : playerHand) {
+
+			// find the exact object matching cardToPlay
+			if (c.toString().equals(cardToPlay.toString())) {
+				cardToRemove = c;
+				break;
+			}
+		}
+
+		// remove the card from their hand
+		if (cardToRemove != null) {
+			playerHand.remove(cardToRemove);
+			activePlayer.setHand(playerHand);
+		} else {
+			System.out.println("Card not found in hand: " + cardToPlay);
+		}
+
+		model.getLastPlayedCard().setSuit(suitChoice);
+		view.displayLastPlayedCard(model.getLastPlayedCard());
+		server.requestViewRefresh(model.getPlayers(), cardToPlay, model.getTurnOrderDirection());
+	}
+
+	/**
+	 * Replaces a Player object with an AIPlayer object with the same values.
+	 * 
+	 * @since 23
+	 * @param player the player to replace
+	 * @return the ai player
+	 */
+	public AIPlayer replacePlayer(Player player) {
+		AIPlayer replacement = new AIPlayer(player.getName());
+		replacement.setScore(player.getScore());
+		replacement.setHand(player.getHand());
+		replacement.setName("AI " + player.getName().toUpperCase());
+		replacement.setID(player.getId());
+		return replacement;
+	}
+
+	/**
+	 * Sends a console message to the host's UI, if they are the host, and tells
+	 * each client to show the console message if they are a client.
+	 * 
+	 * @since 23
+	 * @param optName optional data
+	 * @param msg the packet data
+	 * @param optCard optional data
+	 */
+	public void processConsoleMsg(String optName, String msg, String optCard) {
+		view.sendConsoleMsg(optName, msg, optCard);
+		if (optCard.isEmpty()) {
+			optCard = " ";
+		}
+		if (server != null) {
+			server.broadcastConsoleMsg(optName, msg, optCard);
+			server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
+		}
+
+	}
+
+
 	/* --------------------------------------------------------------------- */
 	/* ---------- METHODS IMPLEMENTED FROM GAMECONTROLLERLISTENER ---------- */
 	/* --------------------------------------------------------------------- */
 
+	/**
+	 * When a chat is received by a client, this method tells the server to
+	 * broadcast that chat to all clients.
+	 * 
+	 * @param msg The chat message.
+	 * @since 23
+	 */
 	@Override
 	public void onChatReceived(String msg) {
-		view.displayChat(msg); // Update UI for all players
+		view.displayChat(msg);
 		if (server != null) {
-			server.broadcastChat(msg); // Host rebroadcasts to clients
+			server.broadcastChat(msg);
 		}
 	}
 
+	/**
+	 * When a console message is received from a client, this method tells the
+	 * server to broadcast that console msg to all clients.
+	 * 
+	 * @param optName optional flag
+	 * @param msg message contents
+	 * @param optCard optional flag
+	 * @since 23
+	 */
 	@Override
 	public void onConsoleMsgReceived(String optName, String msg, String optCard) {
 		view.sendConsoleMsg(optName, msg, optCard);
@@ -259,23 +403,35 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	/**
+	 * Determines if the client requesting to draw may draw (is it their turn?
+	 * do they have room in their hand?).
+	 * 
+	 * @param packetData: the draw request.
+	 * @since 23
+	 */
 	@Override
 	public void onClientDrawReceived(String packetData) {
-
 		String[] packetInfo = packetData.split("\\|");
 		int clientId = Integer.parseInt(packetInfo[1]);
 
 		if (model.getActivePlayer().getId() == clientId) {
 			System.out.println("Client turn verified, proceeding with draw...");
-
 			handleClientDraw(packetInfo[1]);
 			server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
-
 		} else {
 			System.out.println("Active player ID did not match client ID, draw request rejected.");
 		}
 	}
 
+	/**
+	 * Determines if a received "play" from a client is legal (is it their turn?
+	 * is the card a legal play based on the last played card?). If it is, handle
+	 * it, if not, quietly reject it (do nothing).
+	 * 
+	 * @param playData: the move, containing the card the player wishes to play.
+	 * @since 23
+	 */
 	@Override
 	public void onClientPlayReceived(String playData) {
 
@@ -296,10 +452,17 @@ public class GameController implements GameControllerListener {
 				return;
 			}
 
-			// handle the case when a client plays an eight
+			/* handle when the client plays an eight. server requests that the
+			 * appropriate client shows the suit selection dialog, and immediately
+			 * returns from this method. call stack is now clear and only when
+			 * the client selects a suit is processTurn() called again, restarting
+			 * the game loop. */
 			if (cardToPlay.getRank() == Rank.EIGHT) {
 				System.out.println("Client has played an Eight and is choosing a suit...");
-				// tell the client to draw the suit selection dialog
+				if (server != null) {
+					server.requestSuitChoice(clientId, cardToPlay.toString());
+					return;
+				}
 			}
 
 			handleCardPlay(cardToPlay);
@@ -330,23 +493,92 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	/**
+	 * Sends a chosen suit from client to server.
+	 * 
+	 * @param cardToPlay: the original card (eight).
+	 * @since 23
+	 */
 	@Override
-	public Suit onClientSuitRequest() {
-		System.out.println("Client is choosing a suit...");
+	public void onClientSuitRequest(String cardToPlay) {
+		System.out.println("Client is choosing a suit to replace " + cardToPlay);
 		Suit s = view.dialogEightSuit();
-		return s;
+		System.out.println("Client has chosen " + s.toString());
+		client.sendSuit(s.toString(), cardToPlay);
 	}
 
+	/**
+	 * Intermediary step for a client deciding a suit for an eight they have 
+	 * played; at this point the call stack is clear besides this function. Game
+	 * loop resumes once handleClientPostSuitChoice() is called.
+	 * 
+	 * @param packetData packet data
+	 * @since 23
+	 */
+	@Override
+	public void onClientSuitReceived(String packetData) {
+		String[] parsedPacket = packetData.split("\\|");
+		String suit = parsedPacket[2];
+		Card cardToPlay = Card.getCardFromStr(parsedPacket[3]);
+		Suit s = Card.getSuitFromStr(suit);
+		handleClientPostSuitChoice(cardToPlay, s);
+	}
+
+	/**
+	 * Sets certain buttons on/off based on the packet received.
+	 * 
+	 * @param packetData packet data
+	 * @since 23
+	 */
+	@Override
+	public void onButtonStatusReceived(String packetData) {
+		switch (packetData) {
+		case "SINGLEPLAYER": view.setBtnsSingleplayer(); break;
+		case "MULTIPLAYER": view.setBtnsMultiplayer(); break;
+		case "MAINMENU": view.setBtnsMainMenu();
+		default: System.out.println("Invalid button display status in onButtonStatusReceived().");
+		break;
+		}
+	}
+
+	/**
+	 * Updates the dialog for the server when it is waiting for new players to
+	 * connect (visual feedback).
+	 * 
+	 * @param playerCount the how many players have connected
+	 * @param maxPlayers the max no of players
+	 * @since 23
+	 */
 	@Override
 	public void onPlayerConnected(int playerCount, int maxPlayers) {
 		view.updateWaitingStatus(playerCount, maxPlayers);
 	}
 
+	/**
+	 * When a player (client) disconnects, shut down their threads, close their
+	 * socket, and replace their player object with an AI player.
+	 * 
+	 * @param packetData packet data
+	 * @since 23
+	 */
 	@Override
-	public void onPlayerDisconnect() {
+	public void onPlayerDisconnect(String packetData) {
+		String[] parsedPacket = packetData.split("\\|");
+		int clientId = Integer.parseInt(parsedPacket[1]);
+		Player clientPlayer = model.getPlayers().get(clientId);
+		AIPlayer replacement = replacePlayer(clientPlayer);
+
+		model.getPlayers().set(clientId, replacement);
+		server.closeSocket(clientId);
 
 	}
 
+	/**
+	 * Informs the clients of the round winner via dialog.
+	 * 
+	 * @param roundWinnerName name of the round winner
+	 * @since 23
+	 */
 	@Override
 	public void onRoundOver(String roundWinnerName) {
 		if (server != null) {
@@ -356,6 +588,12 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	/**
+	 * Informs the client of the game winner(s) via dialog.
+	 * 
+	 * @param gameWinnerNames the winners names
+	 * @since 23
+	 */
 	@Override
 	public void onGameOver(String gameWinnerNames) {
 		if (server != null) {
@@ -365,6 +603,44 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	/**
+	 * Resets the client's UI to initial state.
+	 * 
+	 * @since 23
+	 */
+	@Override
+	public void onTerminateGameRequest() {
+		// reset the model to initial state
+		model.resetGameFlags();
+
+		// clean up the ui
+		view.resetHands();
+		view.resetLastPlayedCard();
+		view.resetScoreBoard();
+		view.resetPlayerNames();
+		view.resetConsole();
+		view.setBtnsMainMenu();
+		view.refreshView();
+		view.packWindow();
+
+		// reset controller to initial state
+		server = null;
+		client = null;
+	}
+
+	/**
+	 * Refreshes each part of the client's UI with the passed information from
+	 * the server.
+	 * 
+	 * @param plyrID: the client's id (player id)
+	 * @param hand: the hand of the client
+	 * @param playedCard: the last played card
+	 * @param noCardsInHands: the number of cards in each player's hand
+	 * @param playerNames: the name of each player
+	 * @param playerScores: the score of each player
+	 * @param turnDirection: clockwise/counterclockwise
+	 * @since 23
+	 */
 	@Override
 	public void onViewRefresh(String plyrID, String hand, String playedCard, String noCardsInHands, String playerNames,
 			String playerScores, String turnDirection) {
@@ -389,6 +665,13 @@ public class GameController implements GameControllerListener {
 		view.refreshClientScoreTable(southName, clientId, nameArr, playerScores, noCardsInHands, turnDirection);
 	}
 
+	/**
+	 * Informs the server that the amount of players waiting to connect have 
+	 * connected and that the game should start.
+	 * 
+	 * @param state the gamestate
+	 * @since 23
+	 */
 	@Override
 	public void onGameStateUpdated(String state) {
 		System.out.println("Game state update invoked.");
@@ -399,38 +682,32 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
-	public void processConsoleMsg(String optName, String msg, String optCard) {
-		view.sendConsoleMsg(optName, msg, optCard);
-		if (optCard.isEmpty()) {
-			optCard = " ";
-		}
-		if (server != null) {
-			server.broadcastConsoleMsg(optName, msg, optCard);
-			server.requestViewRefresh(model.getPlayers(), model.getLastPlayedCard(), model.getTurnOrderDirection());
-		}
-
-	}
-
+	/**
+	 * Sets up listeners for a client's hand.
+	 * 
+	 * @param hand the player's hand
+	 * @since 23
+	 */
 	public void onHandRefreshed(Vector<Card> hand) {
 		for (Card c : hand) {
 			for (ActionListener al : c.getActionListeners()) {
 				c.removeActionListener(al);
 			}
 			c.addActionListener(new CardPlayListener());
+			c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-			// everything below here is testing drawing the border around a card that has
-			// been moused-over
 			c.addMouseListener(new MouseAdapter() {
 				public void mouseEntered(MouseEvent e) {
-					c.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+					c.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
 				}
 
 				public void mouseExited(MouseEvent e) {
-					c.setBorder(null);
+					c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 				}
 			});
 		}
 	}
+
 
 	/* ----------------------------------------------------------- */
 	/* -------------------- GAME FLOW METHODS -------------------- */
@@ -439,11 +716,10 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Runs the game by drawing the splash and then the main screen.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void launchGame() {
-		// view.drawSplash();
+		view.drawSplash();
 		view.drawMainWindow();
 		view.setSinglePlayerListener(new SinglePlayerListener());
 		view.setMultiPlayerListener(new MultiPlayerListener());
@@ -468,15 +744,15 @@ public class GameController implements GameControllerListener {
 	 * to reflect what the model contains, attach listeners to the human player's
 	 * hand cards, and display the last played card, which starts the game.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void handleStartRound() {
 		if (!model.isGameRunning() && gameMode == Const.SINGLE_PLAYER) {
 			playerName = view.getPlayerName();
-			gameMode = Const.SINGLE_PLAYER;
-			model.initGame(Const.SINGLE_PLAYER, playerName);
-		}
+			model.initSingleplayerGame(playerName);
+			view.setBtnsSingleplayer();
+		} 
+
 		model.initRound();
 		processConsoleMsg("", "newRound", "");
 		processConsoleMsg(playerName, "currentTurn", "");
@@ -491,6 +767,9 @@ public class GameController implements GameControllerListener {
 		}
 		refreshListenersInPlayerHand(model.getActivePlayer());
 		view.displayLastPlayedCard(playedCards.getLast());
+
+		//
+		view.packWindow();
 
 		if (gameMode == Const.MULTI_PLAYER && server != null) {
 			server.requestViewRefresh(players, model.getLastPlayedCard(), turnOrderDir);
@@ -515,10 +794,10 @@ public class GameController implements GameControllerListener {
 	 * next processTurn() call is called within the process of the AI player
 	 * executing their turn.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void processTurn() {
+		System.out.println("Calling processTurn()");
 		Player activePlayer = model.getActivePlayer();
 		String playerName = activePlayer.getName();
 		processConsoleMsg(playerName, "currentTurn", "");
@@ -540,19 +819,16 @@ public class GameController implements GameControllerListener {
 					endMultiplayerGame();
 					return;
 				}
-
 				// handle game still ongoing
 				handleStartRound();
 				return;
 
 			} else {
-
-				// onRoundOver("");
-
 				endRound();
 				// Check the status of the game
 				if (model.isGameOver()) {
 					endGame();
+					view.setBtnsMainMenu();
 					return;
 				}
 
@@ -561,8 +837,6 @@ public class GameController implements GameControllerListener {
 				return;
 			}
 		}
-
-		/* ---------- SINGLEPLAYER ---------- */
 
 		// handle card draw in single player vs multiplayer scenarios
 		if (gameMode == Const.SINGLE_PLAYER) {
@@ -589,7 +863,6 @@ public class GameController implements GameControllerListener {
 	 * refresh the scores, then process the next turn.
 	 * 
 	 * @param AIPlayer The player who should have their turn executed.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void executeAIPlayerTurn(AIPlayer AIPlayer) {
@@ -614,7 +887,6 @@ public class GameController implements GameControllerListener {
 	 * based on the game state, and handles each case.
 	 * 
 	 * @param AIPlayer The AI player who's turn it is.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void decideAIPlayerMove(AIPlayer AIPlayer) {
@@ -661,7 +933,6 @@ public class GameController implements GameControllerListener {
 	 * of each player at round end, displays those scores, and displays the winner
 	 * via dialog.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void endRound() {
@@ -672,16 +943,23 @@ public class GameController implements GameControllerListener {
 		view.displayRoundWinner(model.getRoundWinner());
 	}
 
+	/**
+	 * Handles the ending of a multiplayer round. Tells each client's UI to refresh
+	 * back to the initial state.
+	 * 
+	 * @since 23
+	 */
 	public void endMultiplayerRound() {
+		view.setPackCalls(0);
 		model.setTurnOrderReversed(false);
 		model.tallyScores();
 		Vector<Player> players = model.getPlayers();
 		Player roundWinner = model.getRoundWinner();
 		boolean turnOrderDir = model.getTurnOrderDirection();
-		
+
 		// refresh host UI
 		view.refreshScores(players, turnOrderDir);
-		
+
 		// refresh client UIs
 		if (server != null) {
 			server.requestViewRefresh(players, model.getLastPlayedCard(), turnOrderDir);
@@ -703,35 +981,75 @@ public class GameController implements GameControllerListener {
 	 * winner as a dialog, refreshes the scoreboard, clears each player's hand, and
 	 * resets the logic of the game within the model.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void endGame() {
+		System.out.println("The game has ended. Cleaning up...");
 		//view.setPackCalls(0);
-		view.displayGameWinners(model.getGameWinners());
-		view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
-		model.cleanUpGameState();
-		clearView();
-		model.clearGame();
+		if (model.isGameOver()) {
+			view.displayGameWinners(model.getGameWinners());
+			view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
+		}
+
+		cleanUp();
 	}
-	
+
+	/**
+	 * Ends a multiplayer game, resetting flags and UI elements.
+	 * 
+	 * @since 23
+	 */
 	public void endMultiplayerGame() {
 		view.setPackCalls(0);
-		
+
 		// display game winner for host and clients
 		view.displayGameWinners(model.getGameWinners());
 		if (server != null) {
 			StringBuilder winnerNames = new StringBuilder();
 			Vector<Player> winners = model.getGameWinners();
-			
+
 			for (Player p : winners) {
 				winnerNames.append(p.getName());
 				winnerNames.append(" ");
 			}
 			server.broadcastGameWinners(winnerNames.toString());
+			server.terminateGame();
+			server.terminateThreads();
 		}
-		
-		// TODO finish cleaning up
+
+		cleanUp();
+
+		server = null;
+		client = null;
+	}
+
+	/**
+	 * Cleans up UI elements.
+	 * 
+	 * @since 23
+	 */
+	public void cleanUp() {
+		// clear player's hands
+		clearPlayerHands();
+
+		// set the player names in everyone's zone to ""
+		view.resetScoreBoard();
+
+		// reset the scoreboard
+		view.resetPlayerNames();
+
+		// remove lastplayed card
+		view.resetLastPlayedCard();
+
+		// clear the console?
+		view.resetConsole();
+
+		// set players, deck, played cards, to null. reset all flags.
+		model.resetGameFlags();
+
+		view.setBtnsMainMenu();
+
+		view.packWindow();
 	}
 
 	/**
@@ -739,11 +1057,11 @@ public class GameController implements GameControllerListener {
 	 * refreshed (now showing none, at the end of a game) and refreshView() is
 	 * called on the view.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
-	public void clearView() {
+	public void clearPlayerHands() {
 		for (Player p : model.getPlayers()) {
+			p.clearHand();
 			view.displayCardsInHand(p);
 		}
 		view.refreshView();
@@ -760,7 +1078,6 @@ public class GameController implements GameControllerListener {
 	 * returns.
 	 * 
 	 * @param c The card to determine the special action for.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void handleCardActions(Card c) {
@@ -795,7 +1112,7 @@ public class GameController implements GameControllerListener {
 	 * turn.
 	 * 
 	 * @param num The number of cards to be drawn.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void handleForcedDraw(int num) {
@@ -822,7 +1139,7 @@ public class GameController implements GameControllerListener {
 	 * then applied to the last played card, or it is left default if they cancelled
 	 * out of the dialog.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void handleEight() {
@@ -836,10 +1153,12 @@ public class GameController implements GameControllerListener {
 				chosenSuit = view.dialogEightSuit();
 
 				// get the client to choose a suit
-			} else {
-				int clientId = activePlayer.getId();
-				server.requestSuitChoice(clientId);
-			}
+			} 
+
+			//			else {
+			//				int clientId = activePlayer.getId();
+			//				server.requestSuitChoice(clientId);
+			//			}
 
 			if (chosenSuit != null) {
 				processConsoleMsg("", "suitChanged", chosenSuit.toString());
@@ -863,7 +1182,7 @@ public class GameController implements GameControllerListener {
 	 * must continue drawing cards until their hand is full, or until they draw a
 	 * card that is legal to play.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void handleCardDraw() {
@@ -902,6 +1221,12 @@ public class GameController implements GameControllerListener {
 		}
 	}
 
+	/**
+	 * Handles when a client draws a card.
+	 * 
+	 * @since 23
+	 * @param packetData packet data
+	 */
 	public void handleClientDraw(String packetData) {
 		int clientID = Integer.parseInt(packetData);
 		Player activePlayer = model.getActivePlayer();
@@ -913,7 +1238,7 @@ public class GameController implements GameControllerListener {
 			} else {
 				// active player doesn't have a legal move, draw the card
 				model.drawCard();
-				processConsoleMsg(playerName, "drawCard", "");
+				processConsoleMsg(activePlayer.getName(), "drawCard", "");
 
 				// efficiency
 				Vector<Player> players = model.getPlayers();
@@ -947,7 +1272,7 @@ public class GameController implements GameControllerListener {
 	 * next round of processTurn() can be executed.
 	 * 
 	 * @param c The card to be played.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void handleCardPlay(Card c) {
@@ -962,7 +1287,6 @@ public class GameController implements GameControllerListener {
 				processConsoleMsg(activePlayerName, "playCard", c.toString());
 				handleCardActions(c);
 
-				// if (suitChosen) { do all this shit
 				view.displayCardsInHand(activePlayer);
 				view.displayLastPlayedCard(c);
 				view.refreshScores(model.getPlayers(), model.getTurnOrderDirection());
@@ -972,9 +1296,11 @@ public class GameController implements GameControllerListener {
 				}
 				model.setActivePlayer(model.getNextPlayer());
 				processTurn();
-				// else { return, go to a separate method that gets the suit first
-				// processturn is called by that method instead
 
+			} else {
+				if (view.getSFXStatus()) {
+					view.soundInvalidMove(view.getMusicStatus());
+				}
 			}
 		} else {
 			processConsoleMsg("", "notYourTurn", "");
@@ -988,7 +1314,7 @@ public class GameController implements GameControllerListener {
 	 * be made to be clickable by having listeners added to them.
 	 * 
 	 * @param player The player who's hand to add listeners to.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void refreshListenersInPlayerHand(Player player) {
@@ -998,20 +1324,28 @@ public class GameController implements GameControllerListener {
 			}
 			c.addActionListener(new CardPlayListener());
 
-			// everything below here is testing drawing the border around a card that has
-			// been moused-over
+			c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+
 			c.addMouseListener(new MouseAdapter() {
 				public void mouseEntered(MouseEvent e) {
-					c.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+					c.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
 				}
 
 				public void mouseExited(MouseEvent e) {
-					c.setBorder(null);
+					c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 				}
 			});
 		}
 	}
 
+	/**
+	 * Strips all listeners from card buttons in a player's hand and adds new
+	 * listeners to that hand.
+	 * 
+	 * @param hand the player's hand
+	 * 
+	 * @since 23
+	 */
 	public void refreshListenersInPlayerHand(String hand) {
 		// Dummy player - doesn’t need real one
 		Player tempPlayer = new Player("Temp", -1);
@@ -1027,20 +1361,20 @@ public class GameController implements GameControllerListener {
 				c.removeActionListener(al);
 			}
 			c.addActionListener(new CardPlayListener());
+			c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-			// everything below here is testing drawing the border around a card that has
-			// been moused-over
 			c.addMouseListener(new MouseAdapter() {
 				public void mouseEntered(MouseEvent e) {
-					c.setBorder(BorderFactory.createLineBorder(Color.RED, 5));
+					c.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
 				}
 
 				public void mouseExited(MouseEvent e) {
-					c.setBorder(null);
+					c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 				}
 			});
 		}
 	}
+
 
 	/* --------------------------------------------------- */
 	/* -------------------- LISTENERS -------------------- */
@@ -1049,10 +1383,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a card draw action and triggers the corresponding action.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class CardDrawListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		CardDrawListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
@@ -1060,11 +1400,13 @@ public class GameController implements GameControllerListener {
 			 * this is hacky but it works. basically clients never have active players in
 			 * their models, only the server does.
 			 */
-			if (model.getActivePlayer() == null) {
+			if (model.getActivePlayer() == null && client != null) {
 				client.sendDraw();
 				return;
 			} else {
-				handleCardDraw(); // Host or single-player
+				if (model.isGameRunning()) {
+					handleCardDraw();
+				}
 			}
 
 		}
@@ -1074,10 +1416,16 @@ public class GameController implements GameControllerListener {
 	 * Listens for a card play action and triggers the corresponding action with the
 	 * card played.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class CardPlayListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		CardPlayListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			Card c = (Card) e.getSource();
@@ -1109,7 +1457,7 @@ public class GameController implements GameControllerListener {
 				// handle multi-player logic. differentiate between host/client play
 			} else if (gameMode == Const.MULTI_PLAYER) {
 
-				// seems like a hacky fix
+				// seems hacky but it works
 				if (activePlayer == null && server == null) {
 					client.sendPlay(c.toString());
 
@@ -1129,10 +1477,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for the start of a round in single-player mode.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class SinglePlayerListener implements ActionListener {
+
+		/**
+		 * Default Constructor doesn't throw a fit
+		 */
+		SinglePlayerListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			gameMode = Const.SINGLE_PLAYER;
@@ -1144,10 +1498,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a multiplayer game action.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class MultiPlayerListener implements ActionListener {
+
+		/**
+		 * Default Constructor
+		 */
+		MultiPlayerListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			gatherNetworkInfo(true);
@@ -1157,10 +1517,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a join game action.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class JoinGameListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		JoinGameListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			gatherNetworkInfo(false);
@@ -1170,23 +1536,57 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a disconnect action.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class DisconnectListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		DisconnectListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// Implement logic here
+			if (gameMode == Const.SINGLE_PLAYER) {
+				view.setBtnsMainMenu();
+				if (model.isGameRunning()) {
+					endGame();
+				}
+			} else {
+
+				// client logic
+				if (server == null && client != null) {
+					client.disconnect();
+					cleanUp();
+					client = null;
+
+
+					// server logic
+				} else {
+					server.terminateGame();
+					server.terminateThreads();
+					cleanUp();
+					server = null;
+					client = null;
+				}
+			}
 		}
 	}
 
 	/**
 	 * Listens for an "About" action click and triggers the display of the rules.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class AboutListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		AboutListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			view.displayRules();
@@ -1196,10 +1596,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a change to the language to English.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class LangEnglishListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		LangEnglishListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("Translating elements to English...");
@@ -1210,10 +1616,15 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a change to the language to French.
 	 * 
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	private class LangFrenchListener implements ActionListener {
+
+		/**
+		 * Default Constructor
+		 */
+		LangFrenchListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("Translating elements to French...");
@@ -1224,10 +1635,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a toggle of the sound setting.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class SoundToggleListener implements ActionListener {
+
+		/**
+		 * Default Constructor
+		 */
+		SoundToggleListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// Implement logic here
@@ -1237,10 +1654,16 @@ public class GameController implements GameControllerListener {
 	/**
 	 * Listens for a toggle of the music setting.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class MusicToggleListener implements ActionListener {
+
+		/**
+		 * Default Constructor
+		 */
+		MusicToggleListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// Implement logic here
@@ -1251,10 +1674,16 @@ public class GameController implements GameControllerListener {
 	 * Listens for the action to send a chat message and triggers the sending of the
 	 * message.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	private class ChatSendButtonListener implements ActionListener {
+
+		/**
+		 * Default constructor
+		 */
+		ChatSendButtonListener(){}
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String msg = view.fetchMsg();

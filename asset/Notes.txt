@@ -1,58 +1,15 @@
---- BUGS ---
+----- BUGS -----
 
 -if you start a new game in the middle of an ai player's turn, they keep playing
 -when the player draws their 12th card, if that card is playable, their turn is still passed
--"round over" dialog should happen after ui refresh
 -clicking cancel on singleplayer name starts game anyway w/ default name
+-when a client wins the game (plays their last card) game doesn't detect they've won til the next player finishes their turn (?)
 
---- CHANGES ---
-
--cleanup() at the end of the game needs to:
-	-repaint all cards in all zones (lastPlayedCard persists)
-	-remove all names from all zones (names persist for some reason; where are they drawn?)
-	-set all the text for the scoreboard to be blank/remove the text entirely
-	
--if there is a single player game running, block out multiplayer option, and vice versa
-
-how to handle eights, in handlecardplay:
-
-a boolean "suitchosen" in controller. it's false by default, and switches to true
-once the client chooses a suit. the handlecardplay method skips processturn if 
-suitchosen is false. then, the 
-
-
-reset turn order
-tally scores (model)
-refresh scores (host, clients)
-display the round winner (host, clients)
-
-then
-
-check if the game is over
-
-if it is
-
-reset pack calls
-display game winner (host, clients)
-refresh scores (host, clients)
-cleanup gamestate (model)
-clearview()
-cleargame() model
-
-if it's not
-
-handlestartround()
-
-
-
+----- CHANGES -----
 
 "it is not your turn" could be a more useful message when broadcast to every1
+would be nice: cannot draw; play a card broadcasts to everyone instead of just whoever tried to do the thing
 
-make sure game rounds finish cleanly
-make sure game finishes cleanly
-handle clients playing an 8
+---------- SOURCES ----------
 
-handle disconnects
-make sure translations are gucci
-would be nice: cannot draw; play a card broadcasts to everyone instead of just 
-whoever tried to do the thing
+https://stackoverflow.com/questions/26305/how-can-i-play-sound-in-java

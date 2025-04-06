@@ -6,7 +6,7 @@ import javax.swing.JButton;
 /**
  * Each card is composed of a suit, a rank, and a display image (if the card is
  * face up).
- * @author Cailean Bernard
+ * 
  * @since 23
  * */
 public class Card extends JButton {
@@ -38,7 +38,7 @@ public class Card extends JButton {
 	 * image for the card, since each Card is a button.
 	 * @param r The rank of the card.
 	 * @param s The suit of the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Card(Rank r, Suit s) {
@@ -56,7 +56,7 @@ public class Card extends JButton {
 	 * @param isLeft Should the card be rendered as a left slice?
 	 * @param isHidden Should the card face be visible or rendered as a card back?
 	 * @return ImageIcon that reflects the current state of the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public ImageIcon fetchCardImg(boolean isTop, boolean isLeft, boolean isHidden) {
@@ -105,7 +105,7 @@ public class Card extends JButton {
 	 * fetching the image from the assets folder.
 	 * @param s The passed suit, to convert to String.
 	 * @return a String representation of the suit.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public String suitToString(Suit s) {
@@ -125,7 +125,7 @@ public class Card extends JButton {
 	 * fetching the image from the assets folder.
 	 * @param r The passed rank, to convert to String.
 	 * @return a String representation of the rank.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public String rankToString(Rank r) {
@@ -149,11 +149,11 @@ public class Card extends JButton {
 		}
 
 	}
-	
+
 	/**
 	 * Setter for the Suit.
 	 * @param s The suit to set the card to.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setSuit(Suit s) {
@@ -163,7 +163,7 @@ public class Card extends JButton {
 	/**
 	 * Getter for the Rank.
 	 * @return the rank of the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Rank getRank() {
@@ -173,7 +173,7 @@ public class Card extends JButton {
 	/**
 	 * Getter for the Suit.
 	 * @return the Suit of the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Suit getSuit() {
@@ -183,7 +183,7 @@ public class Card extends JButton {
 	/**
 	 * Getter for the ImageIcon of the card.
 	 * @return the ImageIcon of the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public ImageIcon getImage() {
@@ -193,7 +193,7 @@ public class Card extends JButton {
 	/**
 	 * Setter for the ImageIcon of the card.
 	 * @param img The new image to be displayed on the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setImage(ImageIcon img) {
@@ -205,7 +205,7 @@ public class Card extends JButton {
 	 * Returns a string representation of a card, to be used in console print
 	 * statements and System.out calls, mainly.
 	 * @return a String representation of the card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	@Override
@@ -213,20 +213,41 @@ public class Card extends JButton {
 		return this.rank + " of " + this.suit;
 	}
 	
+	/**
+	 * Returns a suit from a passed String
+	 * @param suit String to return as a Suit
+	 * @return Suit
+	 */
+	public static Suit getSuitFromStr(String suit) {
+		switch (suit) {
+		case "CLUBS": return Suit.CLUBS;
+		case "DIAMONDS": return Suit.DIAMONDS;
+		case "HEARTS": return Suit.HEARTS;
+		case "SPADES": return Suit.SPADES;
+		default: System.out.println("getSuitFromStr() was passed a String that "
+				+ "could not be parsed into a Suit.");
+		return null;
+		}
+	}
+
+	/**
+	 * Returns a card from a passed String
+	 * @param cardStr String to return as a card
+	 * @return the card
+	 */
 	public static Card getCardFromStr(String cardStr) {
 		if (cardStr == null || !cardStr.contains(" of ")) {
-            throw new IllegalArgumentException("Invalid card format");
-        }
+			throw new IllegalArgumentException("Invalid card format");
+		}
 
-        String[] parts = cardStr.split(" of ");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid card format");
-        }
+		String[] parts = cardStr.split(" of ");
+		if (parts.length != 2) {
+			throw new IllegalArgumentException("Invalid card format");
+		}
 
-        Rank rank = Rank.valueOf(parts[0]);
-        Suit suit = Suit.valueOf(parts[1]);
-
-        return new Card(rank, suit);
+		Rank rank = Rank.valueOf(parts[0]);
+		Suit suit = Suit.valueOf(parts[1]);
+		return new Card(rank, suit);
 	}
 
 }

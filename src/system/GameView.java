@@ -22,8 +22,8 @@ import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
-
-import javax.swing.AbstractButton;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,13 +43,11 @@ import javax.swing.JWindow;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
-
 import sysobj.Card;
 import sysobj.Player;
 import sysobj.Rank;
@@ -57,7 +55,6 @@ import sysobj.Suit;
 
 /**
  * The View, where all UI elements are generated and drawn.
- * @author Cailean Bernard
  * @since 23
  */
 public class GameView extends JFrame {
@@ -68,151 +65,103 @@ public class GameView extends JFrame {
 
 	/* ---------- Player Information ---------- */
 
-	/**
-	 * Panel that holds the cards for the player in the the North zone of the UI
-	 */
+	/** Panel that holds the cards for the player in the the North zone of the UI */
 	private JPanel playerNorthCards;
 
-	/**
-	 * Label for the North player's name
-	 */
+	/** Label for the North player's name */
 	private JLabel playerNorthName;
 
-	/**
-	 * Panel that holds the cards for the player in the the East zone of the UI
-	 */
+	/** Panel that holds the cards for the player in the the East zone of the UI */
 	private JPanel playerEastCards;
 
-	/**
-	 * Label for the East player's name
-	 */
+	/** Label for the East player's name */
 	private JLabel playerEastName;
 
-	/**
-	 * Panel that holds the cards for the player in the the West zone of the UI
-	 */
+	/** Panel that holds the cards for the player in the the West zone of the UI */
 	private JPanel playerWestCards;
 
-	/**
-	 * Label for the West player's name
-	 */
+	/** Label for the West player's name */
 	private JLabel playerWestName;
 
-	/**
-	 * Panel that holds the cards for the player in the the South zone of the UI
-	 */
+	/** Panel that holds the cards for the player in the the South zone of the UI */
 	private JPanel playerSouthCards;
 
-	/**
-	 * Label for the South player's name
-	 */
+	/** Label for the South player's name */
 	private JLabel playerSouthName;
 
-	/**
-	 * Score for North player
-	 */
+	/** Score for North player */
 	private JLabel playerNorthScore;
 
-	/**
-	 * Score for East player
-	 */
+	/** Score for East player */
 	private JLabel playerEastScore;
 
-	/**
-	 * Score for West player
-	 */
+	/** Score for West player */
 	private JLabel playerWestScore;
 
-	/**
-	 * Score for South player
-	 */
+	/** Score for South player */
 	private JLabel playerSouthScore;
 
-
+	
 	/* ---------- GUI Menu Buttons ---------- */
 
-	/**
-	 * Menu bar
-	 */
+	/** Menu bar */
 	private JMenuBar mBar;
 
-	/**
-	 * Opens submenu for starting singleplayer/multiplayer game
-	 */
+	/** Opens submenu for starting singleplayer/multiplayer game */
 	private JMenu mStartGame;
 
-	/**
-	 * Joins a multiplayer game that is currently running
-	 */
+	/** Joins a multiplayer game that is currently running */
 	private JMenuItem mJoinGame;
 
-	/**
-	 * Disconnects from a running multiplayer game
-	 */
-	private JMenu mDisconnect;
+	/** Disconnects from a running multiplayer game */
+	private JMenuItem mDisconnect;
 
-	/**
-	 * Submenu that contains various options
-	 */
+	/** Submenu that contains various options */
 	private JMenu mOptions;
 
-	/**
-	 * Opens the rules
-	 */
+	/** Opens the rules */
 	private JMenuItem mRules;
 
-	/**
-	 * Submenu for language selection
-	 */
+	/** Submenu for language selection */
 	private JMenu langSelect;
 
-	/**
-	 * Changes language to English
-	 */
+	/** Changes language to English */
 	private JMenuItem langEng;
 
-	/**
-	 * Changes language to French
-	 */
+	/** Changes language to French */
 	private JMenuItem langFr;
 
-	/**
-	 * Toggles sound effects on or off
-	 */
+	/** Toggles sound effects on or off */
 	private JCheckBoxMenuItem soundToggle;
 
-	/**
-	 * Toggles music on or off
-	 */
+	/** Toggles music on or off */
 	private JCheckBoxMenuItem musicToggle;
 
-	/**
-	 * Starts a new game against AI
-	 */
+	/** Starts a new game against AI */
 	private JMenuItem mSinglePlayer;
 
-	/**
-	 * Starts a new game against humans and AI
-	 */
+	/** Starts a new game against humans and AI */
 	private JMenuItem mHostGame;
 
-	/**
-	 * The last played (discarded) card
-	 */
+	/** The last played (discarded) card */
 	private JButton playedCards;
 
-	/**
-	 * The stack of un-drawn cards
-	 */
+	/** The panel containing the button "playedCards". */
+	private JPanel cardsPlayed;
+
+	/** The stack of un-drawn cards */
 	private JButton library;
 
-	/**
-	 * Chat send button (for sending chat messages)
-	 */
+	/** Chat send button (for sending chat messages) */
 	private JButton chatSend;
 
-
+	
 	/* ---------- Miscellaneous ---------- */
+
+	/**
+	 * The window containing the game.
+	 */
+	JFrame gui;
 
 	/**
 	 * SerialVersionID.
@@ -220,63 +169,46 @@ public class GameView extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Font used by UI elements
-	 */
+	/** Font used by UI elements */
 	private Font myFont;
 
-	/**
-	 * GridBagConstraints for vertically aligned elements
-	 */
+	/** GridBagConstraints for vertically aligned elements */
 	private GridBagConstraints myGBC;
 
-	/**
-	 * Where chat messages appear
-	 */
+	/** Where chat messages appear */
 	private JTextPane chatDisplay;
 
-	/**
-	 * Where chat messages are typed before being sent
-	 */
+	/** Where chat messages are typed before being sent */
 	private TextField chatInput;
 
-	/**
-	 * UI representation of the current turn order
-	 */
+	/** UI representation of the current turn order */
 	private JLabel turnOrder;
 
-	/**
-	 * How many times has pack() been called during game init
-	 */
+	/** How many times has pack() been called during game init */
 	private int packCalls;
 
+	/** The status of how many players are connected. */
 	private JLabel connectionStatus;
+
+	/** The dialog containing the "waiting for players..." information. */
 	private JDialog waitingDialog;
 
-
+	
 	/* ---------- Internationalization ---------- */
 
-	/**
-	 * The current resourcebundle
-	 */
-	private transient ResourceBundle translatable;
+	/** The current resource bundle */
+	private ResourceBundle translatable;
 
-	/**
-	 * The current language
-	 */
+	/** The current language */
 	private Locale language;
 
-	/**
-	 * The title "score" in the scorebox
-	 */
+	/** The title "score" in the scorebox */
 	private JLabel scoreTitle;
 
-	/**
-	 * The chat box (where chat messages appear/are input)
-	 */
+	/** The chat box (where chat messages appear/are input) */
 	private JPanel chatBox;
-
 	
+
 	/* ----------------------------------------------------------- */
 	/* ------------------------- METHODS ------------------------- */
 	/* ----------------------------------------------------------- */
@@ -285,7 +217,7 @@ public class GameView extends JFrame {
 	 * Default constructor for the GameView. Initializes a few things such as the
 	 * gridbagconstraints, locale, resourcebundle, and then draws the splash and
 	 * the main UI for the application.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public GameView() {
@@ -304,7 +236,7 @@ public class GameView extends JFrame {
 	 * player's hand, and the gameplay area. Each of these areas is further broken
 	 * down into several other components.
 	 * 
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void drawMainWindow() {
@@ -536,7 +468,7 @@ public class GameView extends JFrame {
 		cardLibrary.add(library);
 
 		// Played cards have been played by players and are face-up
-		JPanel cardsPlayed = new JPanel();
+		cardsPlayed = new JPanel();
 		cardsPlayed.setBackground(Const.BACKGROUND_PINK);
 		playedCards = new JButton();
 		playedCards.setBorder(null);
@@ -569,29 +501,22 @@ public class GameView extends JFrame {
 
 		// Menu Bar
 		mBar = new JMenuBar();
-		mBar.setVisible(true);
 		mBar.setLayout(new FlowLayout(FlowLayout.LEADING));
 
 		/* ----- Main menu options ----- */
 
 		mStartGame = new JMenu(translatable.getString("startGame"));
-		mStartGame.setVisible(true);
-		mStartGame.setEnabled(true);
 
 		mJoinGame = new JMenuItem(translatable.getString("joinGame"));
-		mJoinGame.setVisible(true);
 		mJoinGame.setEnabled(true);
 
-		mDisconnect = new JMenu(translatable.getString("disconnect"));
-		mDisconnect.setVisible(true);
+		mDisconnect = new JMenuItem(translatable.getString("disconnect"));
 		mDisconnect.setEnabled(false);
 
 		mOptions = new JMenu(translatable.getString("options"));
 		mOptions.setVisible(true);
-		mOptions.setEnabled(true);
 
 		mRules = new JMenuItem(translatable.getString("rules"));
-		mRules.setVisible(true);
 		mRules.setEnabled(true);
 
 		/* ----- SUBMENUS ----- */
@@ -608,7 +533,7 @@ public class GameView extends JFrame {
 		soundToggle = new JCheckBoxMenuItem(translatable.getString("soundEffects"));
 		soundToggle.setSelected(true);
 		musicToggle = new JCheckBoxMenuItem(translatable.getString("music"));
-		musicToggle.setSelected(true);
+		musicToggle.setSelected(false);
 		mSinglePlayer = new JMenuItem(translatable.getString("singlePlayer"));
 		mHostGame = new JMenuItem(translatable.getString("hostGame"));
 
@@ -622,10 +547,10 @@ public class GameView extends JFrame {
 		mStartGame.add(mSinglePlayer);
 		mStartGame.add(mHostGame);
 		mStartGame.add(mJoinGame);
+		mStartGame.add(mDisconnect);
 
 		// Add menu items
 		mBar.add(mStartGame);
-		mBar.add(mDisconnect);
 		mBar.add(mOptions);
 
 		/* ----------------------------------------------------------------------- */
@@ -638,7 +563,7 @@ public class GameView extends JFrame {
 
 		// Building the main window
 		ImageIcon icon = new ImageIcon("asset/img/icon.png");
-		JFrame gui = new JFrame();
+		gui = new JFrame();
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		gui.setResizable(true);
 		gui.setTitle("Crazy Eights");
@@ -653,7 +578,7 @@ public class GameView extends JFrame {
 
 	/**
 	 * Draws a splash screen for 3 seconds.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void drawSplash() {
@@ -696,7 +621,7 @@ public class GameView extends JFrame {
 	 * cards are added to all game zones of the UI. This refreshes the UI once for
 	 * each zone, and calls pack each time.
 	 * @param panel The panel that is contained by the frame as an ancestor.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void resizeWindow(JPanel panel) {
@@ -707,15 +632,20 @@ public class GameView extends JFrame {
 			frame.pack();
 			packCalls++;
 		}			
-		frame.revalidate();
-		frame.repaint();
+	}
+
+	/**
+	 * Packs the window.
+	 */
+	public void packWindow() {
+		gui.pack();
 	}
 
 	/**
 	 * Fetches my font from the asset folder.
 	 * @param path The path to the font.
 	 * @return The font to be used.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Font getMyFont(String path) {
@@ -740,7 +670,7 @@ public class GameView extends JFrame {
 	 * Refresh the card image of the last card played to the played cards pile.
 	 * This card image changes many times during the course of a game.
 	 * @param card The last played card.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void displayLastPlayedCard(Card card) {
@@ -758,7 +688,7 @@ public class GameView extends JFrame {
 	 * removed or added to the hand, as depending on if the card is the last card
 	 * in the hand, it is drawn differently.
 	 * @param p The player who's hand is to be redrawn.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void displayCardsInHand(Player p) {
@@ -793,7 +723,13 @@ public class GameView extends JFrame {
 
 		for (int i = 0; i < handSize; i++) {
 			Card card = p.getHand().get(i);
-			card.setBorder(null);
+
+			if (orientation == Const.SOUTH) {
+				card.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+			} else {
+				card.setBorder(null);
+			}
+
 			boolean isLastCard = (i == handSize - 1);
 
 			// Only South sees their cards
@@ -835,12 +771,27 @@ public class GameView extends JFrame {
 		resizeWindow(handDisplay);
 	}
 
+	/**
+	 * Removes a card image from a player's hand.
+	 * 
+	 * 
+	 * @since 23
+	 * @param card no description
+	 */
 	public void removeCardFromHand(Card card) {
 		playerSouthCards.remove(card);
 		playerSouthCards.revalidate();
 		playerSouthCards.repaint();
 	}
 
+	/**
+	 * Displays the cards in the client's hand.
+	 * 
+	 * 
+	 * @since 23
+	 * @param hand no description
+	 * @param listener no description
+	 */
 	public void refreshClientHand(String hand, GameControllerListener listener) {
 
 		if (hand.isEmpty()) {
@@ -864,7 +815,7 @@ public class GameView extends JFrame {
 		// remove border, fetch the image, and add card imgs to the panel for the player
 		for (int i = 0; i < newHand.size()-1; i++) {
 			Card c = newHand.get(i);
-			c.setBorder(null);
+			c.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 			c.fetchCardImg(false, true, false);
 			playerSouthCards.add(c);
 		}
@@ -882,6 +833,14 @@ public class GameView extends JFrame {
 		resizeWindow(playerSouthCards);
 	}
 
+	/**
+	 * Displays each opponent's "hand".
+	 * 
+	 * 
+	 * @since 23
+	 * @param opponentCardCount no description
+	 * @param clientId no description
+	 */
 	public void refreshOpponentHands(String opponentCardCount, int clientId) {
 		// Remove existing cards
 		playerEastCards.removeAll();
@@ -901,10 +860,10 @@ public class GameView extends JFrame {
 
 		// Total opponents (should be 3: 4 players - 1 self)
 		int numOpponents = oppCardCountArr.length;
-		// Rotate indices based on clientId
-		// East: Previous player (clientId - 1)
-		// West: Next player (clientId + 1)
-		// North: Next + 1 player (clientId + 2)
+		/* Rotate indices based on clientId
+		East: Previous player (clientId - 1)
+		West: Next player (clientId + 1)
+		North: Next + 1 player (clientId + 2) */
 		int eastIdx = (clientId - 1 + numOpponents) % numOpponents;
 		int westIdx = (clientId + 1) % numOpponents;
 		int northIdx = (clientId + 2) % numOpponents;
@@ -920,6 +879,17 @@ public class GameView extends JFrame {
 		refreshOppHandsHelper(oppWest, Const.WEST, playerWestCards);
 	}
 
+	/**
+	 * Displays the cards in the opponent's hands. These are all hidden, so the
+	 * only needed information is how many cards to display and in what orientation
+	 * are the cards being displayed.
+	 * 
+	 * 
+	 * @since 23
+	 * @param numCards no description
+	 * @param orientation no description
+	 * @param panel no description
+	 */
 	private void refreshOppHandsHelper(int numCards, int orientation, JPanel panel) {
 		for (int i = 0; i < numCards; i++) {
 			Card card = new Card(Rank.TWO, Suit.HEARTS);
@@ -970,7 +940,6 @@ public class GameView extends JFrame {
 	 * begins or when a new game is started and the name on the screen is no longer
 	 * relevant.
 	 * @param p The player who's name is to be displayed.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void updatePlayerNames(Player p) {
@@ -989,7 +958,6 @@ public class GameView extends JFrame {
 	 * Updates the status of a players score, as well as cards in hand, based on
 	 * their orientation.
 	 * @param p The player to update information for.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	private void updateScoreTable(Player p) {		
@@ -1008,7 +976,6 @@ public class GameView extends JFrame {
 	 * displays the current turn order (clockwise or counterclockwise).
 	 * @param players The collection of players.
 	 * @param isReversed The current turn order.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void refreshScores(Vector<Player> players, boolean isReversed) {
@@ -1022,6 +989,17 @@ public class GameView extends JFrame {
 
 	}
 
+	/**
+	 * Refreshes the client's score table.
+	 * 
+	 * @since 23
+	 * @param southName: the client's own name.
+	 * @param id: the client's own id.
+	 * @param names: the name of each connected player.
+	 * @param scores: the score of each connected player.
+	 * @param counts: the number of cards in each connected player's hand.
+	 * @param turnDirection: clockwise/counterclockwise.
+	 */
 	public void refreshClientScoreTable(String southName, int id, String[] names, String scores, String counts, String turnDirection) {
 		String[] scoreArr = scores.split(",");	    
 		String[] countArr = counts.split(",");
@@ -1048,6 +1026,14 @@ public class GameView extends JFrame {
 		}
 	}
 
+	/**
+	 * Updates the score table for each player with the player's name and score.
+	 * 
+	 * @since 23
+	 * @param name player names
+	 * @param score player scores
+	 * @param orientation player orientations
+	 */
 	private void refreshClientScoreHelper(String name, String score, int orientation) {
 		switch (orientation) {		
 		case 0: playerSouthScore.setText(name + " = " + score); break;
@@ -1061,7 +1047,6 @@ public class GameView extends JFrame {
 	/**
 	 * Revalidates and repaints the name and cards of each player. Used during
 	 * testing to test different approaches for ending the game gracefully.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void refreshView() {
@@ -1083,13 +1068,76 @@ public class GameView extends JFrame {
 		playerEastName.repaint();
 	}
 
+	/**
+	 * Resets the player names to blank.
+	 * 
+	 * @since 23
+	 */
+	public void resetPlayerNames() {
+		playerSouthName.setText("");
+		playerWestName.setText("");
+		playerNorthName.setText("");
+		playerEastName.setText("");		
+	}
+
+	/**
+	 * Resets the player scoreboard to blank.
+	 * 
+	 * @since 23
+	 */
+	public void resetScoreBoard() {
+		playerSouthScore.setText("");
+		playerWestScore.setText("");
+		playerNorthScore.setText("");
+		playerEastScore.setText("");
+		turnOrder.setText("");
+	}
+
+	/**
+	 * Resets the player's console to blank.
+	 * 
+	 * @since 23
+	 */
+	public void resetConsole() {
+		chatDisplay.setText("");
+	}
+
+	/**
+	 * Resets the last played card's graphic to null.
+	 * 
+	 * @since 23
+	 */
+	public void resetLastPlayedCard() {
+		playedCards.setIcon(null);
+	}
+
+	/**
+	 * Resets the player hands to blank. 
+	 * 
+	 * @since 23
+	 */
+	public void resetHands() {
+		playerSouthCards.removeAll();
+		playerWestCards.removeAll();
+		playerNorthCards.removeAll();
+		playerEastCards.removeAll();
+	}
+
 
 	/* -------------------------------------------------------- */
 	/* -------------------- DIALOGS/POPUPS -------------------- */
 	/* -------------------------------------------------------- */
 
+	/**
+	 * Displays the dialog that shows "waiting for players... x/x.
+	 * 
+	 * @since 23
+	 * @param port the port to connect
+	 * @param cancelAction listener
+	 * @param maxPlayers max no of players
+	 */
 	public void awaitConnectionsDialog(int port, ActionListener cancelAction, int maxPlayers) {
-		waitingDialog = new JDialog((Frame) null, "Hosting Game", true);
+		waitingDialog = new JDialog((Frame) null, translatable.getString("hostGame"), true);
 		waitingDialog.setLayout(new BorderLayout());
 
 		connectionStatus = new JLabel(translatable.getString("waitingForOpponents") + " (0/" + maxPlayers + ")...");
@@ -1108,7 +1156,7 @@ public class GameView extends JFrame {
 		waitingDialog.add(info, BorderLayout.NORTH);
 
 		// cancel button
-		JButton btnCancel = new JButton("Cancel");
+		JButton btnCancel = new JButton(translatable.getString("cancel"));
 		btnCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				cancelAction.actionPerformed(e);
@@ -1124,17 +1172,32 @@ public class GameView extends JFrame {
 		waitingDialog.setVisible(true);
 	}
 
+	/**
+	 * Updates the "waiting for players..." dialog with the amt. of players that
+	 * have connected.
+	 * 
+	 * 
+	 * @since 23
+	 * @param playerCount no description
+	 * @param maxPlayers no description
+	 */
 	public void updateWaitingStatus(int playerCount, int maxPlayers) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				if (connectionStatus != null) {
-					connectionStatus.setText("Waiting for connections (" + 
+					connectionStatus.setText(translatable.getString("waitingForOpponents") + "(" + 
 							playerCount + "/" + maxPlayers + ")...");
 				}
 			}
 		});
 	}
 
+	/**
+	 * Closes the "waiting for players..." dialog.
+	 * 
+	 * 
+	 * @since 23
+	 */
 	public void closeWaitingDialog() {
 		if (waitingDialog != null) {
 			waitingDialog.dispose();
@@ -1143,7 +1206,7 @@ public class GameView extends JFrame {
 
 	/**
 	 * Displays the rules of the game as a dialog.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void displayRules() {
@@ -1174,7 +1237,7 @@ public class GameView extends JFrame {
 	/**
 	 * Displays the round winner in a dialog.
 	 * @param player The winner of the round.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void displayRoundWinner(Player player) {
@@ -1184,8 +1247,8 @@ public class GameView extends JFrame {
 
 	/**
 	 * Displays the round winner in a dialog.
-	 * @param player The winner of the round.
-	 * @author Cailean Bernard
+	 * @param playerName player The winner of the round.
+	 * 
 	 * @since 23
 	 */
 	public void displayRoundWinner(String playerName) {
@@ -1196,7 +1259,7 @@ public class GameView extends JFrame {
 	/**
 	 * Displays the game winner in a dialog.
 	 * @param winners The winners of the game.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void displayGameWinners(Vector<Player> winners) {
@@ -1208,7 +1271,12 @@ public class GameView extends JFrame {
 		JOptionPane.showMessageDialog(this, sb.toString() + translatable.getString("gameWinner") + "!",
 				translatable.getString("gameWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
 	}
-	
+
+	/**
+	 * Dialog that displays the game winners.
+	 * 
+	 * @param winnerNames no description
+	 */
 	public void displayGameWinners(String winnerNames) {
 		JOptionPane.showMessageDialog(this, winnerNames + translatable.getString("gameWinner") + "!",
 				translatable.getString("gameWinnerLabel"), JOptionPane.INFORMATION_MESSAGE);
@@ -1217,7 +1285,7 @@ public class GameView extends JFrame {
 	/**
 	 * Getter for player name.
 	 * @return The player name.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public String getPlayerName() {
@@ -1249,7 +1317,7 @@ public class GameView extends JFrame {
 	 * If the player clicks cancel or x, the suit defaults to the suit displayed
 	 * on the card as it was when in the hand of the player who played it.
 	 * @return The suit chosen.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Suit dialogEightSuit() {
@@ -1285,7 +1353,6 @@ public class GameView extends JFrame {
 	/**
 	 * Sends a chat message to the chat window.
 	 * @param msg The message content.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void displayChat(String msg) {
@@ -1307,7 +1374,6 @@ public class GameView extends JFrame {
 	 * @param optName Optional prefix. Used to display translatable console messages.
 	 * @param msg The message content.
 	 * @param optCard An optional suffix for console messages.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void sendConsoleMsg(String optName, String msg, String optCard) {
@@ -1333,10 +1399,16 @@ public class GameView extends JFrame {
 		case "cantDraw":
 			translatedStr = translatable.getString("cantDraw");
 			completedStr = translatedStr;
+			if (getSFXStatus()) {
+				soundInvalidMove(musicToggle.isSelected());
+			}
 			break;
 		case "notYourTurn":
 			translatedStr = translatable.getString("notYourTurn");
 			completedStr = translatedStr;
+			if (getSFXStatus()) {
+				soundInvalidMove(musicToggle.isSelected());
+			}
 			break;
 		case "passTurn":
 			translatedStr = translatable.getString("passTurn");
@@ -1345,10 +1417,16 @@ public class GameView extends JFrame {
 		case "playCard":
 			translatedStr = translatable.getString("playCard");
 			completedStr = optName + " " + translatedStr + " " + optCard;
+			if (getSFXStatus()) {
+				soundPlayCard(musicToggle.isSelected());
+			}
 			break;
 		case "drawCard":
 			translatedStr = translatable.getString("drawCard");
 			completedStr = optName + " " + translatedStr;
+			if (getSFXStatus()) {
+				soundDrawCard(musicToggle.isSelected());
+			}
 			break;
 		case "forceDraw":
 			translatedStr = translatable.getString("forceDraw");
@@ -1357,14 +1435,23 @@ public class GameView extends JFrame {
 		case "turnReversed":
 			translatedStr = translatable.getString("turnReversed");
 			completedStr = optName + " " + translatedStr;
+			if (getSFXStatus()) {
+				soundTurnReversed(musicToggle.isSelected());
+			}
 			break;
 		case "turnSkipped":
 			translatedStr = translatable.getString("turnSkipped");
 			completedStr = optName + " " + translatedStr;
+			if (getSFXStatus()) {
+				soundTurnSkipped(musicToggle.isSelected());
+			}
 			break;
 		case "newRound":
 			translatedStr = translatable.getString("newRound");
 			completedStr = translatedStr;
+			if (getSFXStatus()) {
+				soundNewRound(musicToggle.isSelected());
+			}
 			break;
 		}
 
@@ -1381,7 +1468,7 @@ public class GameView extends JFrame {
 	 * Fetches the message from the chat input area so that it can be displayed
 	 * in the chat box.
 	 * @return The message to be displayed.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public String fetchMsg() {
@@ -1392,7 +1479,7 @@ public class GameView extends JFrame {
 
 	/**
 	 * Sets the language to French by changing the Locale and the ResourceBundle.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setLanguageToFrench() {
@@ -1405,7 +1492,7 @@ public class GameView extends JFrame {
 
 	/**
 	 * Sets the language to English by changing the Locale and the ResourceBundle.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setLanguageToEnglish() {
@@ -1419,7 +1506,7 @@ public class GameView extends JFrame {
 	/**
 	 * Some elements require revalidating/repainting after translation. This method
 	 * just repaints all those elements.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void repaintTranslatable() {
@@ -1442,18 +1529,262 @@ public class GameView extends JFrame {
 		mHostGame.setText(translatable.getString("hostGame"));
 	}
 
+	/**
+	 * Shows the dialog for when a new game starts.
+	 * 
+	 * 
+	 * @since 23
+	 */
 	public void gameStartDialog() {
-		JOptionPane.showMessageDialog(null, "Game is starting!", "Let's play!", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, translatable.getString("newGame"), 
+				translatable.getString("letsPlay"), JOptionPane.INFORMATION_MESSAGE);
 	}
-	
-	public void toggleBtnsSingleplayer() {
-		mHostGame.setEnabled(mHostGame.isEnabled());
-		mJoinGame.setEnabled(mJoinGame.isEnabled());
+
+	/**
+	 * Sets the status of the menu buttons to the single player configuration.
+	 * 
+	 * 
+	 * @since 23
+	 */
+	public void setBtnsSingleplayer() {
+		mHostGame.setEnabled(false);
+		mJoinGame.setEnabled(false);
+		mDisconnect.setEnabled(true);
 	}
+
+	/**
+	 * Sets the status of the menu buttons to the multiplayer configuration.
+	 * 
+	 * 
+	 * @since 23
+	 */
+	public void setBtnsMultiplayer() {
+		mDisconnect.setEnabled(true);
+		mSinglePlayer.setEnabled(false);
+		mHostGame.setEnabled(false);
+		mJoinGame.setEnabled(false);
+	}
+
+	/**
+	 * Sets the status of the menu buttons to the main menu configuration.
+	 * 
+	 * 
+	 * @since 23
+	 */
+	public void setBtnsMainMenu() {
+		mDisconnect.setEnabled(false);
+		mSinglePlayer.setEnabled(true);
+		mHostGame.setEnabled(true);
+		mJoinGame.setEnabled(true);
+	}
+
 	
-	public void toggleBtnsMultiplayer() {
-		mDisconnect.setEnabled(mDisconnect.isEnabled());
-		mSinglePlayer.setEnabled(mSinglePlayer.isEnabled());
+	/* ------------------------------------------------------------------- */
+	/* ------------------------- SOUND AND MUSIC ------------------------- */
+	/* ------------------------------------------------------------------- */
+
+	/**
+	 * Plays the sound effect for when a makes an invalid move.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundInvalidMove(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_invalidMove.wav";
+		} else {
+			fileName = "invalidMove.wav";
+		}
+
+		File cantPlay = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(cantPlay));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Plays the sound effect for when a player passes the turn.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundPassTurn(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_powerUp.wav";
+		} else {
+			fileName = "powerUp.wav";
+		}
+
+		File passTurn = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(passTurn));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Plays the sound effect for when a new round starts.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundNewRound(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_pickupCoin.wav";
+		} else {
+			fileName = "pickupCoin.wav";
+		}
+
+		File newRound = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(newRound));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Plays the sound effect for when a player plays a card.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundPlayCard(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_playCard.wav";
+		} else {
+			fileName = "playCard.wav";
+		}
+
+		File playCard = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(playCard));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Plays the sound effect for when a player draws a card.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundDrawCard(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_drawCard.wav";
+		} else {
+			fileName = "drawCard.wav";
+		}
+
+		File drawCard = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(drawCard));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Plays the sound effect for when the turn order is reversed.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundTurnReversed(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_powerUp.wav";
+		} else {
+			fileName = "powerUp.wav";
+		}
+
+		File turnReversed = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(turnReversed));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Plays the sound effect for when a player's turn is skipped.
+	 * 
+	 * 
+	 * @since 23
+	 * @param is8bit plays a bitcrushed version of the sound instead.
+	 */
+	public void soundTurnSkipped(boolean is8bit) {
+		String fileName;
+		if (is8bit) {
+			fileName = "crushed_reverseTurn.wav";
+		} else {
+			fileName = "jump.wav";
+		}
+
+		File turnSkipped = new File("asset/sound/" + fileName);
+
+		try {
+			Clip clip = AudioSystem.getClip();
+			clip.open(AudioSystem.getAudioInputStream(turnSkipped));
+			clip.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Getter for the status of the Sound effects tickbox.
+	 * 
+	 * 
+	 * @since 23
+	 * @return true if on, false if off.
+	 */
+	public boolean getSFXStatus() {
+		return soundToggle.isSelected();
+	}
+
+	/**
+	 * Getter for the status of the music tickbox.
+	 * 
+	 * 
+	 * @since 23
+	 * @return true if on, false if off.
+	 */
+	public boolean getMusicStatus() {
+		return musicToggle.isSelected();
 	}
 
 
@@ -1465,7 +1796,6 @@ public class GameView extends JFrame {
 	 * Pack should only be called 4 times while instantiating the game, this
 	 * allows the flag to be reset.
 	 * @param i The number to reset the flag to.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setPackCalls(int i) {
@@ -1476,7 +1806,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the single-player button.
 	 *
 	 * @param listener The action listener to handle single-player selection.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setSinglePlayerListener(ActionListener listener) {
@@ -1487,29 +1816,16 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the multiplayer button.
 	 *
 	 * @param listener The action listener to handle multiplayer selection.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setMultiPlayerListener(ActionListener listener) {
 		mHostGame.addActionListener(listener);
 	}
 
-	//	/**
-	//	 * Sets the action listener for the host game button.
-	//	 *
-	//	 * @param listener The action listener to handle hosting a game.
-	//	 * @author Cailean Bernard
-	//	 * @since 23
-	//	 */
-	//	public void setHostGameListener(ActionListener listener) {
-	//		mStartGame.addActionListener(listener);
-	//	}
-
 	/**
 	 * Sets the action listener for the join game button.
 	 *
 	 * @param listener The action listener to handle joining a game.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setJoinGameListener(ActionListener listener) {
@@ -1520,7 +1836,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the disconnect button.
 	 *
 	 * @param listener The action listener to handle disconnection.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setDisconnectListener(ActionListener listener) {
@@ -1531,7 +1846,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the options button.
 	 *
 	 * @param listener The action listener to open the options menu.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setOptionsListener(ActionListener listener) {
@@ -1541,8 +1855,7 @@ public class GameView extends JFrame {
 	/**
 	 * Sets the action listener for the about button.
 	 *
-	 * @param listener The action listener to display the about section.
-	 * @author Cailean Bernard
+	 * @param listener The action listener to display the about section. 
 	 * @since 23
 	 */
 	public void setAboutListener(ActionListener listener) {
@@ -1553,7 +1866,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the English language selection.
 	 *
 	 * @param listener The action listener to switch language to English.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setLangEnglishListener(ActionListener listener) {
@@ -1564,7 +1876,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the French language selection.
 	 *
 	 * @param listener The action listener to switch language to French.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setLangFrenchListener(ActionListener listener) {
@@ -1575,7 +1886,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the sound toggle button.
 	 *
 	 * @param listener The action listener to toggle sound on/off.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setSoundToggleListener(ActionListener listener) {
@@ -1586,7 +1896,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the music toggle button.
 	 *
 	 * @param listener The action listener to toggle music on/off.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setMusicToggleListener(ActionListener listener) {
@@ -1597,7 +1906,6 @@ public class GameView extends JFrame {
 	 * Sets the action listener for drawing a card from the library.
 	 *
 	 * @param listener The action listener to draw a card.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setDrawFromLibraryListener(ActionListener listener) {
@@ -1608,12 +1916,20 @@ public class GameView extends JFrame {
 	 * Sets the action listener for the chat send button.
 	 *
 	 * @param listener The action listener to send a chat message.
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public void setChatSendButtonListener(ActionListener listener) {
 		chatSend.addActionListener(listener);
 		chatInput.addActionListener(listener);
+	}
+	
+	/**
+	 * Returns the resourcebundle.
+	 * 
+	 * @return the translatable
+	 */
+	public ResourceBundle getTranslatable() {
+		return translatable;
 	}
 
 }

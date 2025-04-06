@@ -14,23 +14,21 @@ package system;
 /**
  * Calls main() function, which calls creates the GameController.
  * 
- * @author Cailean Bernard
- * @since 23
  */
 public class Main {
+	
+	/**
+	 * So Javadoc doesn't throw a fit
+	 */
+	Main(){}
 
 	/**
 	 * Creates the controller, which is made of a model and a view.
 	 * 
 	 * @param args - An array of strings passed as arguments
-	 * @author Cailean Bernard
 	 * @since 23
 	 */
 	public static void main(String[] args) {
-
-		// don't forget to uncomment the splash
-		
-		/* this is a constant that has the value of {@value} */
 		
 		GameModel model = new GameModel();
 		GameView view = new GameView();

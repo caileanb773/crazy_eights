@@ -14,30 +14,56 @@ import sysobj.Suit;
 
 /**
  * Contains logic and objects/collectinos needed to process game logic.
- * @author Cailean Bernard
+ * 
  * @since 23
  * */
 public class GameModel {
 
-	private Vector<Player> players;
-	private Vector<String> aiNames;
-	private Vector<Card> library;
-	private Vector<Card> playedCards;
-	private Player activePlayer;
-	private Vector<Player> pGameWinner;
-	private Player pRoundWinner;
-	private boolean isTurnOrderReversed;
-	private boolean isGameRunning;
-	private boolean cardRedirection;
-	private int currentTurn;
-	private int numTwosPlayed;
-	
+    /** The list of all players currently in the game. */
+    private Vector<Player> players;
+
+    /** The list of names assigned to AI-controlled players. */
+    private Vector<String> aiNames;
+
+    /** The library of all remaining cards in the draw pile. */
+    private Vector<Card> library;
+
+    /** The pile of cards that have been played so far. */
+    private Vector<Card> playedCards;
+
+    /** The player whose turn it is currently. */
+    private Player activePlayer;
+
+    /** The list of players who have won the game (for multi-winner modes). */
+    private Vector<Player> pGameWinner;
+
+    /** The player who won the current or most recent round. */
+    private Player pRoundWinner;
+
+    /** Flag indicating if the turn order is currently reversed. */
+    private boolean isTurnOrderReversed;
+
+    /** Flag indicating if a game is actively running. */
+    private boolean isGameRunning;
+
+    /** 
+     * Flag indicating whether a card redirection effect is active.
+     * Typically used when a card changes who draws or plays next.
+     */
+    private boolean cardRedirection;
+
+    /** The index of the current player's turn in the `players` list. */
+    private int currentTurn;
+
+    /** Tracks how many "Two" cards have been played consecutively (for draw stacking). */
+    private int numTwosPlayed;
+
 
 	/* -------------------- Constructors -------------------- */
 
 	/**
 	 * Default constructor for GameModel
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public GameModel() {
@@ -49,13 +75,12 @@ public class GameModel {
 	/**
 	 * Initializes the game state. Resets all flags/clears all winners/creates AI
 	 * players, adds players to the game.
-	 * @param numHumanPlayers - Right now, this is always 1 (single player)
 	 * @param playerName - The name of the one human player playing.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
-	public void initGame(int numHumanPlayers, String playerName) {
-		int numAIPlayers = 0;
+	public void initSingleplayerGame(String playerName) {
+		int numAIPlayers = 3;
 		players = new Vector<>();
 		pGameWinner = null;
 		pRoundWinner = null;
@@ -68,17 +93,6 @@ public class GameModel {
 		loadAINames();
 
 		// Add AI players up to 4 based on how many human players are going to play
-		if (numHumanPlayers == 1) {
-			numAIPlayers = 3;
-		} else if (numHumanPlayers == 2) {
-			numAIPlayers = 2;
-			
-			//TODO: this might be a spot where i introduced a bug
-		} else if (numHumanPlayers == 3) {
-			numAIPlayers = 1;
-		} else {
-			System.out.println("GameModel constructor tried to set numAIPlayers to number other than 2/3.");
-		}
 
 		int orientation = 0;
 		Player humanPlayer = new Player(playerName, orientation);
@@ -90,7 +104,12 @@ public class GameModel {
 			this.players.add(createCPUOpponent(++orientation));
 		}
 	}
-	
+
+	/**
+	 * Initializes a multiplayer game.
+	 * 
+	 * @param players the list of players
+	 */
 	public void initMultiplayerGame(Vector<Player> players) {
 		this.players = players;
 		playedCards = new Vector<>();
@@ -106,10 +125,10 @@ public class GameModel {
 	 * Clears the game status. Calls cleanUpGameState(), resets the turn order,
 	 * resets game/round winners. This is called at the end of the game to 
 	 * simulate the game state as it was when it began.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
-	public void clearGame() {
+	public void resetGameFlags() {
 		cleanUpGameState();
 		setTurnOrderReversed(false);
 		currentTurn = 0;
@@ -118,12 +137,12 @@ public class GameModel {
 		pGameWinner = null;
 		pRoundWinner = null;
 		aiNames.clear();
-		players.clear();
+		//players.clear();
 		players = null;
 		playedCards = null;
-		aiNames = null;
+		//aiNames = null;
 	}
-	
+
 
 	/* ------------------------------------------------------------------- */
 	/* -------------------- CARD MANIPULATION METHODS -------------------- */
@@ -132,7 +151,7 @@ public class GameModel {
 	/**
 	 * Clears the deck if it exists, else creates a new deck of 52 cards of each
 	 * rank and suit.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void instantiateDeck(){
@@ -149,7 +168,7 @@ public class GameModel {
 
 	/**
 	 * Shuffles the deck using the method from Collections.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void shuffleDeck() {
@@ -159,7 +178,7 @@ public class GameModel {
 	/**
 	 * Deals numCards players to each player in the list of players.
 	 * @param numCards - the number of cards to deal to each player
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void dealCards(int numCards) {
@@ -184,7 +203,7 @@ public class GameModel {
 	 * Creates a CPU opponent by getting a unique name from the list of AI names.
 	 * @return AIPlayer - the completed AIPlayer.
 	 * @param orientation - Which orientation the AI player belongs to
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public AIPlayer createCPUOpponent(int orientation) {
@@ -193,7 +212,7 @@ public class GameModel {
 
 	/**
 	 * Loads the list of names from the .txt into a local list
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void loadAINames() {
@@ -213,7 +232,7 @@ public class GameModel {
 	 * Retrieves a unique name for an AI player from the list of names loaded by
 	 * loadAIName
 	 * @return String - The name returned.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public String getAIPlayerName() {
@@ -229,7 +248,7 @@ public class GameModel {
 	 * clears each player's hand/the library/the played cards. Instantiates a new
 	 * deck, shuffles it, deals cards to players, and flips the last card from the
 	 * library into the played cards zone. Sets the configures the starting turn.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void initRound() {
@@ -267,7 +286,7 @@ public class GameModel {
 	 * Conserves the last played card and reshuffles all other cards from the 
 	 * library and played cards into a new library so that players don't try to
 	 * draw from an empty deck.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void reshuffleSpentDeck() {
@@ -287,7 +306,7 @@ public class GameModel {
 		shuffleDeck();
 		playedCards.add(topCard);
 	}
-	
+
 
 	/* ------------------------------------------------------------------ */
 	/* ------------------------- PLAYER ACTIONS ------------------------- */
@@ -298,7 +317,7 @@ public class GameModel {
 	 * succeeds if the "play" is legal.
 	 * @param card - The card to play.
 	 * @return boolean - Is the play successful or not.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public boolean playCard(Card card) {
@@ -336,7 +355,7 @@ public class GameModel {
 	 * card to be played is an eight.
 	 * @return boolean - Determines if the play was legal or not
 	 * @param card - The card to be played
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public boolean isPlayLegal(Card card) {
@@ -355,7 +374,16 @@ public class GameModel {
 		System.out.println("Illegal move!");
 		return false;
 	}
-	
+
+	/**
+	 * Determines if a play is legal based on the card being passed to the method
+	 * and the last played card in the discard pile.
+	 * 
+	 * @since 23
+	 * @param card the card to play
+	 * @param lastPlayedCard the last played card
+	 * @return true if play is legal, false if not
+	 */
 	public boolean isPlayLegal(Card card, Card lastPlayedCard) {
 		if (card == null) {
 			System.out.println("GameModel.isPlayLegal() passed null card.");
@@ -376,7 +404,7 @@ public class GameModel {
 	 * Draws a card to the hand of the current active user. If the library is
 	 * empty, the deck is reshuffled first. Checks that the draw would not cause
 	 * the player to have more than 12 (max) cards in hand first.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void drawCard() {
@@ -407,7 +435,7 @@ public class GameModel {
 	 * @param passivePlayer - The player being forced to draw cards.
 	 * @param penaltyCards - The amount of cards that the method is forcing upon
 	 * the player.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void forceDraw(Player passivePlayer, int penaltyCards) {
@@ -448,7 +476,7 @@ public class GameModel {
 			remainingCards--;
 		}
 	}
-	
+
 
 	/* -------------------------------------------------------------- */
 	/* -------------------- SPECIAL CARD ACTIONS -------------------- */
@@ -459,7 +487,7 @@ public class GameModel {
 	 * Each card that does not have a special action in the rules has the default
 	 * special action of not being a two and resets the count of twos played.
 	 * @param c - The card to check for special actions.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void applySpecialAction(Card c) {
@@ -471,13 +499,13 @@ public class GameModel {
 		case EIGHT: playEight(); break;
 		case QUEEN: playQueen(); break;
 		default: numTwosPlayed = 0; 
-			break;
+		break;
 		}
 	}
 
 	/**
 	 * Aces reverse the turn order. Default is clockwise vs. counterclockwise.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void playAce() {
@@ -488,7 +516,7 @@ public class GameModel {
 	/**
 	 * Twos force the next player in the turn order to draw two times the number
 	 * of twos played consecutively cards.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void playTwo() {
@@ -498,7 +526,7 @@ public class GameModel {
 
 	/**
 	 * Fours force the next player in the turn order to draw four cards.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void playFour() {
@@ -509,7 +537,7 @@ public class GameModel {
 	/**
 	 * Eights allow the player to choose a new suit for the played eight. AI
 	 * players choose a suit at random.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void playEight() {
@@ -524,14 +552,14 @@ public class GameModel {
 
 	/**
 	 * Queens skip the turn of the next player.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void playQueen() {
 		numTwosPlayed = 0;
 		skipTurn();
 	}
-	
+
 
 	/* --------------------------------------------------------------------- */
 	/* ------------------------- GAMESTATE METHODS ------------------------- */
@@ -542,7 +570,7 @@ public class GameModel {
 	 * has no cards in hand. If a player plays their last card, they are the
 	 * winner of the round.
 	 * @return boolean - True if the round is over, false if not.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public boolean isRoundOver() {
@@ -558,7 +586,7 @@ public class GameModel {
 	/**
 	 * Tallies up the scores for all players. The "score" is equal to the number
 	 * of cards remaining in players hands when the round ends.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void tallyScores() {
@@ -574,7 +602,7 @@ public class GameModel {
 	 * or exceeded the max score as outlined in the constants (default 50). If
 	 * the game is over, endGame() is called.
 	 * @return boolean - True if the game is over, false if not.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public boolean isGameOver() {
@@ -592,7 +620,7 @@ public class GameModel {
 	 * player is the one with the least points. If there are multiple players with
 	 * @return Player - The winning players. If only one, the list will only have
 	 * one element.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public Vector<Player> getWinningPlayers() {
@@ -620,7 +648,7 @@ public class GameModel {
 	 * advances the turn by one in a direction based on if the turn order is 
 	 * reversed or not.
 	 * @return Player - The next player in the turn order.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public Player getNextPlayer() {
@@ -646,7 +674,7 @@ public class GameModel {
 	/**
 	 * Looks at the next player without changing the turn order.
 	 * @return the next player in the turn order
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public Player peekNextPlayer() {
@@ -666,7 +694,7 @@ public class GameModel {
 	/**
 	 * Skips the next player's turn. Increments/decrements the current turn, based
 	 * on if the turn order is reversed or not.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void skipTurn() {
@@ -687,7 +715,7 @@ public class GameModel {
 	/**
 	 * Ends the current game. Retrieves the winning player, sets isGameRunning to
 	 * false, and cleans up the game state.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void endGame() {
@@ -702,17 +730,26 @@ public class GameModel {
 
 	/**
 	 * Clears the collections for played cards, library, and each player's hand.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void cleanUpGameState() {
-		playedCards.clear();
-		library.clear();
-		for (Player p: players) {
-			p.clearHand();
+		if (playedCards != null) {
+			playedCards.clear();
 		}
+
+		if (library != null) {
+			library.clear();
+		}
+
+		if (players != null) {
+			for (Player p: players) {
+				p.clearHand();
+			}
+		}
+
 	}
-	
+
 
 	/* ---------------------------------------------------------------- */
 	/* -------------------- GETTERS, SETTERS, MISC -------------------- */
@@ -722,7 +759,7 @@ public class GameModel {
 	 * Increments a players score by a passed amount.
 	 * @param player - The player who's score to increment.
 	 * @param amt - The amount to increment the score by.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 * */
 	public void incrementScore(Player player, int amt) {
@@ -732,7 +769,7 @@ public class GameModel {
 	/**
 	 * Getter for the last played card (the top of the played cards pile)
 	 * @return Card - the top of the played cards pile
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Card getLastPlayedCard() {
@@ -742,7 +779,7 @@ public class GameModel {
 	/**
 	 * Getter for the player who's turn it is.
 	 * @return Player - The active player.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Player getActivePlayer() {
@@ -752,7 +789,7 @@ public class GameModel {
 	/**
 	 * Setter to set the active player (the player who's turn it is). 
 	 * @param p - Set the active player to this player.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setActivePlayer(Player p) {
@@ -762,7 +799,7 @@ public class GameModel {
 	/**
 	 * Getter for the list of players in the current game.
 	 * @return the list of players in the current game.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Vector<Player> getPlayers() {
@@ -772,7 +809,7 @@ public class GameModel {
 	/**
 	 * Getter for the library (the deck of unplayed cards.
 	 * @return the list of unplayed cards.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Vector<Card> getDeck() {
@@ -782,7 +819,7 @@ public class GameModel {
 	/**
 	 * The "discard pile" or played cards. When a player plays a card, it goes here.
 	 * @return the collection of played cards.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Vector<Card> getPlayedCards() {
@@ -792,7 +829,7 @@ public class GameModel {
 	/**
 	 * Getter for the status of the game.
 	 * @return true if the game is running, false if not.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public boolean isGameRunning() {
@@ -803,7 +840,7 @@ public class GameModel {
 	 * Setter for the status of the game.
 	 * @param isGameRunning - True if the game is running, false if the game is
 	 * not running.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setGameRunning(boolean isGameRunning) {
@@ -814,7 +851,7 @@ public class GameModel {
 	 * Sets the turn order to either normal or reversed.
 	 * @param turnOrder - True is reversed/counterclockwise, false is normal or
 	 * clockwise.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setTurnOrderReversed(boolean turnOrder) {
@@ -824,7 +861,7 @@ public class GameModel {
 	/**
 	 * Getter for the turn order.
 	 * @return true if the turn order is reversed, false if the turn order is normal.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public boolean getTurnOrderDirection() {
@@ -834,7 +871,7 @@ public class GameModel {
 	/**
 	 * Setter for the current turn.
 	 * @param turn - sets the current turn to the passed int.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setTurn(int turn) {
@@ -844,7 +881,7 @@ public class GameModel {
 	/**
 	 * Getter for the winner of the current round.
 	 * @return the winner of the current round as a Player object.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Player getRoundWinner() {
@@ -854,7 +891,7 @@ public class GameModel {
 	/**
 	 * Getter for the winner of the current game.
 	 * @return the winners of the current game as a List of Player objects.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public Vector<Player> getGameWinners() {
@@ -865,7 +902,7 @@ public class GameModel {
 	 * Setter for the card redirection flag. This flag is used to determine if
 	 * card redirection is happening (in force draw scenarios)
 	 * @param tf - Set the flag to true/false
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public void setCardRedirection(boolean tf) {
@@ -875,27 +912,41 @@ public class GameModel {
 	/**
 	 * Getter for card redirection status.
 	 * @return the status of the flag for redirection.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public boolean getCardRedirection() {
 		return this.cardRedirection;
 	}
-	
+
 	/**
 	 * Getter for the number of twos played.
 	 * @return the current value of how many twos have been played in sequence.
-	 * @author Cailean Bernard
+	 * 
 	 * @since 23
 	 */
 	public int getNumTwosPlayed() {
 		return this.numTwosPlayed;
 	}
-	
+
+	/**
+	 * Setter for the last played card.
+	 * 
+	 * 
+	 * @since 23
+	 * @param c card the card to set the last played card to.
+	 */
 	public void setLastPlayedCard(Card c) {
 		this.playedCards.add(c);
 	}
-	
+
+	/**
+	 * Getter for the host.
+	 * 
+	 * 
+	 * @since 23
+	 * @return the host.
+	 */
 	public Player getHost() {
 		for (Player p : players) {
 			if (p.isHost()) {
@@ -903,6 +954,19 @@ public class GameModel {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * For debugging purposes
+	 * @return the values of all fields in the model.
+	 */
+	@Override
+	public String toString() {
+		return "GameModel [players=" + players + ", aiNames=" + aiNames + ", library=" + library + ", playedCards="
+				+ playedCards + ", activePlayer=" + activePlayer + ", pGameWinner=" + pGameWinner + ", pRoundWinner="
+				+ pRoundWinner + ", isTurnOrderReversed=" + isTurnOrderReversed + ", isGameRunning=" + isGameRunning
+				+ ", cardRedirection=" + cardRedirection + ", currentTurn=" + currentTurn + ", numTwosPlayed="
+				+ numTwosPlayed + "]";
 	}
 
 }
