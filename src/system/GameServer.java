@@ -40,6 +40,9 @@ public class GameServer {
 
     /** Auto-incrementing ID assigned to the next connecting client. */
     private int nextClientId = 1;
+    
+    /** Output writer */
+    PrintWriter out;
 
 	/**
 	 * Initializes a new Server and starts listening for packets on the socket.
@@ -57,7 +60,6 @@ public class GameServer {
 		this.connectedPlayers = new Vector<>();
 		this.clientNames = new Vector<>();
 		this.numHumanOpponents = maxPlayers;
-		acceptConnections();
 	}
 
 	/**
@@ -123,7 +125,7 @@ public class GameServer {
 		public void run() {
 			try {
 				BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("ID|" + clientId);
 				String line;
 				while ((line = in.readLine()) != null && !client.isClosed()) {
@@ -209,7 +211,7 @@ public class GameServer {
 		System.out.println("Server is broadcasting a chat to all connected clients: " + msg);
 		for (Socket client : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("CHAT|" + msg);
 			} catch (IOException e) {
 				System.out.println("Failed to broadcast chat to a client." + e.getStackTrace());
@@ -229,7 +231,7 @@ public class GameServer {
 				optName + " " + msg + " " + optCard);
 		for (Socket client : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("CONSOLE|" + optName + "|" + msg + "|" + optCard);
 			} catch (IOException e) {
 				System.out.println("Failed to broadcast chat to a client." + e.getStackTrace());
@@ -246,7 +248,7 @@ public class GameServer {
 		System.out.println("Server is broadcasting round winner to all connected clients.");
 		for (Socket client : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("ROUNDOVER" + "|" + winnerName);
 			} catch (IOException e) {
 				System.out.println("Failed to broadcast round winner to client." + e.getStackTrace());
@@ -263,7 +265,7 @@ public class GameServer {
 		System.out.println("Server is broadcasting game winner to all connected clients.");
 		for (Socket client : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("GAMEOVER" + "|" + winnerNames);
 			} catch (IOException e) {
 				System.out.println("Failed to broadcast game winner to client." + e.getStackTrace());
@@ -285,7 +287,7 @@ public class GameServer {
 		// connectedPlayers doesn't have the host, so subtract 1 from client Id
 		Socket client = connectedPlayers.get(clientId - 1);
 		try {
-			PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+			out = new PrintWriter(client.getOutputStream(), true);
 			out.println("SUITREQUEST" + "|" + cardToPlay);
 		} catch (IOException e) {
 			System.out.println("Failed to request suit from client " + clientId);
@@ -305,7 +307,7 @@ public class GameServer {
 
 		for (Socket s : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+				out = new PrintWriter(s.getOutputStream(), true);
 				out.println("BTN" + "|" + mode);
 			} catch (IOException e) {
 				System.out.println("Failed to broadcast button state to client.");
@@ -323,7 +325,7 @@ public class GameServer {
 	public void closeSocket(int index) {
 		Socket client = connectedPlayers.get(index - 1);
 		try {
-			PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+			out = new PrintWriter(client.getOutputStream(), true);
 			out.println("SHUTDOWN");
 			client.close();
 		} catch (IOException e) {
@@ -339,7 +341,7 @@ public class GameServer {
 		// tell each client to clean up their UI
 		for (Socket client : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("CLEANUP");
 			} catch (IOException e) {
 				System.out.println("Failed to tell client to cleanup UI.");
@@ -355,7 +357,7 @@ public class GameServer {
 	public void terminateThreads() {
 		for (Socket client : connectedPlayers) {
 			try {
-				PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+				out = new PrintWriter(client.getOutputStream(), true);
 				out.println("SHUTDOWN");
 				client.close();
 			} catch (IOException e) {
@@ -389,7 +391,7 @@ public class GameServer {
 	public void requestViewRefresh(Vector<Player> players, Card lastPlayedCard, boolean turnDirection) {
 		for (int i = 0; i < connectedPlayers.size(); i++) {
 			try {
-				PrintWriter out = new PrintWriter(connectedPlayers.get(i).getOutputStream(), true);
+				out = new PrintWriter(connectedPlayers.get(i).getOutputStream(), true);
 				Player clientPlayer = players.get(i + 1);
 				String hand = clientPlayer.stringifyHand();
 				String played = lastPlayedCard.toString();

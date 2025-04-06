@@ -197,7 +197,7 @@ public class GameView extends JFrame {
 	/* ---------- Internationalization ---------- */
 
 	/** The current resource bundle */
-	private ResourceBundle translatable;
+	private transient ResourceBundle translatable;
 
 	/** The current language */
 	private Locale language;

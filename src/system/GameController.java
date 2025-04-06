@@ -153,6 +153,7 @@ public class GameController implements GameControllerListener {
 					}
 
 					server = new GameServer(port, this, numHumanOpponents);
+					server.acceptConnections();
 					client = null;
 					System.out.println(translatable.getString("hostingAs") +
 							playerName + translatable.getString("onPort") + port);
@@ -535,7 +536,7 @@ public class GameController implements GameControllerListener {
 		switch (packetData) {
 		case "SINGLEPLAYER": view.setBtnsSingleplayer(); break;
 		case "MULTIPLAYER": view.setBtnsMultiplayer(); break;
-		case "MAINMENU": view.setBtnsMainMenu();
+		case "MAINMENU": view.setBtnsMainMenu(); break;
 		default: System.out.println("Invalid button display status in onButtonStatusReceived().");
 		break;
 		}
