@@ -769,9 +769,6 @@ public class GameController implements GameControllerListener {
 		refreshListenersInPlayerHand(model.getActivePlayer());
 		view.displayLastPlayedCard(playedCards.getLast());
 
-		//
-		view.packWindow();
-
 		if (gameMode == Const.MULTI_PLAYER && server != null) {
 			server.requestViewRefresh(players, model.getLastPlayedCard(), turnOrderDir);
 		}

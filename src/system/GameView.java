@@ -986,7 +986,6 @@ public class GameView extends JFrame {
 
 		turnOrder.setText(isReversed ? translatable.getString("counterclockwise").toUpperCase() : 
 			translatable.getString("clockwise").toUpperCase());
-
 	}
 
 	/**
