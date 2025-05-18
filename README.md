@@ -1,5 +1,5 @@
-![Screenshot 1](assets/img/screen1.jpg)
-![Screenshot 2](assets/img/screen2.jpg)
+![Screenshot 1](asset/img/screen1.jpg)
+![Screenshot 2](asset/img/screen2.jpg)
 
 Disclaimer:
 This game was written over the course of ~10 weeks cumulatively as part of a Computer Engineering 
