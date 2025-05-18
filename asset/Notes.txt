@@ -1,4 +1,4 @@
------ BUGS -----
+----- KNOWN BUGS -----
 
 -if you start a new game in the middle of an ai player's turn, they keep playing
 -when the player draws their 12th card, if that card is playable, their turn is still passed
@@ -6,9 +6,6 @@
 -when a client wins the game (plays their last card) game doesn't detect they've won til the next player finishes their turn (?)
 
 ----- CHANGES -----
-
-"it is not your turn" could be a more useful message when broadcast to every1
-would be nice: cannot draw; play a card broadcasts to everyone instead of just whoever tried to do the thing
 
 ---------- SOURCES ----------
 

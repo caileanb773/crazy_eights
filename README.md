@@ -22,6 +22,13 @@ accessibility features are planned, such as card image size.
 
 ---
 
+To compile:
+
+Run CompileScript.bat and move the "asset" folder into "bin". The .jar will be created inside bin,
+and should be run from there. If moving the .jar elsewhere, move the asset folder along with it.
+
+---
+
 Using the program:
 After launching, select either single-player or multi-player. If playing multi-player, one person must
 act as the host. Enter the IP and port number that other players will connect to, and then choose a
