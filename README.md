@@ -1,3 +1,39 @@
+Disclaimer:
+This game was written over the course of ~10 weeks cumulatively as part of a Computer Engineering 
+course. 
+Permission from my professor was granted to use the project as a portfolio project. Besides the card 
+images, which have been altered, all code, graphics, and sounds are my own.
+
+The program is written using the Java Swing framework and the MVC (model, view, controller) design
+pattern. The model contains only the game logic, the view contains only UI elements, and the
+controller acts as a bridge between the user and the model/view.
+
+The game is designed to always have 4 players, and in singe-player mode the player will play 
+against 3 AI opponents.
+There is only one level of difficulty for the AI; more difficulty levels will be implemented in a
+later update along with some fixes to single/multiplayer.
+
+In both single player and multi player, game events are logged to the "console", which also serves as
+the chat area in multiplayer mode. The game offers online multiplayer, up to 4 players. If less than 4 
+human players are connected, the remaining slots up to 4 will be occupied by AI players.
+
+The game is available in English and French. Sound effects can be turned off if desired. More
+accessibility features are planned, such as card image size.
+
+---
+
+Using the program:
+After launching, select either single-player or multi-player. If playing multi-player, one person must
+act as the host. Enter the IP and port number that other players will connect to, and then choose a
+name.
+
+To play cards from your hand, click them. If the play is legal, the card will be added to the discard
+pile and removed from your hand. To draw cards, click the face-down "draw pile" to the left of the
+discard pile. To chat, enter a message to the chat input window and press the enter key or click "send".
+The chat does nothing in single-player mode.
+
+---
+
 Objective:
 Crazy Eights is a card game where players take turns discarding cards from their hands until they have
 no more cards in their hand. A round of the game is won whenever the first player discards their last

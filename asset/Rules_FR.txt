@@ -1,25 +1,26 @@
-Mise en place:
-2 à 4 joueurs, jeu de 52 cartes standard. Distribuer 6 cartes à chaque joueur.
-Placer le reste en pioche, retourner une carte pour commencer la défausse.
-Déroulement du jeu:
-Les joueurs jouent chacun leur tour une carte qui correspond à la dernière carte 
-défaussée (par couleur ou par valeur). Les tours se déroulent dans le sens horaire.
-Les huit sont des jokers — jouer un 8 permet de choisir une nouvelle couleur.
-Si un joueur n'a pas de carte jouable, il doit piocher jusqu'à pouvoir jouer. 
-Aucun joueur ne peut avoir plus de 12 cartes en main.
-Cartes spéciales:
-2: Lorsqu'un 2 est joué, le joueur suivant doit piocher 2 cartes. Cet effet est 
-cumulatif: si un autre 2 est joué, le joueur suivant pioche 4 cartes, puis 6, puis 8, etc.
-4: Lorsqu'un 4 est joué, le joueur suivant doit piocher 4 cartes. Cet effet n'est pas cumulatif.
-Pioche forcée (2 ou 4): Si une pioche forcée fait dépasser la limite de 12 cartes,
-les cartes excédentaires reviennent au joueur qui a joué la carte de pioche forcée (2 ou 4).
-Si le joueur qui a joué la carte ayant déclenché la pioche forcée se voit rediriger 
-des cartes, mais que sa main est déjà pleine, il est alors pénalisé en transformant 
-le nombre de cartes redirigées en points de pénalité.
-As: Inverse le sens du jeu.
-Dame: Le joueur suivant perd son tour.
-Victoire: 
-Le premier joueur à se débarrasser de toutes ses cartes gagne la manche. Tous les
-autres joueurs reçoivent un nombre de cartes égal à celui qu'ils ont en main. 
-Lorsque un joueur atteint 50 points, la partie est terminée, et le joueur avec le
-moins de points est le gagnant.
+Objectif :
+Le Huit Fou (Crazy Eights) est un jeu de cartes dans lequel les joueurs se relaient pour se défausser de leurs cartes jusqu’à ce qu’un joueur n’en ait plus en main. Une manche est remportée lorsque le premier joueur se défausse de sa dernière carte. Les cartes sont posées sur la pile de défausse. Si un joueur ne peut pas jouer de carte, il doit piocher jusqu’à ce qu’il puisse en jouer une.
+
+Mise en place :
+4 joueurs, un paquet de 52 cartes standard. 6 cartes sont distribuées à chaque joueur. Les cartes restantes sont placées dans la zone de jeu en tant que pioche. La première carte de la pioche est retournée pour commencer la pile de défausse.
+
+Déroulement du jeu :
+Les joueurs jouent chacun leur tour une carte qui correspond à celle du dessus de la pile de défausse (par couleur ou par valeur). Les tours se déroulent dans le sens horaire au départ.
+Les huit sont des jokers : jouer un 8 permet de choisir une nouvelle couleur.
+Si un joueur n’a aucune carte jouable, il doit piocher jusqu’à pouvoir en jouer une. Aucun joueur ne peut avoir plus de 12 cartes en main.
+
+Cartes spéciales :
+
+2 : Lorsqu’un 2 est joué, le joueur suivant doit piocher 2 cartes. Cet effet est cumulatif : si un autre 2 est joué, le joueur suivant pioche 4 cartes, puis 6, puis 8, etc.
+
+4 : Si un 4 est joué, le joueur suivant doit piocher 4 cartes. Cet effet n’est pas cumulatif.
+Si une pioche forcée (à cause d’un 2 ou d’un 4) oblige un joueur à dépasser 12 cartes en main, les cartes excédentaires retournent au joueur qui a joué la carte de pioche forcée.
+Si ce joueur a également 12 cartes ou plus, les cartes excédentaires sont transformées en points de pénalité contre lui.
+
+As : Inverse le sens du jeu.
+
+Dame : Le prochain joueur perd son tour.
+
+Victoire :
+Le premier joueur à se débarrasser de toutes ses cartes remporte la manche. Tous les autres joueurs reçoivent un nombre de points égal au nombre de cartes qu’ils ont en main.
+Lorsque l’un des joueurs atteint 50 points, la partie prend fin, et le joueur ayant le moins de points est déclaré vainqueur.
