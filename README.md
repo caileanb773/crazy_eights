@@ -11,7 +11,7 @@ The program is written using the Java Swing framework and the MVC (model, view, 
 pattern. The model contains only the game logic, the view contains only UI elements, and the
 controller acts as a bridge between the user and the model/view.
 
-The game is designed to always have 4 players, and in singe-player mode the player will play 
+The game is designed to always have 4 players, and in single-player mode the player will play 
 against 3 AI opponents.
 There is only one level of difficulty for the AI; more difficulty levels will be implemented in a
 later update along with some fixes to single/multiplayer.
